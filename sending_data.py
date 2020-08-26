@@ -7,7 +7,10 @@ Created on Wed Aug 26 09:56:27 2020
 
 import socket
 
-client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client_socket.connect(('localhost', 20000))
-client_socket.send(b'Hello world !')
-client_socket.close()
+HOST = '127.0.0.1 '
+PORT = 20000
+
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.connect((HOST, PORT))
+    s.send(b'Hello world !')
