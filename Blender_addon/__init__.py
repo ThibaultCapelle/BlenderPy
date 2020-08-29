@@ -12,7 +12,7 @@ import bpy
 
 #from .panels import Launch_server, Stop_server, Test_Panel
 
-modulesNames = ['panels', 'printing', 'receiving_data']
+modulesNames = ['panels', 'printing', 'receiving_data', 'Interprete']
  
 import sys
 import importlib

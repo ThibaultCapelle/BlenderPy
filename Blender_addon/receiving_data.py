@@ -5,7 +5,8 @@ Created on Wed Aug 26 10:05:13 2020
 @author: Thibault
 """
 
-import socket, threading
+import socket, threading, json
+from . import Interprete
 
 HOST = '127.0.0.1'
 PORT = 20000
@@ -19,15 +20,15 @@ class Server:
         
     def connect(self):
         if not self.connected:
-            self.server_thread=threading.Thread(target=self.listen)
-            self.server_thread.start()
+            self.server_thread=threading.Thread(target=self.listen, daemon=True)
             self.connected=True
+            self.server_thread.start()
     
     def listen(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((self.host, self.port))
             s.listen()
-            while True:
+            while self.connected:
                 conn, addr = s.accept()
                 with conn:
                     print('Connected by', addr)
@@ -37,9 +38,24 @@ class Server:
                             break
                         else:
                             print(data)
+                            self.interpreter(data)
+            s.shutdown(socket.SHUT_RDWR)
+            s.close()
     
     def disconnect(self):
+        self.connected=False
         if self.connected:
-            self.server_thread.stop()
-            self.connected=False
+            print('I will disconnect this server')
+    
+    def interpreter(self, message):
+        cmd = json.loads(message.decode())
+        if cmd['type']=='command':
+            if cmd['command']=='delete_all':
+                Interprete.delete_all()
+        elif cmd['type']=='class':
+            if cmd['class']=='Material':
+                Interprete.Material(cmd)
+        else:
+            print("unknown")
+        
         
