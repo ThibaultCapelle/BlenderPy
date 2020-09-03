@@ -4,34 +4,45 @@ import bmesh
 from mathutils import Vector 
 from bmesh.types import BMVert 
 
-
-def delete_all():
-    objs = [ob for ob in bpy.context.scene.objects]
-    bpy.ops.object.delete({"selected_objects": objs})
-    for block in bpy.data.meshes:
-        if block.users == 0:
-            bpy.data.meshes.remove(block)
-
-    for block in bpy.data.materials:
-        if block.users == 0:
-            bpy.data.materials.remove(block)
+class Interprete:
     
-    for block in bpy.data.textures:
-        if block.users == 0:
-            bpy.data.textures.remove(block)
+    def __init__(self, server):
+        self.server=server
     
-    for block in bpy.data.images:
-        if block.users == 0:
-            bpy.data.images.remove(block)
+    def delete_all(self):
+        objs = [ob for ob in bpy.context.scene.objects]
+        bpy.ops.object.delete({"selected_objects": objs})
+        for block in bpy.data.meshes:
+            if block.users == 0:
+                bpy.data.meshes.remove(block)
+    
+        for block in bpy.data.materials:
+            if block.users == 0:
+                bpy.data.materials.remove(block)
+        
+        for block in bpy.data.textures:
+            if block.users == 0:
+                bpy.data.textures.remove(block)
+        
+        for block in bpy.data.images:
+            if block.users == 0:
+                bpy.data.images.remove(block)
+        
+    def mesh(self, message):
+        points, cells = message['points'], message['cells']
+        obj = Object(message["name"], points, cells, message["thickness"])
+    
+    def get_material_names(self, conn):
+        self.server.send_answer(conn,
+                                [item.name for item in bpy.data.materials])
+
+
+
 
 def Material(message):
     #print(message)
     assert message['class']=='Material'
-    
-def Mesh(message):
-    #print(message)
-    points, cells = message['points'], message['cells']
-    obj = Object(message["name"], points, cells, message["thickness"])
+
 
 class Object:
     

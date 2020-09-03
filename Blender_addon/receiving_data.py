@@ -6,8 +6,9 @@ Created on Wed Aug 26 10:05:13 2020
 """
 
 import socket, threading, json
-from . import Interprete
+from .interprete import Interprete
 import bpy
+import time
 
 HOST = '127.0.0.1'
 PORT = 20000
@@ -18,6 +19,7 @@ class Server:
         self.host=host
         self.port=port
         self.connected=False
+        self.interprete = Interprete(self)
         
     def connect(self):
         if not self.connected:
@@ -37,6 +39,17 @@ class Server:
             data.extend(packet)
             i+=1
         return data  
+    
+    def send(self, message):
+        print('len : {:010x}'.format(len(message)))
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((self.host, self.port))
+            s.sendall(('{:010x}'.format(len(message))+message).encode())
+    
+    def send_answer(self, conn, message):
+        message=str(message)
+        print(message)
+        conn.sendall(('{:010x}'.format(len(message))+message).encode())
         
     def listen(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -55,7 +68,7 @@ class Server:
                         print(msglen)
                         data=self.receive_all(conn, msglen)
                         if data is not None:
-                            self.interpreter(data)
+                            self.interpreter(conn, data)
                         elif len(data)!=msglen:
                             print('the length and the data did not match')
             s.shutdown(socket.SHUT_RDWR)
@@ -66,16 +79,18 @@ class Server:
         if self.connected:
             print('I will disconnect this server')
     
-    def interpreter(self, message):
+    def interpreter(self, conn, message):
         cmd = json.loads(message)
         if cmd['type']=='command':
             if cmd['command']=='delete_all':
-                Interprete.delete_all()
+                self.interprete.delete_all()
+            elif cmd['command']=='get_material_names':
+                self.interprete.get_material_names(conn)
         elif cmd['type']=='class':
             if cmd['class']=='Material':
-                Interprete.Material(cmd)
+                self.interprete.Material(cmd)
         elif cmd['type']=='mesh':
-            Interprete.Mesh(cmd)
+            self.interprete.mesh(cmd)
         else:
             print("unknown")
         
