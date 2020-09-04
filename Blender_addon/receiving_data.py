@@ -7,8 +7,6 @@ Created on Wed Aug 26 10:05:13 2020
 
 import socket, threading, json
 from .interprete import Interprete
-import bpy
-import time
 
 HOST = '127.0.0.1'
 PORT = 20000
@@ -47,7 +45,7 @@ class Server:
             s.sendall(('{:010x}'.format(len(message))+message).encode())
     
     def send_answer(self, conn, message):
-        message=str(message)
+        message=json.dumps(dict({'content':message}))
         print(message)
         conn.sendall(('{:010x}'.format(len(message))+message).encode())
         
@@ -81,7 +79,10 @@ class Server:
     
     def interpreter(self, conn, message):
         cmd = json.loads(message)
-        if cmd['type']=='command':
+        print(cmd)
+        cmd['kwargs']['connection']=conn
+        self.interprete.call(cmd)
+        '''if cmd['type']=='command':
             if cmd['command']=='delete_all':
                 self.interprete.delete_all()
             elif cmd['command']=='get_material_names':
@@ -92,6 +93,6 @@ class Server:
         elif cmd['type']=='mesh':
             self.interprete.mesh(cmd)
         else:
-            print("unknown")
+            print("unknown")'''
         
         

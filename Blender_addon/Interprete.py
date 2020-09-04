@@ -9,7 +9,14 @@ class Interprete:
     def __init__(self, server):
         self.server=server
     
-    def delete_all(self):
+    def call(self, cmd):
+        print('len of args is {:}'.format(len(cmd['args'])))
+        if len(cmd['args'])==0 or (len(cmd['args'])==1 and len(cmd['args'][0])==0):
+            getattr(self, cmd['command'])(**cmd['kwargs'])
+        else:
+            getattr(self, cmd['command'])(*cmd['args'], **cmd['kwargs'])
+    
+    def delete_all(self, connection=None):
         objs = [ob for ob in bpy.context.scene.objects]
         bpy.ops.object.delete({"selected_objects": objs})
         for block in bpy.data.meshes:
@@ -28,13 +35,50 @@ class Interprete:
             if block.users == 0:
                 bpy.data.images.remove(block)
         
-    def mesh(self, message):
-        points, cells = message['points'], message['cells']
-        obj = Object(message["name"], points, cells, message["thickness"])
+    def create_mesh(self, points=None, cells=None, name=None,
+             thickness=None, connection=None):
+        obj = Object(name, points, cells, thickness)
+        self.server.send_answer(connection, 
+                                [obj.name_msh, obj.name_msh])
     
-    def get_material_names(self, conn):
-        self.server.send_answer(conn,
+    def update_material(self, connection=None, **kwargs):
+        material=bpy.data.materials.get(kwargs['name'])
+        material.node_tree.nodes["Principled BSDF"].inputs[0].default_value=kwargs['color']
+        material.node_tree.nodes["Principled BSDF"].inputs[15].default_value=kwargs['transmission']
+        material.node_tree.nodes["Principled BSDF"].inputs[16].default_value=kwargs['use_screen_refraction']
+        material.use_screen_refraction=kwargs['use_screen_refraction']
+        if kwargs['use_screen_refraction']:
+            bpy.context.scene.eevee.use_ssr = True
+            bpy.context.scene.eevee.use_ssr_refraction = True
+        print('yolo')
+        
+    def get_material_names(self, connection=None):
+        assert connection is not None
+        self.server.send_answer(connection,
                                 [item.name for item in bpy.data.materials])
+    
+    def get_material(self, name, connection=None):
+        self.server.send_answer(connection, bpy.data.materials.get(name).name)
+    
+    def create_material(self, name, connection=None):
+        self.server.send_answer(connection, self.new_material(name).name)
+    
+    def new_material(self, name):
+        mat=bpy.data.materials.new(name)
+        mat.use_nodes = True
+        self.nodes = mat.node_tree.nodes
+        print([node for node in self.nodes])
+        #node = self.nodes.new("Principled BSDF")
+        return mat
+    
+    def assign_material(self, **kwargs):
+        bpy.data.objects[kwargs['name_obj']].select_set(True)
+        bpy.context.view_layer.objects.active = bpy.data.objects[kwargs['name_obj']]
+        ob = bpy.data.objects[kwargs['name_obj']]
+        if ob.data.materials:
+            ob.data.materials[0] = bpy.data.materials.get(kwargs['name_mat'])
+        else:
+            ob.data.materials.append(bpy.data.materials.get(kwargs['name_mat']))
 
 
 
