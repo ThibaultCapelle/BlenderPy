@@ -75,35 +75,36 @@ def delete_all():
     
 class Material:
     
-    def __init__(self, name, color, alpha=None, transmission=0,
-                 use_screen_refraction=False, refraction_depth=0.):
+    def __init__(self, name, color, alpha=1., transmission=0,
+                 use_screen_refraction=False, refraction_depth=0.,
+                 blend_method='OPAQUE', use_backface_culling=False):
         names = self.get_material_names()
         if name in names:
             self.material_object = self.get_material(name)
         else:
             self.material_object = self.create_material(name)
-        self.color=self.convert_color(color, alpha)
+        self.color=self.convert_color(color)
         params=dict({'name':self.material_object, 'color':self.color,
                      'alpha':alpha, 'transmission':transmission,
                      'use_screen_refraction':use_screen_refraction,
-                     'refraction_depth':refraction_depth})
+                     'refraction_depth':refraction_depth,
+                     'blend_method':blend_method,
+                     'use_backface_culling':use_backface_culling})
         send(parse('update_material()', kwargs=params))
-        '''[item.name for item in bpy.data.materials]
-        if name in names:
-            self.material=bdy.data.materials.get(name)
-        else:
-            self.material=self.new_material(name)
+    
+    def z_dependant_color(self, positions, colors):
+        params=dict({'colors':[self.convert_color(color) for color in colors],
+                     'name':self.material_object,
+                     'positions':positions})
+        send(parse('z_dependant_color()', kwargs=params))
+    
+    def gaussian_laser(self, ZR, W0, I):
+        params=dict({'name':self.material_object,
+                     'ZR':ZR,
+                     'W0':W0,
+                     'I':I})
+        send(parse('gaussian_laser()', kwargs=params))
         
-        #self.material.diffuse_color=self.color
-        self.material.node_tree.nodes["Principled BSDF"].inputs[0].default_value=self.color
-        self.material.node_tree.nodes["Principled BSDF"].inputs[15].default_value=transmission
-        self.material.node_tree.nodes["Principled BSDF"].inputs[16].default_value=use_screen_refraction
-        self.material.use_screen_refraction=use_screen_refraction
-        if use_screen_refraction:
-            bpy.context.scene.eevee.use_ssr = True
-            bpy.context.scene.eevee.use_ssr_refraction = True
-            #bpy.context.object.active_material.refraction_depth = refraction_depth
-'''
     def get_material(self, name):
         return ask(parse('get_material({:})'.format(name)))
     
@@ -113,7 +114,7 @@ class Material:
     def get_material_names(self):
         return ask(parse('get_material_names()'))
     
-    def convert_color(self, color, alpha):
+    def convert_color(self, color, alpha=1):
         if len(color)==3:
             if alpha is None:
                 alpha=1.0
@@ -127,6 +128,25 @@ class Material:
             else:
                 alpha=int(color[7:9], 16)/256.
             return [int(color[i:i+2], 16)/256. for i in [1,3,5]] +[alpha]
+    
+class Light:
+    
+    def __init__(self, name, location, power, radius=0.25):
+        self.add_light(name, location, power, radius)
+        
+    def add_light(self, name, location, power, radius):
+        res=dict()
+        kwargs = dict()
+        kwargs['location']=location
+        kwargs['power']=power
+        kwargs['radius']=radius
+        kwargs['name']=name
+        res['type']='light'
+        res['args']=[]
+        res['command']='create_light'
+        res['kwargs']=kwargs
+        self.name=ask(json.dumps(res))
+        
 
 class Mesh:
     
@@ -162,15 +182,22 @@ class Mesh:
 
 if __name__=='__main__':
     import pygmsh
-    
     delete_all()
-    
-    geom = pygmsh.opencascade.geometry.Geometry(characteristic_length_max=1)
-    geom.add_box([-3,-3,-1],[6,6,1])
+    material=Material('hello', '#F5D15B', alpha=0.5, blend_method='BLEND')
+    geom=pygmsh.opencascade.geometry.Geometry(characteristic_length_max=0.25)
+
+    mirror_1=geom.add_cylinder([0,0,0],
+                               [0,0,1], 1)
     mesh = pygmsh.generate_mesh(geom)
-    obj = Mesh(mesh)
-    m=Material('material', '#C12828')
-    obj.assign_material(m)
+    mirror_1_mesh=Mesh(mesh, name='mirror_1')
+    mirror_1_mesh.assign_material(material)
+    '''material.z_dependant_color([0.,0.5,1.],
+                               ['#3213CD',
+                                '#FFFFFF',
+                                '#F60818'])'''
+    
+    material.gaussian_laser(0.05,0.005, 100)
+    
     
                           
                       
