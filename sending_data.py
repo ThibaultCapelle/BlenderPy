@@ -128,6 +128,69 @@ class Material:
             else:
                 alpha=int(color[7:9], 16)/256.
             return [int(color[i:i+2], 16)/256. for i in [1,3,5]] +[alpha]
+
+class Camera:
+    
+    def __init__(self, name, location, rotation):
+        self.add_camera(name, location, rotation)
+    
+    def add_camera(self, name, location, rotation):
+        res=dict()
+        kwargs = dict()
+        kwargs['location']=location
+        kwargs['rotation']=rotation
+        kwargs['name']=name
+        res['type']='camera'
+        res['args']=[]
+        res['command']='create_camera'
+        res['kwargs']=kwargs
+        self.name, self.name_obj=ask(json.dumps(res))
+    
+    @property
+    def position(self):
+        res = dict()
+        kwargs = dict()
+        kwargs['name']=self.name
+        kwargs['name_obj']=self.name_obj
+        res['command']='get_camera_position'
+        res['args']=[]
+        res['kwargs']=kwargs
+        return ask(json.dumps(res))
+    
+    @position.setter
+    def position(self, val):
+        res = dict()
+        kwargs = dict()
+        kwargs['name']=self.name
+        kwargs['name_obj']=self.name_obj
+        kwargs['position']=val
+        res['command']='set_camera_position'
+        res['args']=[]
+        res['kwargs']=kwargs
+        send(json.dumps(res))
+    
+    @property
+    def rotation(self):
+        res = dict()
+        kwargs = dict()
+        kwargs['name']=self.name
+        kwargs['name_obj']=self.name_obj
+        res['command']='get_camera_rotation'
+        res['args']=[]
+        res['kwargs']=kwargs
+        return ask(json.dumps(res))
+    
+    @rotation.setter
+    def rotation(self, val):
+        res = dict()
+        kwargs = dict()
+        kwargs['name']=self.name
+        kwargs['name_obj']=self.name_obj
+        kwargs['rotation']=val
+        res['command']='set_camera_rotation'
+        res['args']=[]
+        res['kwargs']=kwargs
+        send(json.dumps(res))
     
 class Light:
     
@@ -197,7 +260,9 @@ if __name__=='__main__':
                                 '#F60818'])'''
     
     material.gaussian_laser(0.05,0.005, 100)
-    
+    cam=Camera('camera', [0,0,0],[0,0,0])
+    cam.rotation=[1,0,0]
+    print(cam.rotation)
     
                           
                       

@@ -10,8 +10,9 @@ class Interprete:
         self.server=server
     
     def call(self, cmd):
-        print('len of args is {:}'.format(len(cmd['args'])))
-        if len(cmd['args'])==0 or (len(cmd['args'])==1 and len(cmd['args'][0])==0):
+        if len(cmd['args'])==0 or\
+        (len(cmd['args'])==1 and len(cmd['args'][0])==0)or\
+        'args' not in cmd.keys():
             getattr(self, cmd['command'])(**cmd['kwargs'])
         else:
             getattr(self, cmd['command'])(*cmd['args'], **cmd['kwargs'])
@@ -207,6 +208,54 @@ class Interprete:
         bpy.data.lights[created_name].name=new_name
         bpy.data.lights[new_name].energy=power
         self.server.send_answer(connection, new_name)
+    
+    def create_camera(self, **kwargs):
+        names, names_obj=([item.name for item in bpy.data.cameras],
+                          [item.name for item in bpy.data.objects])
+        location, rotation=kwargs['location'], kwargs['rotation']
+        bpy.ops.object.camera_add(location=(location[0], location[1], location[2]),
+                                            rotation=(rotation[0], rotation[1], rotation[2]))
+        new_names, new_names_obj=([item.name for item in bpy.data.cameras],
+                          [item.name for item in bpy.data.objects])
+        for item in new_names:
+            if item not in names:
+                created_name=item
+                break
+        for item in new_names_obj:
+            if item not in names_obj:
+                created_name_obj=item
+                break
+        new_name=kwargs['name']+'.{:}'.format(1+len([item for item in bpy.data.cameras if kwargs['name'] in item.name]))
+        new_name_obj=kwargs['name']+'.{:}'.format(1+len([item for item in bpy.data.objects if kwargs['name'] in item.name]))
+        bpy.data.cameras[created_name].name=new_name
+        bpy.data.objects[created_name_obj].name=new_name_obj
+        self.server.send_answer(kwargs['connection'], [new_name, new_name_obj])
+    
+    def get_camera_position(self, **kwargs):
+        camera=bpy.data.objects[kwargs['name_obj']]
+        res=[camera.location.x,
+             camera.location.y,
+             camera.location.z]
+        self.server.send_answer(kwargs['connection'], res)
+    
+    def set_camera_position(self, **kwargs):
+        camera=bpy.data.objects[kwargs['name_obj']]
+        camera.location.x=kwargs['position'][0]
+        camera.location.y=kwargs['position'][1]
+        camera.location.z=kwargs['position'][2]
+        
+    def get_camera_rotation(self, **kwargs):
+        camera=bpy.data.objects[kwargs['name_obj']]
+        res=[camera.rotation_euler.x,
+             camera.rotation_euler.y,
+             camera.rotation_euler.z]
+        self.server.send_answer(kwargs['connection'], res)
+    
+    def set_camera_rotation(self, **kwargs):
+        camera=bpy.data.objects[kwargs['name_obj']]
+        camera.rotation_euler.x=kwargs['rotation'][0]
+        camera.rotation_euler.y=kwargs['rotation'][1]
+        camera.rotation_euler.z=kwargs['rotation'][2]
         
     def get_material(self, name, connection=None):
         self.server.send_answer(connection, bpy.data.materials.get(name).name)
