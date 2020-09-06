@@ -208,7 +208,53 @@ class Light:
         res['args']=[]
         res['command']='create_light'
         res['kwargs']=kwargs
-        self.name=ask(json.dumps(res))
+        self.name, self.name_obj=ask(json.dumps(res))
+    
+    @property
+    def position(self):
+        res = dict()
+        kwargs = dict()
+        kwargs['name']=self.name
+        kwargs['name_obj']=self.name_obj
+        res['command']='get_light_position'
+        res['args']=[]
+        res['kwargs']=kwargs
+        return ask(json.dumps(res))
+    
+    @position.setter
+    def position(self, val):
+        res = dict()
+        kwargs = dict()
+        kwargs['name']=self.name
+        kwargs['name_obj']=self.name_obj
+        kwargs['position']=val
+        res['command']='set_light_position'
+        res['args']=[]
+        res['kwargs']=kwargs
+        send(json.dumps(res)) 
+        
+    @property
+    def power(self):
+        res = dict()
+        kwargs = dict()
+        kwargs['name']=self.name
+        kwargs['name_obj']=self.name_obj
+        res['command']='get_light_power'
+        res['args']=[]
+        res['kwargs']=kwargs
+        return ask(json.dumps(res))
+    
+    @power.setter
+    def power(self, val):
+        res = dict()
+        kwargs = dict()
+        kwargs['name']=self.name
+        kwargs['name_obj']=self.name_obj
+        kwargs['power']=val
+        res['command']='set_light_power'
+        res['args']=[]
+        res['kwargs']=kwargs
+        send(json.dumps(res))
         
 
 class Mesh:
@@ -263,6 +309,11 @@ if __name__=='__main__':
     cam=Camera('camera', [0,0,0],[0,0,0])
     cam.rotation=[1,0,0]
     print(cam.rotation)
+    light=Light('light', [0,0,0], 10)
+    light.position=[1,0,0]
+    print(light.position)
+    light.power=100
+    print(light.power)
     
                           
                       

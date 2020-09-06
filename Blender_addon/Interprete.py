@@ -196,18 +196,26 @@ class Interprete:
     
     def create_light(self, name='light', connection=None, power=100, radius=0.2,
                      location=[0,0,0]):
-        names=[item.name for item in bpy.data.lights]
+        names, names_obj=([item.name for item in bpy.data.lights],
+                          [item.name for item in bpy.data.objects])
         bpy.ops.object.light_add(type='POINT', radius=radius,
                                  location=(location[0], location[1], location[2]))
-        new_names=[item.name for item in bpy.data.lights]
+        new_names, new_names_obj=([item.name for item in bpy.data.lights],
+                                  [item.name for item in bpy.data.objects])
         for item in new_names:
             if item not in names:
                 created_name=item
                 break
+        for item in new_names_obj:
+            if item not in names_obj:
+                created_name_obj=item
+                break
         new_name=name+'.{:}'.format(1+len([item for item in bpy.data.lights if name in item.name]))
+        new_name_obj=name+'.{:}'.format(1+len([item for item in bpy.data.objects if name in item.name]))
+        bpy.data.objects[created_name_obj].name=new_name_obj
         bpy.data.lights[created_name].name=new_name
         bpy.data.lights[new_name].energy=power
-        self.server.send_answer(connection, new_name)
+        self.server.send_answer(connection, [new_name, new_name_obj])
     
     def create_camera(self, **kwargs):
         names, names_obj=([item.name for item in bpy.data.cameras],
@@ -238,11 +246,32 @@ class Interprete:
              camera.location.z]
         self.server.send_answer(kwargs['connection'], res)
     
+    def get_light_position(self, **kwargs):
+        light=bpy.data.objects[kwargs['name_obj']]
+        res=[light.location.x,
+             light.location.y,
+             light.location.z]
+        self.server.send_answer(kwargs['connection'], res)
+    
+    def get_light_power(self, **kwargs):
+        light=bpy.data.lights[kwargs['name']]
+        self.server.send_answer(kwargs['connection'], light.energy)
+    
+    def set_light_power(self, **kwargs):
+        light=bpy.data.lights[kwargs['name']]
+        light.energy=kwargs['power']
+    
     def set_camera_position(self, **kwargs):
         camera=bpy.data.objects[kwargs['name_obj']]
         camera.location.x=kwargs['position'][0]
         camera.location.y=kwargs['position'][1]
         camera.location.z=kwargs['position'][2]
+    
+    def set_light_position(self, **kwargs):
+        light=bpy.data.objects[kwargs['name_obj']]
+        light.location.x=kwargs['position'][0]
+        light.location.y=kwargs['position'][1]
+        light.location.z=kwargs['position'][2]
         
     def get_camera_rotation(self, **kwargs):
         camera=bpy.data.objects[kwargs['name_obj']]
