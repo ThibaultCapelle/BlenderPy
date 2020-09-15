@@ -3,6 +3,7 @@ import bpy, json
 import bmesh 
 from mathutils import Vector 
 from bmesh.types import BMVert 
+import numpy as np
 
 class Interprete:
     
@@ -23,18 +24,16 @@ class Interprete:
         for block in bpy.data.meshes:
             if block.users == 0:
                 bpy.data.meshes.remove(block)
-    
         for block in bpy.data.materials:
             if block.users == 0:
                 bpy.data.materials.remove(block)
-        
         for block in bpy.data.textures:
             if block.users == 0:
                 bpy.data.textures.remove(block)
-        
         for block in bpy.data.images:
             if block.users == 0:
                 bpy.data.images.remove(block)
+        self.server.send_answer(connection, "DONE")
         
     def create_mesh(self, points=None, cells=None, name=None,
              thickness=None, connection=None):
@@ -44,31 +43,47 @@ class Interprete:
     
     def update_material(self, connection=None, **kwargs):
         material=bpy.data.materials.get(kwargs['name'])
-        material.node_tree.nodes["Principled BSDF"].inputs[0].default_value=kwargs['color']
-        material.node_tree.nodes["Principled BSDF"].inputs[15].default_value=kwargs['transmission']
-        material.node_tree.nodes["Principled BSDF"].inputs[16].default_value=kwargs['use_screen_refraction']
-        material.node_tree.nodes["Principled BSDF"].inputs['Alpha'].default_value=kwargs['alpha']
+        node=material.node_tree.nodes["Principled BSDF"]
+        node.inputs[0].default_value=kwargs['color']
+        node.inputs[15].default_value=kwargs['transmission']
+        node.inputs[16].default_value=kwargs['use_screen_refraction']
+        node.inputs['Alpha'].default_value=kwargs['alpha']
         material.blend_method = kwargs['blend_method']
-
+        material.shadow_method = kwargs['blend_method_shadow']
         material.use_screen_refraction=kwargs['use_screen_refraction']
+        if 'roughness' in kwargs.keys():
+            node.inputs['Roughness'].default_value=kwargs['roughness']
+        if 'metallic' in kwargs.keys():
+            node.inputs['Metallic'].default_value=kwargs['metallic']
         if kwargs['use_screen_refraction']:
             bpy.context.scene.eevee.use_ssr = True
             bpy.context.scene.eevee.use_ssr_refraction = True
         print(kwargs)
         material.use_backface_culling=kwargs['use_backface_culling']
     
+    def get_cursor_location(self, **kwargs):
+        self.server.send_answer(kwargs['connection'], 
+                                [bpy.context.scene.cursor.location.x,
+                                 bpy.context.scene.cursor.location.y,
+                                 bpy.context.scene.cursor.location.z])
+    
+    def set_cursor_location(self, **kwargs):
+        bpy.context.scene.cursor.location.x=kwargs['location'][0]
+        bpy.context.scene.cursor.location.y=kwargs['location'][1]
+        bpy.context.scene.cursor.location.z=kwargs['location'][2]
+        bpy.data.objects[kwargs['name']].select_set(True)
+        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+    
     def z_dependant_color(self, connection=None, **kwargs):
         material=bpy.data.materials.get(kwargs['name'])
-        Texcoords=material.node_tree.nodes.new(type="ShaderNodeTexCoord")
-        SeparateXYZ=material.node_tree.nodes.new(type="ShaderNodeSeparateXYZ")
-        material.node_tree.links.new(Texcoords.outputs['Generated'],
-                                     SeparateXYZ.inputs['Vector'])
+        
         ColorRamp=material.node_tree.nodes.new(type="ShaderNodeValToRGB")
-        material.node_tree.links.new(SeparateXYZ.outputs['Z'],
-                                     ColorRamp.inputs['Fac'])
+        SeparateXYZ=material.node_tree.nodes.new(type="ShaderNodeSeparateXYZ")
         Principled_BDSF=material.node_tree.nodes['Principled BSDF']
         material.node_tree.links.new(ColorRamp.outputs['Color'],
                                      Principled_BDSF.inputs['Base Color'])
+        material.node_tree.links.new(ColorRamp.outputs['Alpha'],
+                                     Principled_BDSF.inputs['Alpha'])
         for element in ColorRamp.color_ramp.elements[:-1]:
             ColorRamp.color_ramp.elements.remove(element)
         element=ColorRamp.color_ramp.elements[0]
@@ -78,29 +93,131 @@ class Interprete:
                                    kwargs['colors'][1:]):
             new_element=ColorRamp.color_ramp.elements.new(position)
             new_element.color=color
+        if 'name_msh' in kwargs.keys():
+            msh=bpy.data.meshes.get(kwargs['name_msh'])
+            bm=bmesh.new()
+            bm.from_mesh(msh)
             
+            zmin, zmax=(np.min([v.co.z for v in bm.verts]),
+                        np.max([v.co.z for v in bm.verts]))
+            bm.free()
+            Geometry=material.node_tree.nodes.new(type="ShaderNodeNewGeometry")
+            material.node_tree.links.new(Geometry.outputs['Position'],
+                                         SeparateXYZ.inputs['Vector'])
+            add=material.node_tree.nodes.new(type="ShaderNodeMath")
+            add.operation='ADD'
+            add.inputs[1].default_value=kwargs['z_offset']
+            
+            material.node_tree.links.new(SeparateXYZ.outputs['Z'],
+                                         add.inputs[0])
+            divide=material.node_tree.nodes.new(type="ShaderNodeMath")
+            divide.operation='DIVIDE'
+            divide.inputs[1].default_value=kwargs['z_scale']
+            material.node_tree.links.new(add.outputs[0],
+                                         divide.inputs[0])
+            material.node_tree.links.new(divide.outputs[0],
+                                         ColorRamp.inputs['Fac'])
+        else:
+            Texcoords=material.node_tree.nodes.new(type="ShaderNodeTexCoord")
+            material.node_tree.links.new(Texcoords.outputs['Generated'],
+                                         SeparateXYZ.inputs['Vector'])
+            material.node_tree.links.new(SeparateXYZ.outputs['Z'],
+                                         ColorRamp.inputs['Fac'])
+    
+    
+    def make_oscillations(self, **kwargs):
+        scene=bpy.context.scene
+        scene.frame_end=kwargs['N_frames']
+        scene.frame_start=1
+        scene.frame_current=scene.frame_start
+        obj=bpy.data.objects[kwargs['name_obj']]
+        extension_scale, extension_rotation, extension_motion=([kwargs['target_scale'][i]-kwargs['center_scale'][i] for i in range(3)],
+                                                               [kwargs['target_rotation'][i]-kwargs['center_rotation'][i] for i in range(3)],
+                                                               [kwargs['target_motion'][i]-kwargs['center_motion'][i] for i in range(3)] 
+                                                               )
+        if kwargs['Q']==0:
+            for i in range(5):
+                scene.frame_current=int(i*kwargs['N_frames']/4)
+                
+                obj.scale.x=kwargs['center_scale'][0]+np.cos(np.pi*i/2)*extension_scale[0]
+                obj.scale.y=kwargs['center_scale'][1]+np.cos(np.pi*i/2)*extension_scale[1]
+                obj.scale.z=kwargs['center_scale'][2]+np.cos(np.pi*i/2)*extension_scale[2]
+
+                obj.location.x=kwargs['center_motion'][0]+np.cos(np.pi*i/2)*extension_motion[0]
+                obj.location.y=kwargs['center_motion'][1]+np.cos(np.pi*i/2)*extension_motion[1]
+                obj.location.z=kwargs['center_motion'][2]+np.cos(np.pi*i/2)*extension_motion[2]
+            
+                obj.rotation_euler.x=kwargs['center_rotation'][0]+np.cos(np.pi*i/2)*extension_rotation[0]
+                obj.rotation_euler.y=kwargs['center_rotation'][1]+np.cos(np.pi*i/2)*extension_rotation[1]
+                obj.rotation_euler.z=kwargs['center_rotation'][2]+np.cos(np.pi*i/2)*extension_rotation[2]
+            
+                obj.keyframe_insert("scale")
+                obj.keyframe_insert("location")
+                obj.keyframe_insert("rotation_euler")
+        else:
+            Q=kwargs['Q']
+            N_frames_per_oscillation=int(kwargs['N_frames']/kwargs['N_oscillations'])
+            for i in range(kwargs['N_oscillations']):
+                for j in range(4):
+                    
+                    scene.frame_current=int(i*N_frames_per_oscillation+j*N_frames_per_oscillation/4)
+                    damping=(i+float(j)/4)/Q
+                    obj.scale.x=kwargs['center_scale'][0]+np.exp(-damping)*np.cos(np.pi*j/2)*extension_scale[0]
+                    obj.scale.y=kwargs['center_scale'][1]+np.exp(-damping)*np.cos(np.pi*j/2)*extension_scale[1]
+                    obj.scale.z=kwargs['center_scale'][2]+np.exp(-damping)*np.cos(np.pi*j/2)*extension_scale[2]
+    
+                    obj.location.x=kwargs['center_motion'][0]+np.exp(-damping)*np.cos(np.pi*j/2)*extension_motion[0]
+                    obj.location.y=kwargs['center_motion'][1]+np.exp(-damping)*np.cos(np.pi*j/2)*extension_motion[1]
+                    obj.location.z=kwargs['center_motion'][2]+np.exp(-damping)*np.cos(np.pi*j/2)*extension_motion[2]
+                
+                    obj.rotation_euler.x=kwargs['center_rotation'][0]+np.exp(-damping)*np.cos(np.pi*j/2)*extension_rotation[0]
+                    obj.rotation_euler.y=kwargs['center_rotation'][1]+np.exp(-damping)*np.cos(np.pi*j/2)*extension_rotation[1]
+                    obj.rotation_euler.z=kwargs['center_rotation'][2]+np.exp(-damping)*np.cos(np.pi*j/2)*extension_rotation[2]
+                
+                    obj.keyframe_insert("scale")
+                    obj.keyframe_insert("location")
+                    obj.keyframe_insert("rotation_euler")
+        self.server.send_answer(kwargs['connection'], "DONE")
+            
+            
+        
+        
     def gaussian_laser(self, connection=None, **kwargs):
         W0=kwargs['W0']
         ZR=kwargs['ZR']
         I=kwargs['I']
         material=bpy.data.materials.get(kwargs['name'])
         Texcoords=material.node_tree.nodes.new(type="ShaderNodeTexCoord")
+        Texcoords.location.x=-100
         SeparateXYZ=material.node_tree.nodes.new(type="ShaderNodeSeparateXYZ")
+        SeparateXYZ.location.x=Texcoords.location.x+Texcoords.width+20
         material.node_tree.links.new(Texcoords.outputs['Generated'],
                                      SeparateXYZ.inputs['Vector'])
-        powx=material.node_tree.nodes.new(type="ShaderNodeMath")
-        powx.operation='POWER'
-        powy=material.node_tree.nodes.new(type="ShaderNodeMath")
-        powy.operation='POWER'
+        
         
         diffx, diffy, diffz=(material.node_tree.nodes.new(type="ShaderNodeMath"),
                              material.node_tree.nodes.new(type="ShaderNodeMath"),
                              material.node_tree.nodes.new(type="ShaderNodeMath"))
+        diffx.location.y=500
+        diffy.location.y=0
+        diffz.location.y=-500
+        diffx.location.x=SeparateXYZ.location.x+SeparateXYZ.width+20
+        diffy.location.x=diffx.location.x
+        diffz.location.x=diffx.location.x
         for op, coord in zip([diffx, diffy, diffz], ['X', 'Y', 'Z']):
             op.operation='SUBTRACT'
             material.node_tree.links.new(SeparateXYZ.outputs[coord],
                                          op.inputs[0])
             op.inputs[1].default_value=0.5
+        
+        powx=material.node_tree.nodes.new(type="ShaderNodeMath")
+        powx.operation='POWER'
+        powx.location.x=diffz.location.x+diffz.width+20
+        powx.location.y=200
+        powy=material.node_tree.nodes.new(type="ShaderNodeMath")
+        powy.operation='POWER'
+        powy.location.x=powx.location.x
+        powy.location.y=-200
         material.node_tree.links.new(diffx.outputs[0],
                                      powx.inputs[0])
         powx.inputs[1].default_value=2
@@ -187,6 +304,8 @@ class Interprete:
         material.node_tree.links.new(emission.outputs['Emission'],
                                      output.inputs['Volume'])
         material.node_tree.nodes.remove(material.node_tree.nodes['Principled BSDF'])
+        bpy.context.scene.eevee.volumetric_tile_size = '2'
+
         
     def get_material_names(self, connection=None):
         assert connection is not None
@@ -196,48 +315,41 @@ class Interprete:
     
     def create_light(self, name='light', connection=None, power=100, radius=0.2,
                      location=[0,0,0]):
-        names, names_obj=([item.name for item in bpy.data.lights],
-                          [item.name for item in bpy.data.objects])
-        bpy.ops.object.light_add(type='POINT', radius=radius,
-                                 location=(location[0], location[1], location[2]))
-        new_names, new_names_obj=([item.name for item in bpy.data.lights],
-                                  [item.name for item in bpy.data.objects])
-        for item in new_names:
-            if item not in names:
-                created_name=item
-                break
-        for item in new_names_obj:
-            if item not in names_obj:
-                created_name_obj=item
-                break
-        new_name=name+'.{:}'.format(1+len([item for item in bpy.data.lights if name in item.name]))
-        new_name_obj=name+'.{:}'.format(1+len([item for item in bpy.data.objects if name in item.name]))
-        bpy.data.objects[created_name_obj].name=new_name_obj
-        bpy.data.lights[created_name].name=new_name
-        bpy.data.lights[new_name].energy=power
-        self.server.send_answer(connection, [new_name, new_name_obj])
+        
+        new_light=bpy.data.lights.new(name, type='POINT')
+        new_obj=bpy.data.objects.new(name, new_light)
+        new_obj.location.x=location[0]
+        new_obj.location.y=location[1]
+        new_obj.location.z=location[2]
+        bpy.data.collections[0].objects.link(new_obj)
+        new_light.energy=power
+        self.server.send_answer(connection, [new_light.name, new_obj.name])
     
+    def create_plane(self, **kwargs):
+        location, size, name, connection=(kwargs['location'], kwargs['size'],
+                                          kwargs['name'], kwargs['connection'])
+        points=[[location[0]-size/2, location[1]-size/2, location[2]],
+                [location[0]-size/2, location[1]+size/2, location[2]],
+                [location[0]+size/2, location[1]+size/2, location[2]],
+                [location[0]+size/2, location[1]-size/2, location[2]]]
+        cells=[[0,1,2,3]]
+        self.create_mesh(points=points, cells=cells, name=name, connection=connection)
+        
     def create_camera(self, **kwargs):
-        names, names_obj=([item.name for item in bpy.data.cameras],
-                          [item.name for item in bpy.data.objects])
-        location, rotation=kwargs['location'], kwargs['rotation']
-        bpy.ops.object.camera_add(location=(location[0], location[1], location[2]),
-                                            rotation=(rotation[0], rotation[1], rotation[2]))
-        new_names, new_names_obj=([item.name for item in bpy.data.cameras],
-                          [item.name for item in bpy.data.objects])
-        for item in new_names:
-            if item not in names:
-                created_name=item
-                break
-        for item in new_names_obj:
-            if item not in names_obj:
-                created_name_obj=item
-                break
-        new_name=kwargs['name']+'.{:}'.format(1+len([item for item in bpy.data.cameras if kwargs['name'] in item.name]))
-        new_name_obj=kwargs['name']+'.{:}'.format(1+len([item for item in bpy.data.objects if kwargs['name'] in item.name]))
-        bpy.data.cameras[created_name].name=new_name
-        bpy.data.objects[created_name_obj].name=new_name_obj
-        self.server.send_answer(kwargs['connection'], [new_name, new_name_obj])
+        location, rotation, name=kwargs['location'], kwargs['rotation'], kwargs['name']
+        
+        new_cam=bpy.data.cameras.new(name)
+        new_obj=bpy.data.objects.new(name, new_cam)
+        new_obj.location.x=location[0]
+        new_obj.location.y=location[1]
+        new_obj.location.z=location[2]
+        
+        new_obj.rotation_euler.x=rotation[0]
+        new_obj.rotation_euler.y=rotation[1]
+        new_obj.rotation_euler.z=rotation[2]
+        
+        bpy.data.collections[0].objects.link(new_obj)
+        self.server.send_answer(kwargs['connection'], [new_cam.name, new_obj.name])
     
     def get_camera_position(self, **kwargs):
         camera=bpy.data.objects[kwargs['name_obj']]
@@ -286,6 +398,45 @@ class Interprete:
         camera.rotation_euler.y=kwargs['rotation'][1]
         camera.rotation_euler.z=kwargs['rotation'][2]
         
+    def get_object_rotation(self, **kwargs):
+        obj=bpy.data.objects[kwargs['name_obj']]
+        res=[obj.rotation_euler.x,
+             obj.rotation_euler.y,
+             obj.rotation_euler.z]
+        self.server.send_answer(kwargs['connection'], res)
+    
+    def set_object_rotation(self, **kwargs):
+        obj=bpy.data.objects[kwargs['name_obj']]
+        obj.rotation_euler.x=kwargs['rotation'][0]
+        obj.rotation_euler.y=kwargs['rotation'][1]
+        obj.rotation_euler.z=kwargs['rotation'][2]
+    
+    def get_object_location(self, **kwargs):
+        obj=bpy.data.objects[kwargs['name_obj']]
+        res=[obj.location.x,
+             obj.location.y,
+             obj.location.z]
+        self.server.send_answer(kwargs['connection'], res)
+    
+    def set_object_location(self, **kwargs):
+        obj=bpy.data.objects[kwargs['name_obj']]
+        obj.rotation_euler.x=kwargs['location'][0]
+        obj.rotation_euler.y=kwargs['location'][1]
+        obj.rotation_euler.z=kwargs['location'][2]
+    
+    def get_object_scale(self, **kwargs):
+        obj=bpy.data.objects[kwargs['name_obj']]
+        res=[obj.scale.x,
+             obj.scale.y,
+             obj.scale.z]
+        self.server.send_answer(kwargs['connection'], res)
+    
+    def set_object_scale(self, **kwargs):
+        obj=bpy.data.objects[kwargs['name_obj']]
+        obj.scale.x=kwargs['scale'][0]
+        obj.scale.y=kwargs['scale'][1]
+        obj.scale.z=kwargs['scale'][2]
+        
     def get_material(self, name, connection=None):
         self.server.send_answer(connection, bpy.data.materials.get(name).name)
     
@@ -296,8 +447,6 @@ class Interprete:
         mat=bpy.data.materials.new(name)
         mat.use_nodes = True
         self.nodes = mat.node_tree.nodes
-        print([node for node in self.nodes])
-        #node = self.nodes.new("Principled BSDF")
         return mat
     
     def assign_material(self, **kwargs):
@@ -313,7 +462,6 @@ class Interprete:
 
 
 def Material(message):
-    #print(message)
     assert message['class']=='Material'
 
 

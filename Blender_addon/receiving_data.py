@@ -46,7 +46,6 @@ class Server:
     
     def send_answer(self, conn, message):
         message=json.dumps(dict({'content':message}))
-        print(message)
         conn.sendall(('{:010x}'.format(len(message))+message).encode())
         
     def listen(self):
@@ -63,7 +62,7 @@ class Server:
                             print("No raw_msglen")
                             break
                         msglen = int(raw_msglen.decode(),16)
-                        print(msglen)
+                        print('len of packet is {:}'.format(msglen))
                         data=self.receive_all(conn, msglen)
                         if data is not None:
                             self.interpreter(conn, data)
@@ -79,20 +78,7 @@ class Server:
     
     def interpreter(self, conn, message):
         cmd = json.loads(message)
-        print(cmd)
         cmd['kwargs']['connection']=conn
         self.interprete.call(cmd)
-        '''if cmd['type']=='command':
-            if cmd['command']=='delete_all':
-                self.interprete.delete_all()
-            elif cmd['command']=='get_material_names':
-                self.interprete.get_material_names(conn)
-        elif cmd['type']=='class':
-            if cmd['class']=='Material':
-                self.interprete.Material(cmd)
-        elif cmd['type']=='mesh':
-            self.interprete.mesh(cmd)
-        else:
-            print("unknown")'''
         
         

@@ -71,13 +71,14 @@ def parse(message, kwargs=None):
     return msg
 
 def delete_all():
-    send(parse('delete_all()'))
+    assert ask(parse('delete_all()'))=="DONE"
     
 class Material:
     
     def __init__(self, name, color, alpha=1., transmission=0,
                  use_screen_refraction=False, refraction_depth=0.,
-                 blend_method='OPAQUE', use_backface_culling=False):
+                 blend_method='OPAQUE', blend_method_shadow='OPAQUE',
+                 use_backface_culling=False, **kwargs):
         names = self.get_material_names()
         if name in names:
             self.material_object = self.get_material(name)
@@ -89,13 +90,18 @@ class Material:
                      'use_screen_refraction':use_screen_refraction,
                      'refraction_depth':refraction_depth,
                      'blend_method':blend_method,
-                     'use_backface_culling':use_backface_culling})
+                     'use_backface_culling':use_backface_culling,
+                     'blend_method_shadow':blend_method_shadow})
+        params.update(kwargs)
         send(parse('update_material()', kwargs=params))
     
-    def z_dependant_color(self, positions, colors):
+    def z_dependant_color(self, positions, colors, z_offset=0, **kwargs):
         params=dict({'colors':[self.convert_color(color) for color in colors],
                      'name':self.material_object,
-                     'positions':positions})
+                     'positions':positions,
+                     'z_offset':z_offset,
+                      'z_scale':kwargs['z_scale']})
+        params.update(kwargs)
         send(parse('z_dependant_color()', kwargs=params))
     
     def gaussian_laser(self, ZR, W0, I):
@@ -128,8 +134,55 @@ class Material:
             else:
                 alpha=int(color[7:9], 16)/256.
             return [int(color[i:i+2], 16)/256. for i in [1,3,5]] +[alpha]
+    
+class Object:
+    
+    @property
+    def location(self):
+        kwargs = dict({'name_obj':self.name_obj})
+        res=dict({'kwargs':kwargs, 'args':[],
+                  'command':'get_object_location'})
+        return ask(json.dumps(res))
+    
+    @location.setter
+    def location(self, val):
+        kwargs = dict({'name_obj':self.name_obj,
+                       'location':val})
+        res=dict({'kwargs':kwargs, 'args':[],
+                  'command':'set_object_location'})
+        send(json.dumps(res))
+        
+    @property
+    def rotation(self):
+        kwargs = dict({'name_obj':self.name_obj})
+        res=dict({'kwargs':kwargs, 'args':[],
+                  'command':'get_object_rotation'})
+        return ask(json.dumps(res))
+    
+    @rotation.setter
+    def rotation(self, val):
+        kwargs = dict({'name_obj':self.name_obj,
+                       'rotation':val})
+        res=dict({'kwargs':kwargs, 'args':[],
+                  'command':'set_object_rotation'})
+        send(json.dumps(res))
+    
+    @property
+    def scale(self):
+        kwargs = dict({'name_obj':self.name_obj})
+        res=dict({'kwargs':kwargs, 'args':[],
+                  'command':'get_object_scale'})
+        return ask(json.dumps(res))
+    
+    @scale.setter
+    def scale(self, val):
+        kwargs = dict({'name_obj':self.name_obj,
+                       'scale':val})
+        res=dict({'kwargs':kwargs, 'args':[],
+                  'command':'set_object_scale'})
+        send(json.dumps(res))
 
-class Camera:
+class Camera(Object):
     
     def __init__(self, name, location, rotation):
         self.add_camera(name, location, rotation)
@@ -145,54 +198,30 @@ class Camera:
         res['command']='create_camera'
         res['kwargs']=kwargs
         self.name, self.name_obj=ask(json.dumps(res))
+        
+class Plane(Object):
     
-    @property
-    def position(self):
-        res = dict()
+    def __init__(self, name, location, size):
+        self.add_plane(name, location, size)
+        
+    def add_plane(self, name, location, size):
+        res=dict()
         kwargs = dict()
-        kwargs['name']=self.name
-        kwargs['name_obj']=self.name_obj
-        res['command']='get_camera_position'
+        kwargs['location']=location
+        kwargs['size']=size
+        kwargs['name']=name
+        res['type']='plane'
         res['args']=[]
+        res['command']='create_plane'
         res['kwargs']=kwargs
-        return ask(json.dumps(res))
+        self.name, self.name_obj=ask(json.dumps(res))
     
-    @position.setter
-    def position(self, val):
-        res = dict()
-        kwargs = dict()
-        kwargs['name']=self.name
-        kwargs['name_obj']=self.name_obj
-        kwargs['position']=val
-        res['command']='set_camera_position'
-        res['args']=[]
-        res['kwargs']=kwargs
-        send(json.dumps(res))
-    
-    @property
-    def rotation(self):
-        res = dict()
-        kwargs = dict()
-        kwargs['name']=self.name
-        kwargs['name_obj']=self.name_obj
-        res['command']='get_camera_rotation'
-        res['args']=[]
-        res['kwargs']=kwargs
-        return ask(json.dumps(res))
-    
-    @rotation.setter
-    def rotation(self, val):
-        res = dict()
-        kwargs = dict()
-        kwargs['name']=self.name
-        kwargs['name_obj']=self.name_obj
-        kwargs['rotation']=val
-        res['command']='set_camera_rotation'
-        res['args']=[]
-        res['kwargs']=kwargs
-        send(json.dumps(res))
-    
-class Light:
+    def assign_material(self, material):
+        kwargs = dict({'name_obj':self.name_obj,
+                       'name_mat':material.material_object})
+        send(parse('assign_material()', kwargs=kwargs))
+        
+class Light(Object):
     
     def __init__(self, name, location, power, radius=0.25):
         self.add_light(name, location, power, radius)
@@ -209,29 +238,6 @@ class Light:
         res['command']='create_light'
         res['kwargs']=kwargs
         self.name, self.name_obj=ask(json.dumps(res))
-    
-    @property
-    def position(self):
-        res = dict()
-        kwargs = dict()
-        kwargs['name']=self.name
-        kwargs['name_obj']=self.name_obj
-        res['command']='get_light_position'
-        res['args']=[]
-        res['kwargs']=kwargs
-        return ask(json.dumps(res))
-    
-    @position.setter
-    def position(self, val):
-        res = dict()
-        kwargs = dict()
-        kwargs['name']=self.name
-        kwargs['name_obj']=self.name_obj
-        kwargs['position']=val
-        res['command']='set_light_position'
-        res['args']=[]
-        res['kwargs']=kwargs
-        send(json.dumps(res)) 
         
     @property
     def power(self):
@@ -287,6 +293,44 @@ class Mesh:
         kwargs = dict({'name_obj':self.name_obj,
                        'name_mat':material.material_object})
         send(parse('assign_material()', kwargs=kwargs))
+    
+    def make_oscillations(self, target_scale=[1,1,1],
+                          target_rotation =[0,0,0], target_motion=[0,0,0],
+                          center_scale=[1,1,1], center_rotation=[0,0,0],
+                          center_motion=[0,0,0], Q=0,
+                          N_frames=40, N_oscillations=10):
+        kwargs = dict({'name_obj':self.name_obj,
+                       'target_scale':target_scale,
+                       'target_rotation':target_rotation,
+                       'target_motion':target_motion,
+                       'N_frames':N_frames,
+                       'N_oscillations':N_oscillations,
+                       'Q':Q,
+                       'center_motion':center_motion,
+                       'center_scale':center_scale,
+                       'center_rotation':center_rotation})
+        assert ask(parse('make_oscillations()', kwargs=kwargs))=="DONE"
+    
+    @property
+    def cursor_location(self):
+        res=dict()
+        kwargs = dict()
+        kwargs['name']=self.name_obj
+        res['args']=[]
+        res['command']='get_cursor_location'
+        res['kwargs']=kwargs
+        return ask(json.dumps(res)) 
+    
+    @cursor_location.setter
+    def cursor_location(self, val):
+        res=dict()
+        kwargs = dict()
+        kwargs['name']=self.name_obj
+        kwargs['location']=val
+        res['args']=[]
+        res['command']='set_cursor_location'
+        res['kwargs']=kwargs
+        send(json.dumps(res))
         
 
 if __name__=='__main__':
@@ -299,21 +343,12 @@ if __name__=='__main__':
                                [0,0,1], 1)
     mesh = pygmsh.generate_mesh(geom)
     mirror_1_mesh=Mesh(mesh, name='mirror_1')
-    mirror_1_mesh.assign_material(material)
-    '''material.z_dependant_color([0.,0.5,1.],
-                               ['#3213CD',
-                                '#FFFFFF',
-                                '#F60818'])'''
-    
-    material.gaussian_laser(0.05,0.005, 100)
-    cam=Camera('camera', [0,0,0],[0,0,0])
-    cam.rotation=[1,0,0]
-    print(cam.rotation)
-    light=Light('light', [0,0,0], 10)
-    light.position=[1,0,0]
-    print(light.position)
-    light.power=100
-    print(light.power)
+    '''mirror_1_mesh.assign_material(material)
+    material.z_dependant_color([0.,0.5,1.],
+                               ['#3213CDFF',
+                                '#FFFFFF10',
+                                '#F60818FF'])'''
+    mirror_1_mesh.make_oscillations(target_scale=[1,1,2])
     
                           
                       
