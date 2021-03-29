@@ -137,6 +137,11 @@ class Material:
     
 class Object:
     
+    def assign_material(self, material):
+        kwargs = dict({'name_obj':self.name_obj,
+                       'name_mat':material.material_object})
+        send(parse('assign_material()', kwargs=kwargs))
+    
     @property
     def location(self):
         kwargs = dict({'name_obj':self.name_obj})
@@ -198,6 +203,23 @@ class Camera(Object):
         res['command']='create_camera'
         res['kwargs']=kwargs
         self.name, self.name_obj=ask(json.dumps(res))
+
+class Cube(Object):
+    
+    def __init__(self, name, location, size):
+        self.add_cube(name, location, size)
+        
+    def add_cube(self, name, location, size):
+        res=dict()
+        kwargs = dict()
+        kwargs['location']=location
+        kwargs['size']=size
+        kwargs['name']=name
+        res['type']='cube'
+        res['args']=[]
+        res['command']='create_cube'
+        res['kwargs']=kwargs
+        self.name, self.name_obj=ask(json.dumps(res))
         
 class Plane(Object):
     
@@ -215,11 +237,6 @@ class Plane(Object):
         res['command']='create_plane'
         res['kwargs']=kwargs
         self.name, self.name_obj=ask(json.dumps(res))
-    
-    def assign_material(self, material):
-        kwargs = dict({'name_obj':self.name_obj,
-                       'name_mat':material.material_object})
-        send(parse('assign_material()', kwargs=kwargs))
         
 class Light(Object):
     

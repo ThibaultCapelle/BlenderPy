@@ -334,6 +334,25 @@ class Interprete:
                 [location[0]+size/2, location[1]-size/2, location[2]]]
         cells=[[0,1,2,3]]
         self.create_mesh(points=points, cells=cells, name=name, connection=connection)
+    
+    def create_cube(self, **kwargs):
+        location, size, name, connection=(kwargs['location'], kwargs['size'],
+                                          kwargs['name'], kwargs['connection'])
+        points=[[location[0]-size/2, location[1]-size/2, location[2]+size/2],
+                [location[0]-size/2, location[1]+size/2, location[2]+size/2],
+                [location[0]+size/2, location[1]+size/2, location[2]+size/2],
+                [location[0]+size/2, location[1]-size/2, location[2]+size/2],
+                [location[0]-size/2, location[1]-size/2, location[2]-size/2],
+                [location[0]-size/2, location[1]+size/2, location[2]-size/2],
+                [location[0]+size/2, location[1]+size/2, location[2]-size/2],
+                [location[0]+size/2, location[1]-size/2, location[2]-size/2]]
+        cells=[[0,1,2,3],
+               [4,5,6,7],
+               [0,3,7,4],
+               [0,1,5,4],
+               [2,3,7,6],
+               [1,2,6,5]]
+        self.create_mesh(points=points, cells=cells, name=name, connection=connection)
         
     def create_camera(self, **kwargs):
         location, rotation, name=kwargs['location'], kwargs['rotation'], kwargs['name']
