@@ -68,6 +68,7 @@ class Server:
                             self.interpreter(conn, data)
                         elif len(data)!=msglen:
                             print('the length and the data did not match')
+            print("we are going to shut down boys")
             s.shutdown(socket.SHUT_RDWR)
             s.close()
     

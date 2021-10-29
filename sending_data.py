@@ -39,12 +39,14 @@ def ask(message):
         data=receive_all(s, msglen)
         return json.loads(data)['content']
 
-def parse(message, kwargs=None):
+def parse(message, kwargs=None, **keyargs):
     b=message.find('(')
     res=dict()
     if b==-1:
         res['type']='command'
         res['command']=message
+        res['kwargs']=kwargs
+        res['args']=[]
     else:
         res['type']='command'
         first_part=message[:b]
@@ -64,6 +66,7 @@ def parse(message, kwargs=None):
                     kwargs[k]=v
                 else:
                     args.append(data[i])
+        kwargs.update(keyargs)
         res['args']=args
         res['kwargs']=kwargs
     msg=json.dumps(res)
@@ -72,13 +75,177 @@ def parse(message, kwargs=None):
 
 def delete_all():
     assert ask(parse('delete_all()'))=="DONE"
+
+class ShaderDict(dict):
+    
+    def __init__(self, name, material_name, func, **kwargs):
+        super().__init__()
+        self.name=name
+        self.material_name=material_name
+        self.func=func
+        
+    def __setitem__(self, key, value):
+        if isinstance(value, ShaderSocket):
+            send(parse('set_'+self.func, kwargs=value.todict(from_name=self.name,
+                                                             from_key=key)))
+        else:
+            send(parse('set_'+self.func, kwargs=dict({'material_name':self.material_name,
+                                                     'from_name':self.name,
+                                                     'from_key':key,
+                                                     'value':value})))
+    
+    def __getitem__(self, key):
+        kwargs= dict({'material_name':self.material_name,
+                     'name':self.name,
+                     'key':key})
+        res=ask(parse('get_'+self.func, kwargs=kwargs))
+        if isinstance(res, dict):
+            node=ShaderNode(**res)
+            return ShaderSocket(material_parent=node.parent_name,
+                                parent=node, 
+                                key=res['socket_name'])
+        else:
+            return res
+
+class ShaderSocket:
+    
+    def __init__(self, material_parent=None,
+                 parent=None, key=None, value=None, **kwargs):
+        assert isinstance(parent, ShaderNode)
+        self.material_parent=material_parent
+        self.parent=parent
+        self.key=key
+        self.value=value
+    
+    def todict(self, **kwargs):
+        params=dict({'material_name':self.material_parent,
+                     'parent_name':self.parent.name,
+                     'key':self.key,
+                     'value':self.value})
+        params.update(kwargs)
+        return params
+        
+class ShaderNode:
+    
+    def __init__(self, parent=None, shader_type='Emission',
+                 name=None, **kwargs):
+        assert parent is not None
+        self._shadertype_dict=dict({'Emission':'ShaderNodeEmission',
+                         'Add':'ShaderNodeAddShader'})
+        if name==None:
+            kwargs['shader_type']=self._format_type(shader_type)
+            kwargs['parent_name']=parent
+            self.parent_name=parent
+            self.name=ask(parse('create_shadernode()', kwargs=kwargs))
+        else:
+            self.parent_name=parent
+            self.name=name
+        self._inputs=ShaderDict(self.name, self.parent_name, 'shadernode_input')
+        self._outputs=ShaderDict(self.name, self.parent_name, 'shadernode_output')
+        
+    
+    def todict(self, **kwargs):
+        params=dict({'parent_name':self.parent_name,
+                     'name':self.name})
+        params.update(kwargs)
+        return params
+    
+    def _format_type(self, key):
+        assert key in self._shadertype_dict.keys()
+        return self._shadertype_dict[key]
+    
+    @property
+    def inputs(self):
+        return self._inputs
+    
+    @property
+    def outputs(self):
+        return self._outputs
+
+
+class Constraint:
+    
+    def __init__(self, parent=None, constraint_type='FOLLOW_PATH', **kwargs):
+        kwargs['constraint_type']=constraint_type
+        kwargs['parent_name']=parent
+        self.parent_name=parent
+        self.name=ask(parse('create_constraint()', kwargs=kwargs))
+    
+    @property
+    def target(self):
+        pass
+    
+    @target.setter
+    def target(self, val):
+        assert isinstance(val, Object)
+        send(parse('assign_constraint()', const_name=self.name,
+                   key='target',
+                   parent_name=self.parent_name,
+                   val=val.name_obj))
+    
+    @property
+    def forward_axis(self):
+        pass
+    
+    @forward_axis.setter
+    def forward_axis(self, val):
+        send(parse('assign_constraint()', const_name=self.name,
+                   key='forward_axis',
+                   parent_name=self.parent_name,
+                   val=val))
+    
+    @property
+    def use_curve_follow(self):
+        pass
+    
+    @use_curve_follow.setter
+    def use_curve_follow(self, val):
+        send(parse('assign_constraint()', const_name=self.name,
+                   key='use_curve_follow',
+                   parent_name=self.parent_name,
+                   val=val))
+
+
+class Modifier:
+    
+    def __init__(self, parent=None, modifier_type='CURVE', **kwargs):
+        kwargs['modifier_type']=modifier_type
+        kwargs['parent_name']=parent
+        self.parent_name=parent
+        self.name=ask(parse('create_modifier()', kwargs=kwargs))
+    
+    @property
+    def target(self):
+        pass
+    
+    @target.setter
+    def target(self, val):
+        assert isinstance(val, Object)
+        send(parse('assign_modifier()', mod_name=self.name,
+                   key='object',
+                   parent_name=self.parent_name,
+                   val=val.name_obj))
+    
+    @property
+    def deform_axis(self):
+        pass
+    
+    @deform_axis.setter
+    def deform_axis(self, val):
+        send(parse('assign_modifier()', mod_name=self.name,
+                   key='deform_axis',
+                   parent_name=self.parent_name,
+                   val=val))
+        
     
 class Material:
     
     def __init__(self, name, color, alpha=1., transmission=0,
                  use_screen_refraction=False, refraction_depth=0.,
                  blend_method='OPAQUE', blend_method_shadow='OPAQUE',
-                 use_backface_culling=False, **kwargs):
+                 use_backface_culling=False,
+                 metallic=0.,
+                 **kwargs):
         names = self.get_material_names()
         if name in names:
             self.material_object = self.get_material(name)
@@ -91,7 +258,8 @@ class Material:
                      'refraction_depth':refraction_depth,
                      'blend_method':blend_method,
                      'use_backface_culling':use_backface_culling,
-                     'blend_method_shadow':blend_method_shadow})
+                     'blend_method_shadow':blend_method_shadow,
+                     'metallic':metallic})
         params.update(kwargs)
         send(parse('update_material()', kwargs=params))
     
@@ -99,10 +267,15 @@ class Material:
         params=dict({'colors':[self.convert_color(color) for color in colors],
                      'name':self.material_object,
                      'positions':positions,
-                     'z_offset':z_offset,
-                      'z_scale':kwargs['z_scale']})
+                     'z_offset':z_offset})
         params.update(kwargs)
         send(parse('z_dependant_color()', kwargs=params))
+    
+    def glowing(self, **kwargs):
+        send(parse('glowing()', kwargs=kwargs))
+    
+    def metallic_texture(self, **kwargs):
+        send(parse('metallic_texture()', kwargs=kwargs))
     
     def gaussian_laser(self, ZR, W0, I):
         params=dict({'name':self.material_object,
@@ -142,6 +315,29 @@ class Object:
                        'name_mat':material.material_object})
         send(parse('assign_material()', kwargs=kwargs))
     
+    def follow_path(self, target=None, use_curve_follow=True,
+                    forward_axis='FORWARD_X'):
+        self.assign_constraint(constraint_type='FOLLOW_PATH')
+        self.constraint.target=target
+        self.constraint.use_curve_follow=use_curve_follow
+        self.constraint.forward_axis=forward_axis
+    
+    def assign_constraint(self, constraint_type='FOLLOW_PATH', **kwargs):
+        self.constraint=Constraint(parent=self._blender_mesh.name_obj,
+                                   constraint_type=constraint_type,
+                                   **kwargs)
+    
+    def curve_modifier(self, target=None, deform_axis='POS_X'):
+        self.assign_modifier(modifier_type='CURVE')
+        self.modifier.target=target
+        self.modifier.deform_axis=deform_axis
+    
+    def assign_modifier(self, modifier_type='CURVE', **kwargs):
+        self.modifier=Modifier(parent=self._blender_mesh.name_obj,
+                                   modifier_type=modifier_type,
+                                   **kwargs)
+        
+    
     @property
     def location(self):
         kwargs = dict({'name_obj':self.name_obj})
@@ -151,6 +347,8 @@ class Object:
     
     @location.setter
     def location(self, val):
+        if len(val)<3:
+            val=list(val)+[0. for i in range(3-len(val))]
         kwargs = dict({'name_obj':self.name_obj,
                        'location':val})
         res=dict({'kwargs':kwargs, 'args':[],
@@ -220,6 +418,18 @@ class Cube(Object):
         res['command']='create_cube'
         res['kwargs']=kwargs
         self.name, self.name_obj=ask(json.dumps(res))
+
+class Curve(Object):
+    
+    def __init__(self, points, **kwargs):
+        res=dict()
+        kwargs['points']=points
+        res['points']=points
+        res['type']='curve'
+        res['args']=[]
+        res['command']='create_curve'
+        res['kwargs']=kwargs
+        self.name, self.name_obj=ask(json.dumps(res))
         
 class Plane(Object):
     
@@ -282,22 +492,38 @@ class Light(Object):
 
 class Mesh:
     
-    def __init__(self, mesh, thickness=None, name='mesh'):
+    def __init__(self, mesh=None, cells=None, points=None,
+                 thickness=None, name='mesh'):
         self.thickness=thickness
+        self.cells=cells
+        self.points=points
         self.mesh=mesh
-        self.name_obj, self.name_msh = self.send_mesh(self.mesh,
+        self.name_obj, self.name_msh = self.send_mesh(self.mesh, 
                                                       thickness=self.thickness,
                                                       name=name)
         
     def send_mesh(self, mesh, thickness=None, name='mesh'):
-        points, cells = mesh.points, mesh.cells
-        res=dict()
-        kwargs = dict()
-        kwargs['points']=[[coord for coord in p] for p in points]
-        kwargs['cells']=[]
-        for celltype in cells:
-            if celltype.type=='triangle':
-                kwargs['cells']+=[[int(ind) for ind in cell] for cell in celltype.data]
+        if self.mesh is not None:
+            points, cells = self.mesh.points, self.mesh.cells
+            res=dict()
+            kwargs = dict()
+            kwargs['points']=[[coord for coord in p] for p in points]
+            kwargs['cells']=[]
+            for celltype in cells:
+                if celltype.type=='triangle':
+                    kwargs['cells']+=[[int(ind) for ind in cell] for cell in celltype.data]
+            
+        else:
+            points, cells = self.points, self.cells
+            kwargs = dict()
+            res=dict()
+            kwargs['points']=[[coord for coord in p] for p in points]
+            kwargs['cells']=[]
+            for celltype in cells:
+                if celltype[0]=='triangle':
+                    kwargs['cells']+=[[int(ind) for ind in cell] for cell in celltype[1]]
+            print(kwargs)
+         
         kwargs['name']=name
         kwargs['thickness']=thickness
         res['type']='mesh'

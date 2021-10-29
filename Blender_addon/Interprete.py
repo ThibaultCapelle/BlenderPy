@@ -34,12 +34,121 @@ class Interprete:
             if block.users == 0:
                 bpy.data.images.remove(block)
         self.server.send_answer(connection, "DONE")
+    
+    def assign_constraint(self, connection=None,
+                          key=None,
+                          const_name=None,
+                          parent_name=None,
+                          val=None,
+                          **kwargs):
+        if key=='target':
+            val=bpy.data.objects[val]
+        setattr(bpy.data.objects[parent_name].constraints[const_name],key, val)
+    
+    def assign_modifier(self, connection=None,
+                          key=None,
+                          mod_name=None,
+                          parent_name=None,
+                          val=None,
+                          **kwargs):
+        if key=='object':
+            val=bpy.data.objects[val]
+        setattr(bpy.data.objects[parent_name].modifiers[mod_name],key, val)
+        
+    
+    def create_constraint(self, connection=None, **kwargs):
+        constraint=Constraint(**kwargs)
+        self.server.send_answer(connection, 
+                                constraint.name)
+    
+    def create_modifier(self, connection=None, **kwargs):
+        modifier=Modifier(**kwargs)
+        self.server.send_answer(connection, 
+                                modifier.name)
         
     def create_mesh(self, points=None, cells=None, name=None,
              thickness=None, connection=None):
         obj = Object(name, points, cells, thickness)
         self.server.send_answer(connection, 
-                                [obj.name_msh, obj.name_msh])
+                                [obj.name_obj, obj.name_msh])
+    
+    def create_shadernode(self, connection=None, **kwargs):
+        node=ShaderNode(**kwargs)
+        self.server.send_answer(connection, 
+                                node.name)
+    
+    def set_shadernode_input(self, material_name=None, 
+                             from_name=None,
+                             from_key=None,
+                             value=None,
+                             key=None,
+                             parent_name=None,
+                             connection=None, **kwargs):
+        mat=bpy.data.materials[material_name]
+        to_socket=mat.node_tree.nodes[from_name].inputs[from_key]
+        if key is None:
+            to_socket.default_value=value
+        else:
+            from_socket=mat.node_tree.nodes[parent_name].outputs[key]
+            mat.node_tree.links.new(from_socket,
+                                    to_socket)
+    
+    def set_shadernode_output(self, material_name=None, 
+                             from_name=None,
+                             from_key=None,
+                             value=None,
+                             key=None,
+                             parent_name=None,
+                             connection=None, **kwargs):
+        mat=bpy.data.materials[material_name]
+        from_socket=mat.node_tree.nodes[from_name].outputs[from_key]
+        to_socket=mat.node_tree.nodes[parent_name].inputs[key]
+        mat.node_tree.links.new(from_socket,
+                                    to_socket)
+    
+    def get_shadernode_input(self, key=None, 
+                             material_name=None, 
+                             name=None,
+                             connection=None, **kwargs):
+        mat=bpy.data.materials[material_name]
+        node=mat.node_tree.nodes[name].inputs[key]
+        if len(node.links)==0:
+            if node.type=='VALUE':
+                self.server.send_answer(connection,
+                                        node.default_value)
+            elif node.type=='RGBA':
+                self.server.send_answer(connection,
+                                        list(node.default_value))
+            else:
+                self.server.send_answer(connection,
+                                        '')
+        else:
+            input_node=node.links[0].from_node
+            input_socket=node.links[0].from_socket
+            self.server.send_answer(connection,
+                                    dict({'parent':mat.name,
+                                          'name':input_node.name,
+                                          'socket_name':input_socket.name}))
+    
+    def get_shadernode_output(self, key=None, 
+                             material_name=None, 
+                             name=None,
+                             connection=None, **kwargs):
+        mat=bpy.data.materials[material_name]
+        node=mat.node_tree.nodes[name]
+        socket=node.outputs[key]
+        if len(socket.links)==0:
+            self.server.send_answer(connection, 
+                                    dict({'parent':mat.name,
+                                          'name':node.name,
+                                          'socket_name':socket.name}))
+        else:
+            output_node=socket.links[0].to_node
+            output_socket=socket.links[0].to_socket
+            self.server.send_answer(connection,
+                                    dict({'parent':mat.name,
+                                          'name':output_node.name,
+                                          'socket_name':output_socket.name}))
     
     def update_material(self, connection=None, **kwargs):
         material=bpy.data.materials.get(kwargs['name'])
@@ -73,6 +182,63 @@ class Interprete:
         bpy.context.scene.cursor.location.z=kwargs['location'][2]
         bpy.data.objects[kwargs['name']].select_set(True)
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
+    
+    def create_curve(self, location=[0,0,0], name="curve",
+                     points=[(0,0,0), (1,0,0)], **kwargs):
+        new_curve=bpy.data.curves.new(name, 'CURVE')
+        new_spline=new_curve.splines.new('POLY')
+        new_spline.points[0].co=Vector((points[0][0], 
+                         points[0][1],
+                         points[0][2],
+                         0.))
+        new_spline.points.add(len(points)-1)
+        for i, p in enumerate(points[1:]):
+            new_spline.points[i+1].co=Vector((p[0], p[1], p[2], 0.))
+        new_obj=bpy.data.objects.new(name, new_curve)
+        new_obj.location.x=location[0]
+        new_obj.location.y=location[1]
+        new_obj.location.z=location[2]
+        
+        bpy.data.collections[0].objects.link(new_obj)
+        self.server.send_answer(kwargs['connection'], [new_curve.name, new_obj.name])
+    
+    
+    def draw_curve(self, points=None, **kwargs):
+        print(bpy.context.scene)
+        win      = bpy.context.window
+        scr      = win.screen
+        areas3d  = [area for area in scr.areas if area.type == 'VIEW_3D']
+        region   = [region for region in areas3d[0].regions if region.type == 'WINDOW']
+        override = {'window':win,
+            'screen':scr,
+            'area'  :areas3d[0],
+            'region':region,
+            'scene' :bpy.context.scene,
+            }
+        bpy.ops.curve.primitive_nurbs_path_add(radius=1,
+                                               enter_editmode=True,
+                                               align='WORLD',
+                                               location=(0, 0, 0),
+                                               scale=(1, 1, 1))
+        #bpy.ops.object.mode_set(mode='EDIT_CURVE')
+        print(bpy.context.mode)
+        stroke=[]
+        for point in points:
+            stroke.append({"name":"",
+                           "location":points,
+                           "pressure":1,
+                           "size":0,
+                           "pen_flip":False,
+                           "time":0,
+                           "is_start":False})
+        bpy.ops.curve.draw(override,
+                           error_threshold=0.042712,
+                           fit_method='REFIT',
+                           corner_angle=1.22173,
+                           use_cyclic=False,
+                           stroke=stroke,
+                           wait_for_input=False)
+
     
     def z_dependant_color(self, connection=None, **kwargs):
         material=bpy.data.materials.get(kwargs['name'])
@@ -178,9 +344,61 @@ class Interprete:
                     obj.keyframe_insert("location")
                     obj.keyframe_insert("rotation_euler")
         self.server.send_answer(kwargs['connection'], "DONE")
-            
-            
-        
+    
+    def glowing(self, connection=None, color=[0.8984375, 0.1484375,
+                       0.1484375, 1.],
+                strength=100, name="glow",
+                **kwargs):
+        material=bpy.data.materials.get(name)
+        Principled_BSDF=material.node_tree.nodes['Principled BSDF']
+        emission=material.node_tree.nodes.new(type="ShaderNodeEmission")
+        emission.inputs['Color'].default_value= color
+        add=material.node_tree.nodes.new(type="ShaderNodeAddShader")
+        output=material.node_tree.nodes['Material Output']
+        material.node_tree.links.new(emission.outputs['Emission'],
+                                         add.inputs[0])
+        material.node_tree.links.new(Principled_BSDF.outputs['BSDF'],
+                                         add.inputs[1])
+        material.node_tree.links.new(add.outputs['Shader'],
+                                         output.inputs['Surface'])
+    
+    def metallic_texture(self, connection=None, name='metal',
+                         Voronoi_scale=3.3,
+                         bump_strength=0.458,
+                         bump_distance=4.2,
+                         noise_scale=36.8,
+                         noise_detail=5,
+                         noise_scale_rough=1,
+                         noise_detail_rough=7,
+                         **kwargs):
+        material=bpy.data.materials.get(name)
+        # Normal input of BDSF
+        Texcoords=material.node_tree.nodes.new(type="ShaderNodeTexCoord")
+        mapping=material.node_tree.nodes.new(type="ShaderNodeMapping")
+        noise_1=material.node_tree.nodes.new(type="ShaderNodeTexNoise")
+        voronoi_1=material.node_tree.nodes.new(type="ShaderNodeTexVoronoi")
+        coloramp=material.node_tree.nodes.new(type="ShaderNodeValToRGB")
+        bump=material.node_tree.nodes.new(type="ShaderNodeBump")
+        Principled_BDSF=material.node_tree.nodes['Principled BSDF']
+        material.node_tree.links.new(bump.outputs['Normal'],
+                                         Principled_BDSF.inputs['Normal'])
+        material.node_tree.links.new(coloramp.outputs['Color'],
+                                         bump.inputs['Normal'])
+        material.node_tree.links.new(voronoi_1.outputs['Color'],
+                                         coloramp.inputs['Fac'])
+        material.node_tree.links.new(noise_1.outputs['Color'],
+                                         voronoi_1.inputs['Vector'])
+        material.node_tree.links.new(mapping.outputs['Vector'],
+                                         noise_1.inputs['Vector'])
+        material.node_tree.links.new(Texcoords.outputs['Object'],
+                                         mapping.inputs['Vector'])
+        # Roughness input of BDSF
+        noise_2=material.node_tree.nodes.new(type="ShaderNodeTexNoise")
+        coloramp_2=material.node_tree.nodes.new(type="ShaderNodeValToRGB")
+        material.node_tree.links.new(coloramp_2.outputs['Color'],
+                                         Principled_BDSF.inputs['Roughness'])
+        material.node_tree.links.new(noise_2.outputs['Color'],
+                                         coloramp_2.inputs['Fac'])
         
     def gaussian_laser(self, connection=None, **kwargs):
         W0=kwargs['W0']
@@ -439,9 +657,9 @@ class Interprete:
     
     def set_object_location(self, **kwargs):
         obj=bpy.data.objects[kwargs['name_obj']]
-        obj.rotation_euler.x=kwargs['location'][0]
-        obj.rotation_euler.y=kwargs['location'][1]
-        obj.rotation_euler.z=kwargs['location'][2]
+        obj.location.x=kwargs['location'][0]
+        obj.location.y=kwargs['location'][1]
+        obj.location.z=kwargs['location'][2]
     
     def get_object_scale(self, **kwargs):
         obj=bpy.data.objects[kwargs['name_obj']]
@@ -483,24 +701,50 @@ class Interprete:
 def Material(message):
     assert message['class']=='Material'
 
+class ShaderNode:
+    
+    def __init__(self, parent_name=None, shader_type=None, **kwargs):
+        self.parent=bpy.data.materials[parent_name]
+        self.type=shader_type
+        self.node=self.parent.node_tree.nodes.new(self.type)
+        self.name=self.node.name
+
+class Constraint:
+    
+    def __init__(self, parent_name, constraint_type, **kwargs):
+        self.parent=bpy.data.objects[parent_name]
+        self.type=constraint_type
+        self.const=self.parent.constraints.new(self.type)
+        self.name=self.const.name
+
+class Modifier:
+    
+    def __init__(self, parent_name, modifier_type, **kwargs):
+        self.parent=bpy.data.objects[parent_name]
+        self.type=modifier_type
+        self.mod=self.parent.modifiers.new(self.type, self.type)
+        self.name=self.mod.name
 
 class Object:
     
     def __init__(self, name, points, cells, thickness):
         self.thickness=thickness
-        self.name_root=name
+        '''self.name_root=name
         self.name_obj=self.name_root+'.'+str(1+len([o for o in bpy.data.objects if self.name_root in o.name]))
         self.name_msh=self.name_root+'.'+str(1+len([o for o in bpy.data.meshes if self.name_root in o.name]))
-        
+        '''
+        self.name=name
         self.points=points
         self.cells=cells
-        self.mesh_data = bpy.data.meshes.new(self.name_msh)
+        self.mesh_data = bpy.data.meshes.new(self.name)
+        self.name_msh=self.mesh_data.name
         self.mesh_data.from_pydata(points, [], cells)
         self.mesh_data.update()
     
-        self.obj = bpy.data.objects.new(self.name_obj, self.mesh_data)
+        self.obj = bpy.data.objects.new(self.name, self.mesh_data)
         collection = bpy.context.collection
         collection.objects.link(self.obj)
+        self.name_obj=self.obj.name
         self.extrude()
     
     def select_obj(self):
