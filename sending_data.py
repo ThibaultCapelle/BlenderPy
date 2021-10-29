@@ -401,7 +401,7 @@ class Camera(Object):
         res['command']='create_camera'
         res['kwargs']=kwargs
         self.name, self.name_obj=ask(json.dumps(res))
-
+        
 class Cube(Object):
     
     def __init__(self, name, location, size):
@@ -493,7 +493,8 @@ class Light(Object):
 class Mesh:
     
     def __init__(self, mesh=None, cells=None, points=None,
-                 thickness=None, name='mesh'):
+                 thickness=None, name='mesh', subdivide=1, **kwargs):
+        self.subdivide=subdivide
         self.thickness=thickness
         self.cells=cells
         self.points=points
@@ -526,6 +527,7 @@ class Mesh:
          
         kwargs['name']=name
         kwargs['thickness']=thickness
+        kwargs['subdivide']=self.subdivide
         res['type']='mesh'
         res['args']=[]
         res['command']='create_mesh'

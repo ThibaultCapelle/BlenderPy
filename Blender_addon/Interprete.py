@@ -67,8 +67,8 @@ class Interprete:
                                 modifier.name)
         
     def create_mesh(self, points=None, cells=None, name=None,
-             thickness=None, connection=None):
-        obj = Object(name, points, cells, thickness)
+             thickness=None, subdivide=1, connection=None):
+        obj = Object(name, points, cells, thickness, subdivide=subdivide)
         self.server.send_answer(connection, 
                                 [obj.name_obj, obj.name_msh])
     
@@ -553,6 +553,19 @@ class Interprete:
         cells=[[0,1,2,3]]
         self.create_mesh(points=points, cells=cells, name=name, connection=connection)
     
+    def create_cylinder(self, connection=None,
+                        location=None, radius=None, thickness=None,
+                        name=None, subdivide=10, Npoints=100, **kwargs):
+        points=[location]+[[location[0]+radius*np.cos(theta),
+                 location[1]+radius*np.sin(theta),
+                 location[2]] for theta in np.linspace(0,2*np.pi, Npoints)]
+        cells=[[0,i, (i+1)%len(points)] for i in range(1, len(points))]
+        #print([points, cells])
+        self.create_mesh(points=points, cells=cells, thickness=thickness,
+                         name=name, connection=connection,
+                         subdivide=subdivide)
+        
+        
     def create_cube(self, **kwargs):
         location, size, name, connection=(kwargs['location'], kwargs['size'],
                                           kwargs['name'], kwargs['connection'])
@@ -727,12 +740,9 @@ class Modifier:
 
 class Object:
     
-    def __init__(self, name, points, cells, thickness):
+    def __init__(self, name, points, cells, thickness, subdivide=1):
+        self.subdivide=subdivide
         self.thickness=thickness
-        '''self.name_root=name
-        self.name_obj=self.name_root+'.'+str(1+len([o for o in bpy.data.objects if self.name_root in o.name]))
-        self.name_msh=self.name_root+'.'+str(1+len([o for o in bpy.data.meshes if self.name_root in o.name]))
-        '''
         self.name=name
         self.points=points
         self.cells=cells
@@ -742,9 +752,11 @@ class Object:
         self.mesh_data.update()
     
         self.obj = bpy.data.objects.new(self.name, self.mesh_data)
+        
         collection = bpy.context.collection
         collection.objects.link(self.obj)
         self.name_obj=self.obj.name
+        print(self.name_obj)
         self.extrude()
     
     def select_obj(self):
@@ -760,7 +772,10 @@ class Object:
                 break
     
     def extrude(self):
+        print('entering extrude')
+        print(self.thickness)
         if self.thickness is not None:
+            print('thickness is not None')
             self.select_obj()
             # Create BMesh object  
             bm = bmesh.new() 
@@ -771,10 +786,19 @@ class Object:
             # Extrude 
             extruded = bmesh.ops.extrude_face_region(bm, geom=faces)
             # Move extruded geometry 
+            print('I started the extrusion')
             translate_verts = [v for v in extruded['geom'] if isinstance(v, BMVert)]
             up = Vector((0, 0, self.thickness)) 
             bmesh.ops.translate(bm, vec=up, verts=translate_verts) 
-            # Remove doubles 
+            print('extrusion was done')
+            for i in range(self.subdivide-1):
+                print('I will subdivide')
+                bmesh.ops.bisect_plane(bm,
+                                           geom=bm.verts[:]+bm.edges[:]+bm.faces[:],
+                                           dist=0.001,
+                                       plane_co=[0,0,(i+1)*self.thickness/self.subdivide],
+                                       plane_no=[0,0,1])
+        # Remove doubles 
             bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001) 
             # Update mesh and free Bmesh 
             bm.normal_update() 

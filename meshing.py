@@ -21,7 +21,8 @@ class Plane_Geom(Object):
                  characteristic_length_max=0.03,
                  material=Material('nitrure', '#F5D15B', alpha=0.3, blend_method='BLEND',
                  use_backface_culling=True, blend_method_shadow='NONE'),
-                 rounding_decimals=12):
+                 rounding_decimals=12, subdivide=1):
+        self.subdivide=subdivide
         self.name=name
         self.thickness=thickness
         self.geom=pygmsh.opencascade.geometry.Geometry(characteristic_length_max=characteristic_length_max)
@@ -32,11 +33,13 @@ class Plane_Geom(Object):
         if not use_triangle:
             self._pymesh=pygmsh.generate_mesh(self.geom)
             self._blender_mesh=Mesh(mesh=self._pymesh, name=self.name,
-                                    thickness=self.thickness)
+                                    thickness=self.thickness,
+                                    subdivide=self.subdivide)
         else:
             self.generate_triangulation_from_shapely_LineString(self.line)
             self._blender_mesh=Mesh(cells=self.cells, points=self.cell_points, name=self.name,
-                                    thickness=self.thickness)
+                                    thickness=self.thickness,
+                                    subdivide=self.subdivide)
         self.name_obj=self._blender_mesh.name_obj
         self._blender_mesh.assign_material(self.material)
     
@@ -171,6 +174,13 @@ class Polygon(Plane_Geom):
         self.line=geometry.LineString(self.points)
         self.xy=self.format_line(self.line)
         self.geom.add_polygon(self.xy)
+
+class Cylinder(Plane_Geom):
+    
+    def __init__(self, radius=1, height=1,
+                 **kwargs):
+        self.line=geometry.Point(0,0).buffer(1.0).exterior
+        super().__init__(thickness=height, **kwargs)
     
 width_antenna=0.5
 thick_substrate=0.5
@@ -209,7 +219,7 @@ antenna=Path([(distance_from_side,
                      length_SMA+distance_from_side),
                     (W_cell/2+width_SMA/2+distance_from_side,
                      distance_from_side)][::-1], width_circuit,
-                     thickness=None)
+                     thickness=0.1, subdivide=2)
 arrow=Arrow(length=5, width=0.15, head_width=0.3, thickness=None)
 arrow.send_to_blender()
 curve_2=Curve([[p[0], p[1], 0.0] for p in antenna.points], name='translate')
@@ -227,6 +237,11 @@ glow.glowing()
 arrow.assign_material(glow)
 material.metallic_texture()
 antenna.assign_material(material)
+
+c=Cylinder(height=arrow.length,
+           subdivide=10,
+           radius=arrow.width)
+c.send_to_blender(use_triangle=True)
 #%%
 '''Wx_membrane, Wy_membrane = 10, 10
 Wx_membrane_2, Wy_membrane_2 = 5, 5
