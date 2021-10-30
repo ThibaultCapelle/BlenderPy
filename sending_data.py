@@ -6,7 +6,7 @@ Created on Wed Aug 26 09:56:27 2020
 """
 
 import socket, json
-
+from parsing import Expression
 HOST = '127.0.0.1'
 PORT = 20000
 
@@ -131,7 +131,8 @@ class ShaderNode:
                  name=None, **kwargs):
         assert parent is not None
         self._shadertype_dict=dict({'Emission':'ShaderNodeEmission',
-                         'Add':'ShaderNodeAddShader'})
+                         'Add':'ShaderNodeAddShader',
+                         'Math':'ShaderNodeMath'})
         if name==None:
             kwargs['shader_type']=self._format_type(shader_type)
             kwargs['parent_name']=parent
@@ -142,7 +143,7 @@ class ShaderNode:
             self.name=name
         self._inputs=ShaderDict(self.name, self.parent_name, 'shadernode_input')
         self._outputs=ShaderDict(self.name, self.parent_name, 'shadernode_output')
-        
+        self._properties=ShaderDict(self.name, self.parent_name, 'shadernode_property')
     
     def todict(self, **kwargs):
         params=dict({'parent_name':self.parent_name,
@@ -161,6 +162,10 @@ class ShaderNode:
     @property
     def outputs(self):
         return self._outputs
+    
+    @property
+    def properties(self):
+        return self._properties
 
 
 class Constraint:
@@ -170,41 +175,40 @@ class Constraint:
         kwargs['parent_name']=parent
         self.parent_name=parent
         self.name=ask(parse('create_constraint()', kwargs=kwargs))
+        self._properties=PropertyDict(self.name, self.parent_name,
+                                      func='constraint_property')
     
     @property
-    def target(self):
-        pass
+    def properties(self):
+        return self._properties
     
-    @target.setter
-    def target(self, val):
-        assert isinstance(val, Object)
-        send(parse('assign_constraint()', const_name=self.name,
-                   key='target',
-                   parent_name=self.parent_name,
-                   val=val.name_obj))
+class PropertyDict(dict):
     
-    @property
-    def forward_axis(self):
-        pass
+    def __init__(self, name, name_obj, func=None, **kwargs):
+        super().__init__()
+        self.name=name
+        self.name_obj=name_obj
+        self.func=func
+        
+    def __setitem__(self, key, value):
+        kwargs=dict({'key':key,
+                     'parent_name':self.name,
+                     'parent_name_obj':self.name_obj})
+        if isinstance(value, Object):
+            value=value.todict()
+        kwargs['val']=value
+        send(parse('set_'+self.func,
+                   kwargs=kwargs))
     
-    @forward_axis.setter
-    def forward_axis(self, val):
-        send(parse('assign_constraint()', const_name=self.name,
-                   key='forward_axis',
-                   parent_name=self.parent_name,
-                   val=val))
-    
-    @property
-    def use_curve_follow(self):
-        pass
-    
-    @use_curve_follow.setter
-    def use_curve_follow(self, val):
-        send(parse('assign_constraint()', const_name=self.name,
-                   key='use_curve_follow',
-                   parent_name=self.parent_name,
-                   val=val))
-
+    def __getitem__(self, key):
+        kwargs=dict({'key':key,
+                     'parent_name':self.name,
+                     'parent_name_obj':self.name_obj})
+        res=ask(parse('get_'+self.func, kwargs=kwargs))
+        if isinstance(res, dict):
+            return Object(**res)
+        else:
+            return res
 
 class Modifier:
     
@@ -213,29 +217,12 @@ class Modifier:
         kwargs['parent_name']=parent
         self.parent_name=parent
         self.name=ask(parse('create_modifier()', kwargs=kwargs))
+        self._properties=PropertyDict(self.name, self.parent_name, func='modifier_property')
     
     @property
-    def target(self):
-        pass
+    def properties(self):
+        return self._properties
     
-    @target.setter
-    def target(self, val):
-        assert isinstance(val, Object)
-        send(parse('assign_modifier()', mod_name=self.name,
-                   key='object',
-                   parent_name=self.parent_name,
-                   val=val.name_obj))
-    
-    @property
-    def deform_axis(self):
-        pass
-    
-    @deform_axis.setter
-    def deform_axis(self, val):
-        send(parse('assign_modifier()', mod_name=self.name,
-                   key='deform_axis',
-                   parent_name=self.parent_name,
-                   val=val))
         
     
 class Material:
@@ -262,7 +249,33 @@ class Material:
                      'metallic':metallic})
         params.update(kwargs)
         send(parse('update_material()', kwargs=params))
+        self.operations=dict({'*':'MULTIPLY',
+                         '/':'DIVIDE',
+                         '+':'ADD',
+                         '-':'SUBTRACT',
+                         '^':'POWER'})
     
+    def add_shader(self, shader_type):
+        return ShaderNode(shader_type=shader_type,
+                          parent=self.material_object)
+    
+    def coordinate_expression(self, exp):
+        e=Expression(exp)
+        self.distribute_shaders(e)
+    
+    def distribute_shaders(self, e):
+        if hasattr(e, 'operation'):
+            e.shader=self.add_shader(shader_type='Math')
+            e.shader.properties['operation']=self.operations[e.operation]
+        elif len(e.tokens)==1 and isinstance(e.tokens[0],Expression):
+            self.distribute_shaders(e.tokens[0])
+            e.shader=e.tokens[0].shader
+            e.nodes=e.tokens[0].nodes
+            if not e.tokens[0].isleaf():
+                e.operation=e.tokens[0].operation
+        for node in e.nodes:
+            self.distribute_shaders(node)
+        
     def z_dependant_color(self, positions, colors, z_offset=0, **kwargs):
         params=dict({'colors':[self.convert_color(color) for color in colors],
                      'name':self.material_object,
@@ -310,6 +323,10 @@ class Material:
     
 class Object:
     
+    def __init__(self, name_obj=None, **kwargs):
+        if name_obj is not None:
+            self.name_obj=name_obj
+    
     def assign_material(self, material):
         kwargs = dict({'name_obj':self.name_obj,
                        'name_mat':material.material_object})
@@ -318,9 +335,9 @@ class Object:
     def follow_path(self, target=None, use_curve_follow=True,
                     forward_axis='FORWARD_X'):
         self.assign_constraint(constraint_type='FOLLOW_PATH')
-        self.constraint.target=target
-        self.constraint.use_curve_follow=use_curve_follow
-        self.constraint.forward_axis=forward_axis
+        self.constraint.properties['target']=target
+        self.constraint.properties['use_curve_follow']=use_curve_follow
+        self.constraint.properties['forward_axis']=forward_axis
     
     def assign_constraint(self, constraint_type='FOLLOW_PATH', **kwargs):
         self.constraint=Constraint(parent=self._blender_mesh.name_obj,
@@ -329,13 +346,20 @@ class Object:
     
     def curve_modifier(self, target=None, deform_axis='POS_X'):
         self.assign_modifier(modifier_type='CURVE')
-        self.modifier.target=target
-        self.modifier.deform_axis=deform_axis
+        self.modifier.properties['object']=target
+        self.modifier.properties['deform_axis']=deform_axis
     
     def assign_modifier(self, modifier_type='CURVE', **kwargs):
         self.modifier=Modifier(parent=self._blender_mesh.name_obj,
                                    modifier_type=modifier_type,
                                    **kwargs)
+    
+    def copy_location(self, target=None):
+        self.assign_constraint(constraint_type='COPY_LOCATION')
+        self.constraint.properties['target']=target
+    
+    def todict(self):
+        return dict({'name_obj':self.name_obj})
         
     
     @property

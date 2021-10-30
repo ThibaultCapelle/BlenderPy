@@ -230,6 +230,13 @@ antenna.send_to_blender(use_triangle=True)
 curve.location=list(antenna.points[-1])+[0.]
 #arrow.follow_path(curve_2)
 arrow.curve_modifier(curve_2)
+c=Cylinder(height=arrow.length,
+           subdivide=10,
+           radius=arrow.width)
+c.send_to_blender(use_triangle=True)
+c.rotation=[0,np.pi/2,0]
+c.curve_modifier(curve_2)
+c.copy_location(arrow)
 material=Material('metal', '#5E5C5C', alpha=1., blend_method='OPAQUE',
                  use_backface_culling=False, blend_method_shadow='NONE')
 glow=Material("glow", '#D70A0A')
@@ -238,10 +245,8 @@ arrow.assign_material(glow)
 material.metallic_texture()
 antenna.assign_material(material)
 
-c=Cylinder(height=arrow.length,
-           subdivide=10,
-           radius=arrow.width)
-c.send_to_blender(use_triangle=True)
+glow.coordinate_expression('-4e^(-(x^2+y^2)/(0.1)^2)')
+
 #%%
 '''Wx_membrane, Wy_membrane = 10, 10
 Wx_membrane_2, Wy_membrane_2 = 5, 5

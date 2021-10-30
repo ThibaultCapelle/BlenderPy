@@ -45,16 +45,49 @@ class Interprete:
             val=bpy.data.objects[val]
         setattr(bpy.data.objects[parent_name].constraints[const_name],key, val)
     
-    def assign_modifier(self, connection=None,
+    def set_modifier_property(self, connection=None,
                           key=None,
-                          mod_name=None,
+                          parent_name_obj=None,
                           parent_name=None,
                           val=None,
                           **kwargs):
-        if key=='object':
-            val=bpy.data.objects[val]
-        setattr(bpy.data.objects[parent_name].modifiers[mod_name],key, val)
-        
+        if isinstance(val, dict):
+            val=bpy.data.objects[val['name_obj']]
+        setattr(bpy.data.objects[parent_name_obj].modifiers[parent_name],key, val)
+    
+    def get_modifier_property(self, connection=None,
+                          key=None,
+                          parent_name_obj=None,
+                          parent_name=None,
+                          **kwargs):
+        res=getattr(bpy.data.objects[parent_name_obj].modifiers[parent_name], key)
+        if isinstance(res, bpy.types.Object):
+            self.server.send_answer(connection, 
+                                dict({'name_obj':res.name}))
+        else:
+            self.server.send_answer(connection, res)
+    
+    def set_constraint_property(self, connection=None,
+                          key=None,
+                          parent_name_obj=None,
+                          parent_name=None,
+                          val=None,
+                          **kwargs):
+        if isinstance(val, dict):
+            val=bpy.data.objects[val['name_obj']]
+        setattr(bpy.data.objects[parent_name_obj].constraints[parent_name],key, val)
+    
+    def get_constraint_property(self, connection=None,
+                          key=None,
+                          parent_name_obj=None,
+                          parent_name=None,
+                          **kwargs):
+        res=getattr(bpy.data.objects[parent_name_obj].constraints[parent_name], key)
+        if isinstance(res, bpy.types.Object):
+            self.server.send_answer(connection, 
+                                dict({'name_obj':res.name}))
+        else:
+            self.server.send_answer(connection, res)
     
     def create_constraint(self, connection=None, **kwargs):
         constraint=Constraint(**kwargs)
@@ -92,6 +125,26 @@ class Interprete:
             from_socket=mat.node_tree.nodes[parent_name].outputs[key]
             mat.node_tree.links.new(from_socket,
                                     to_socket)
+    
+    def set_shadernode_property(self, material_name=None, 
+                             from_name=None,
+                             from_key=None,
+                             value=None,
+                             parent_name=None,
+                             connection=None, **kwargs):
+        mat=bpy.data.materials[material_name]
+        node=mat.node_tree.nodes[from_name]
+        setattr(node, from_key, value)
+        
+    def get_shadernode_property(self, key=None, 
+                             material_name=None, 
+                             name=None,
+                             connection=None, **kwargs):
+        mat=bpy.data.materials[material_name]
+        node=mat.node_tree.nodes[name]
+        res=getattr(node, key)
+        self.server.send_answer(connection,
+                                    res)
     
     def set_shadernode_output(self, material_name=None, 
                              from_name=None,
