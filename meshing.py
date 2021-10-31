@@ -244,8 +244,15 @@ glow.glowing()
 arrow.assign_material(glow)
 material.metallic_texture()
 antenna.assign_material(material)
+#%%
+from sending_data import (Material)
 
-glow.coordinate_expression('-4e^(-(x^2+y^2)/(0.1)^2)')
+glow=Material("glow", '#D70A0A')
+coordinates=glow.add_shader('Texture_coordinates')
+separate=glow.add_shader('Separate_XYZ')
+separate.inputs['Vector']=coordinates.outputs['Generated']
+glow.coordinate_expression('-4e^(-(X^2+X^2)/(0.1)^2)', input_shader=separate,
+                           special_keys='XY')
 
 #%%
 '''Wx_membrane, Wy_membrane = 10, 10

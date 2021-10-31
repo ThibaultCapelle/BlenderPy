@@ -7,6 +7,7 @@ Created on Wed Aug 26 09:56:27 2020
 
 import socket, json
 from parsing import Expression
+import numpy as np
 HOST = '127.0.0.1'
 PORT = 20000
 
@@ -83,21 +84,26 @@ class ShaderDict(dict):
         self.name=name
         self.material_name=material_name
         self.func=func
+        self.params=kwargs
         
     def __setitem__(self, key, value):
+        kwargs=self.params.copy()
         if isinstance(value, ShaderSocket):
-            send(parse('set_'+self.func, kwargs=value.todict(from_name=self.name,
-                                                             from_key=key)))
+            kwargs.update(value.todict(from_name=self.name,
+                                       from_key=key))
+            send(parse('set_'+self.func, kwargs=kwargs))
         else:
-            send(parse('set_'+self.func, kwargs=dict({'material_name':self.material_name,
-                                                     'from_name':self.name,
-                                                     'from_key':key,
-                                                     'value':value})))
+            kwargs.update(dict({'material_name':self.material_name,
+                                'from_name':self.name,
+                                'from_key':key,
+                                'value':value}))
+            send(parse('set_'+self.func, kwargs=kwargs))
     
     def __getitem__(self, key):
-        kwargs= dict({'material_name':self.material_name,
+        kwargs=self.params.copy()
+        kwargs.update(dict({'material_name':self.material_name,
                      'name':self.name,
-                     'key':key})
+                     'key':key}))
         res=ask(parse('get_'+self.func, kwargs=kwargs))
         if isinstance(res, dict):
             node=ShaderNode(**res)
@@ -116,6 +122,10 @@ class ShaderSocket:
         self.parent=parent
         self.key=key
         self.value=value
+        self._properties=PropertyDict('','', func='shadersocket_property',
+                                      material_name=self.material_parent,
+                                      node_name=self.parent,
+                                      socket_key=self.key)
     
     def todict(self, **kwargs):
         params=dict({'material_name':self.material_parent,
@@ -124,6 +134,11 @@ class ShaderSocket:
                      'value':self.value})
         params.update(kwargs)
         return params
+    
+    @property
+    def properties(self):
+        return self._properties
+    
         
 class ShaderNode:
     
@@ -132,7 +147,9 @@ class ShaderNode:
         assert parent is not None
         self._shadertype_dict=dict({'Emission':'ShaderNodeEmission',
                          'Add':'ShaderNodeAddShader',
-                         'Math':'ShaderNodeMath'})
+                         'Math':'ShaderNodeMath',
+                         'Texture_coordinates':'ShaderNodeTexCoord',
+                         'Separate_XYZ':'ShaderNodeSeparateXYZ'})
         if name==None:
             kwargs['shader_type']=self._format_type(shader_type)
             kwargs['parent_name']=parent
@@ -189,11 +206,13 @@ class PropertyDict(dict):
         self.name=name
         self.name_obj=name_obj
         self.func=func
+        self.params=kwargs
         
     def __setitem__(self, key, value):
-        kwargs=dict({'key':key,
+        kwargs=self.params.copy()
+        kwargs.update(dict({'key':key,
                      'parent_name':self.name,
-                     'parent_name_obj':self.name_obj})
+                     'parent_name_obj':self.name_obj}))
         if isinstance(value, Object):
             value=value.todict()
         kwargs['val']=value
@@ -201,9 +220,10 @@ class PropertyDict(dict):
                    kwargs=kwargs))
     
     def __getitem__(self, key):
-        kwargs=dict({'key':key,
+        kwargs=self.params.copy()
+        kwargs.update(dict({'key':key,
                      'parent_name':self.name,
-                     'parent_name_obj':self.name_obj})
+                     'parent_name_obj':self.name_obj}))
         res=ask(parse('get_'+self.func, kwargs=kwargs))
         if isinstance(res, dict):
             return Object(**res)
@@ -259,22 +279,36 @@ class Material:
         return ShaderNode(shader_type=shader_type,
                           parent=self.material_object)
     
-    def coordinate_expression(self, exp):
-        e=Expression(exp)
-        self.distribute_shaders(e)
+    def coordinate_expression(self, exp, input_shader=None, special_keys=None):
+        e=Expression(content=exp, tokens=[])
+        if not e.isleaf():
+            self.distribute_shaders(e.get_tree(),input_shader=input_shader,
+                                        special_keys=special_keys)
     
-    def distribute_shaders(self, e):
-        if hasattr(e, 'operation'):
-            e.shader=self.add_shader(shader_type='Math')
-            e.shader.properties['operation']=self.operations[e.operation]
-        elif len(e.tokens)==1 and isinstance(e.tokens[0],Expression):
-            self.distribute_shaders(e.tokens[0])
-            e.shader=e.tokens[0].shader
-            e.nodes=e.tokens[0].nodes
-            if not e.tokens[0].isleaf():
-                e.operation=e.tokens[0].operation
-        for node in e.nodes:
-            self.distribute_shaders(node)
+    def distribute_shaders(self, tree, input_shader=None, special_keys=None):
+        if isinstance(tree, dict):
+            operation=list(tree.keys())[0]
+            tree['shader']=self.add_shader(shader_type='Math')
+            tree['shader'].properties['operation']=self.operations[operation]
+            subtree=tree[operation]
+            for node in subtree:
+                self.distribute_shaders(node, input_shader=input_shader,
+                                        special_keys=special_keys)
+            for i, node in enumerate(subtree):
+                if isinstance(node, dict):
+                    tree['shader'].inputs[i]=node['shader'].outputs['Value']
+                else:
+                    try:
+                        tree['shader'].inputs[i]=float(node)
+                    except ValueError:
+                        if node=='e':
+                            tree['shader'].inputs[i]=np.e
+                        if node in special_keys:
+                            tree['shader'].inputs[i]=input_shader.outputs[node]
+                            
+        else:
+            print(tree)
+        
         
     def z_dependant_color(self, positions, colors, z_offset=0, **kwargs):
         params=dict({'colors':[self.convert_color(color) for color in colors],

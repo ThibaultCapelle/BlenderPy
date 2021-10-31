@@ -26,18 +26,18 @@ class Expression:
     
     specials=['(',')','+','-','/','*','^','e','|']
     numbers=['.','0','1','2','3','4','5','6','7','8','9']
-    nodes=['x','y','z']
+    nodes=['x','y','z', 'X', 'Y', 'Z']
     
-    def __init__(self, content='', nodes=[], operations=[], tokens=[]):
+    def __init__(self, content='', nodes=[], operation=None, tokens=[]):
         self.shader=None
         self.content=content
         self.nodes=nodes
-        self.operations=operations
+        self.operation=operation
         self.tokens=tokens
         self.lexer()
         self.parenthesis()
         self.parse()
-        
+        self.clean_tree()
     
     def lexer(self):
         i=0
@@ -151,11 +151,23 @@ class Expression:
             for node in self.nodes:
                 leaves+=node.get_leaves()
         return leaves
+    
+    def clean_tree(self):
+        for i, node in enumerate(self.nodes):
+            if len(node.tokens)==1 and isinstance(node.tokens[0], Expression):
+                self.nodes[i]=node.tokens[0]
+    
+    def get_tree(self):
+        if self.isleaf():
+            return self.tokens[0].content
+        else:
+            return dict({self.operation:[node.get_tree() for node in self.nodes]})
         
         
 
 if __name__=='__main__':
-    e=Expression(content='-4e^(-(x^2+y^2)/(0.1)^2)')
+    expression=Expression(content='-4e^(-(x^2+y^2)/(0.1)^2)', tokens=[])
+    res=expression.get_tree()
     
             
     

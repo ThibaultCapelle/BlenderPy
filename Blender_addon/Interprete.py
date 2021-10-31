@@ -146,6 +146,29 @@ class Interprete:
         self.server.send_answer(connection,
                                     res)
     
+    def set_shadersocket_property(self, material_name=None, 
+                                  key=None,
+                             socket_key=None,
+                             value=None,
+                             parent_name=None,
+                             connection=None, **kwargs):
+        mat=bpy.data.materials[material_name]
+        node=mat.node_tree.nodes[parent_name]
+        socket=node[socket_key]
+        setattr(socket, key, value)
+        
+    def get_shadersocket_property(self, material_name=None, 
+                                  key=None,
+                                  socket_key=None,
+                                  parent_name=None,
+                                  connection=None, **kwargs):
+        mat=bpy.data.materials[material_name]
+        node=mat.node_tree.nodes[name]
+        socket=node[socket_key]
+        res=getattr(socket, key)
+        self.server.send_answer(connection,
+                                    res)
+    
     def set_shadernode_output(self, material_name=None, 
                              from_name=None,
                              from_key=None,
@@ -153,6 +176,7 @@ class Interprete:
                              key=None,
                              parent_name=None,
                              connection=None, **kwargs):
+        print((from_name, from_key, parent_name, key))
         mat=bpy.data.materials[material_name]
         from_socket=mat.node_tree.nodes[from_name].outputs[from_key]
         to_socket=mat.node_tree.nodes[parent_name].inputs[key]
@@ -164,20 +188,16 @@ class Interprete:
                              name=None,
                              connection=None, **kwargs):
         mat=bpy.data.materials[material_name]
-        node=mat.node_tree.nodes[name].inputs[key]
-        if len(node.links)==0:
-            if node.type=='VALUE':
-                self.server.send_answer(connection,
-                                        node.default_value)
-            elif node.type=='RGBA':
-                self.server.send_answer(connection,
-                                        list(node.default_value))
-            else:
-                self.server.send_answer(connection,
-                                        '')
+        node=mat.node_tree.nodes[name]
+        socket=node.inputs[key]
+        if len(socket.links)==0:
+            self.server.send_answer(connection,
+                                    dict({'parent':mat.name,
+                                          'name':node.name,
+                                          'socket_name':socket.name}))
         else:
-            input_node=node.links[0].from_node
-            input_socket=node.links[0].from_socket
+            input_node=socket.links[0].from_node
+            input_socket=socket.links[0].from_socket
             self.server.send_answer(connection,
                                     dict({'parent':mat.name,
                                           'name':input_node.name,
