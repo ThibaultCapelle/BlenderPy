@@ -163,7 +163,7 @@ class Interprete:
                                   parent_name=None,
                                   connection=None, **kwargs):
         mat=bpy.data.materials[material_name]
-        node=mat.node_tree.nodes[name]
+        node=mat.node_tree.nodes[parent_name]
         socket=node[socket_key]
         res=getattr(socket, key)
         self.server.send_answer(connection,
@@ -194,7 +194,8 @@ class Interprete:
             self.server.send_answer(connection,
                                     dict({'parent':mat.name,
                                           'name':node.name,
-                                          'socket_name':socket.name}))
+                                          'socket_name':socket.name,
+                                          'shader_socket_type':'input'}))
         else:
             input_node=socket.links[0].from_node
             input_socket=socket.links[0].from_socket
@@ -214,7 +215,8 @@ class Interprete:
             self.server.send_answer(connection, 
                                     dict({'parent':mat.name,
                                           'name':node.name,
-                                          'socket_name':socket.name}))
+                                          'socket_name':socket.name,
+                                          'shader_socket_type':'output'}))
         else:
             output_node=socket.links[0].to_node
             output_socket=socket.links[0].to_socket

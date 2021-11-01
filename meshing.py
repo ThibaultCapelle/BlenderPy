@@ -251,9 +251,11 @@ glow=Material("glow", '#D70A0A')
 coordinates=glow.add_shader('Texture_coordinates')
 separate=glow.add_shader('Separate_XYZ')
 separate.inputs['Vector']=coordinates.outputs['Generated']
-glow.coordinate_expression('-4e^(-(X^2+X^2)/(0.1)^2)', input_shader=separate,
-                           special_keys='XY')
-
+special_keys=dict({'X':separate.outputs['X'], 'Y':separate.outputs['Y']})
+math_shader=glow.coordinate_expression('-4e^(-(X^2+Y^2)/(0.1)^2)',
+                                  special_keys=special_keys)
+emission=glow.add_shader('Emission')
+emission.inputs['Strength']=math_shader.outputs['Value']
 #%%
 '''Wx_membrane, Wy_membrane = 10, 10
 Wx_membrane_2, Wy_membrane_2 = 5, 5

@@ -7,6 +7,7 @@ Created on Wed Aug 26 10:05:13 2020
 
 import socket, threading, json
 from .interprete import Interprete
+from mathutils import Vector
 
 HOST = '127.0.0.1'
 PORT = 20000
@@ -45,6 +46,15 @@ class Server:
             s.sendall(('{:010x}'.format(len(message))+message).encode())
     
     def send_answer(self, conn, message):
+        if isinstance(message, Vector):
+            message_list=[]
+            if hasattr(message, 'x'):
+                message_list.append(message.x)
+            if hasattr(message, 'y'):    
+                message_list.append(message.y)
+            if hasattr(message, 'z'):    
+                message_list.append(message.z)    
+            message=message_list
         message=json.dumps(dict({'content':message}))
         conn.sendall(('{:010x}'.format(len(message))+message).encode())
         

@@ -109,19 +109,21 @@ class ShaderDict(dict):
             node=ShaderNode(**res)
             return ShaderSocket(material_parent=node.parent_name,
                                 parent=node, 
-                                key=res['socket_name'])
+                                key=res['socket_name'],
+                                shader_socket_type=res['shader_socket_type'])
         else:
             return res
 
 class ShaderSocket:
     
-    def __init__(self, material_parent=None,
+    def __init__(self, material_parent=None, shader_socket_type='input',
                  parent=None, key=None, value=None, **kwargs):
         assert isinstance(parent, ShaderNode)
         self.material_parent=material_parent
         self.parent=parent
         self.key=key
         self.value=value
+        self.shader_socket_type=shader_socket_type
         self._properties=PropertyDict('','', func='shadersocket_property',
                                       material_name=self.material_parent,
                                       node_name=self.parent,
@@ -149,7 +151,9 @@ class ShaderNode:
                          'Add':'ShaderNodeAddShader',
                          'Math':'ShaderNodeMath',
                          'Texture_coordinates':'ShaderNodeTexCoord',
-                         'Separate_XYZ':'ShaderNodeSeparateXYZ'})
+                         'Separate_XYZ':'ShaderNodeSeparateXYZ',
+                         'Principled BSDF':'ShaderNodeBsdfPrincipled',
+                         'Material Output':'ShaderNodeOutputMaterial'})
         if name==None:
             kwargs['shader_type']=self._format_type(shader_type)
             kwargs['parent_name']=parent
@@ -274,24 +278,74 @@ class Material:
                          '+':'ADD',
                          '-':'SUBTRACT',
                          '^':'POWER'})
+        names=['Principled BSDF', 'Material Output']
+        self.shadernodes_dimensions=dict()
+        for name in names:
+            self.shadernodes_dimensions[name]=ShaderNode(name=name, parent=self.material_object,
+                                                shader_type=name).properties['location']
+    
+    @property
+    def xmax_shadernode_dimensions(self):
+        return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,0])
+    
+    @property
+    def ymax_shadernode_dimensions(self):
+        return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,1])
+    
+    @property
+    def xmin_shadernode_dimensions(self):
+        return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,0])
+    
+    @property
+    def ymin_shadernode_dimensions(self):
+        return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,1])
+    
+    @property
+    def height_shadernode_dimensions(self):
+        return self.ymax_shadernode_dimensions-self.ymin_shadernode_dimensions
+    
+    @property
+    def width_shadernode_dimensions(self):
+        return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions
     
     def add_shader(self, shader_type):
-        return ShaderNode(shader_type=shader_type,
+        dx, dy=200, 200
+        i,j=0,0
+        while [i*dx, j*dy] in list(self.shadernodes_dimensions.values()):
+            i+=1
+            if i*dx>self.width_shadernode_dimensions:
+                i=0
+                j+=1
+                if j*dy>self.height_shadernode_dimensions:
+                    j=0
+                    i=int(self.width_shadernode_dimensions)/dx+1
+                    break
+        res= ShaderNode(shader_type=shader_type,
                           parent=self.material_object)
+        res.properties['location']=[i*dx, j*dy]
+        self.shadernodes_dimensions[res.name]=[i*dx, j*dy]
+        return res
     
     def coordinate_expression(self, exp, input_shader=None, special_keys=None):
         e=Expression(content=exp, tokens=[])
         if not e.isleaf():
-            self.distribute_shaders(e.get_tree(),input_shader=input_shader,
-                                        special_keys=special_keys)
+            tree=e.get_tree()
+            tree['parent']=None
+            return self.distribute_shaders(tree,input_shader=input_shader,
+                                           special_keys=special_keys)
     
     def distribute_shaders(self, tree, input_shader=None, special_keys=None):
+        return_shader=None
         if isinstance(tree, dict):
             operation=list(tree.keys())[0]
             tree['shader']=self.add_shader(shader_type='Math')
             tree['shader'].properties['operation']=self.operations[operation]
+            if tree['parent'] is None:
+                return_shader=tree['shader']
             subtree=tree[operation]
             for node in subtree:
+                if isinstance(node, dict):
+                    node['parent']=tree['shader']
                 self.distribute_shaders(node, input_shader=input_shader,
                                         special_keys=special_keys)
             for i, node in enumerate(subtree):
@@ -303,11 +357,12 @@ class Material:
                     except ValueError:
                         if node=='e':
                             tree['shader'].inputs[i]=np.e
-                        if node in special_keys:
-                            tree['shader'].inputs[i]=input_shader.outputs[node]
+                        if node in special_keys.keys():
+                            tree['shader'].inputs[i]=special_keys[node]
                             
         else:
             print(tree)
+        return return_shader
         
         
     def z_dependant_color(self, positions, colors, z_offset=0, **kwargs):
