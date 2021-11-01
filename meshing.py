@@ -11,7 +11,7 @@ import pygmsh
 import numpy as np
 from sending_data import (Material, Mesh, delete_all,
                           Light, Camera, Curve, Object,
-                          ShaderNode)
+                          ShaderNode, Plane)
 thick_membrane=0.025
 
 
@@ -224,26 +224,31 @@ arrow=Arrow(length=5, width=0.15, head_width=0.3, thickness=None)
 arrow.send_to_blender()
 curve_2=Curve([[p[0], p[1], 0.0] for p in antenna.points], name='translate')
 #curve=Curve([[p[0], p[1], np.cos(i/100*np.pi)] for i,p in enumerate(antenna.points)], name='hello')
-curve=Curve([(theta,0.5*np.sin(theta)*np.sin(30*theta),0) for theta in np.linspace(0, 10*np.pi, 3000)], name='hello')
+#curve=Curve([(theta,0.5*np.sin(theta)*np.sin(30*theta),0) for theta in np.linspace(0, 10*np.pi, 3000)], name='hello')
 
 antenna.send_to_blender(use_triangle=True)
-curve.location=list(antenna.points[-1])+[0.]
+#curve.location=list(antenna.points[-1])+[0.]
 #arrow.follow_path(curve_2)
 arrow.curve_modifier(curve_2)
-c=Cylinder(height=arrow.length,
+'''c=Cylinder(height=arrow.length,
            subdivide=10,
            radius=arrow.width)
 c.send_to_blender(use_triangle=True)
 c.rotation=[0,np.pi/2,0]
 c.curve_modifier(curve_2)
-c.copy_location(arrow)
-material=Material('metal', '#5E5C5C', alpha=1., blend_method='OPAQUE',
-                 use_backface_culling=False, blend_method_shadow='NONE')
+c.copy_location(arrow)'''
+metal=Material('imported', '#6B5252')
+metal.load_image_shader_dir(r'C:\Users\Thibault\Downloads\Metal005_1K-JPG')
 glow=Material("glow", '#D70A0A')
-glow.glowing()
+emission=glow.add_shader('Emission')
+emission.inputs['Strength']=40.
+glow.get_shader('Material Output').inputs['Surface']=emission.outputs['Emission']
 arrow.assign_material(glow)
-material.metallic_texture()
-antenna.assign_material(material)
+arrow.location=[0.,0.,0.2]
+antenna.assign_material(metal)
+light=Light(light_type='SUN', power=2, radius=3, location=[1,0,4])
+plane=Plane(size=100, location=[0., 0., -0.1])
+
 #%%
 from sending_data import (Material)
 
@@ -252,49 +257,17 @@ coordinates=glow.add_shader('Texture_coordinates')
 separate=glow.add_shader('Separate_XYZ')
 separate.inputs['Vector']=coordinates.outputs['Generated']
 special_keys=dict({'X':separate.outputs['X'], 'Y':separate.outputs['Y']})
-math_shader=glow.coordinate_expression('-4e^(-(X^2+Y^2)/(0.1)^2)',
+math_shader=glow.coordinate_expression('4e^(-(X^2+Y^2)/(0.1)^2)',
                                   special_keys=special_keys)
 emission=glow.add_shader('Emission')
 emission.inputs['Strength']=math_shader.outputs['Value']
+add_shader=glow.add_shader('Add')
+add_shader.inputs[0]=glow.get_shader('Principled BSDF').outputs['BSDF']
+add_shader.inputs[1]=emission.outputs['Emission']
+s=glow.get_shader('Material Output')
+s.inputs['Surface']=add_shader.outputs['Shader']
 #%%
-'''Wx_membrane, Wy_membrane = 10, 10
-Wx_membrane_2, Wy_membrane_2 = 5, 5
-geom=pygmsh.opencascade.geometry.Geometry(characteristic_length_max=0.03)
-membrane = geom.add_rectangle([-Wx_membrane/2,-Wy_membrane/2,0],
-                              Wx_membrane,Wy_membrane, corner_radius=0.01)
-rectangle_2=geom.add_rectangle([-Wx_membrane_2/2,-Wy_membrane_2/2,0],
-                              Wx_membrane_2,Wy_membrane_2, corner_radius=0.005)
-membrane_gmsh=geom.boolean_difference([membrane], [rectangle_2])
-mesh = pygmsh.generate_mesh(geom)
-membrane=Mesh(mesh, name='membrane', thickness=thick_membrane)
-
-nitrure=Material('nitrure', '#F5D15B', alpha=0.3, blend_method='BLEND',
-                 use_backface_culling=True, blend_method_shadow='NONE')
-membrane.assign_material(nitrure)'''
-path=Path([(0,0), (1,0), (1,1), (0,1), (0,0)], 0.1, name='yolo',
-           thickness=None, cap_style='round', join_style='round',
-           characteristic_length_max=1e-1)
-
-path.send_to_blender()
-
-arrow=Arrow(length=5, thickness=None)
-arrow.send_to_blender()
-curve=Curve([(theta,0.5*np.sin(theta)*np.sin(30*theta),0) for theta in np.linspace(0, 10*np.pi, 3000)], name='hello')
-curve_2=Curve([(theta,0,0) for theta in np.linspace(0, 10*np.pi*6, 100)], name='translate')
-
-arrow.follow_path(curve_2)
-arrow.curve_modifier(curve)
-'''
-from sending_data import Curve, delete_all
-import numpy as np
-delete_all()
-curve=Curve([(theta,np.sin(theta),0) for theta in np.linspace(0, 10*np.pi, 100)], name='hello')'''
-'''
-geom = pygmsh.opencascade.geometry.Geometry(characteristic_length_max=0.03)
-geom.add_polygon([(0,0,0),(0,1,0),(1,1,0),(1,0,0)])
-mesh = pygmsh.generate_mesh(geom)
-membrane=Mesh(mesh, name='membrane', thickness=thick_membrane)
-
-nitrure=Material('nitrure', '#F5D15B', alpha=0.3, blend_method='BLEND',
-                 use_backface_culling=True, blend_method_shadow='NONE')
-membrane.assign_material(nitrure)'''
+import meshio
+from sending_data import Mesh
+mesh=Mesh(mesh=meshio.read(r'Y:\membrane\Equipment\Homebuilt\Machined parts\Microwave_cavity_push_project\coupling_from_below\bottom.STL'),
+          name='bottom')

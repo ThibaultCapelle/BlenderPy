@@ -49,11 +49,11 @@ class Interprete:
                           key=None,
                           parent_name_obj=None,
                           parent_name=None,
-                          val=None,
+                          value=None,
                           **kwargs):
-        if isinstance(val, dict):
-            val=bpy.data.objects[val['name_obj']]
-        setattr(bpy.data.objects[parent_name_obj].modifiers[parent_name],key, val)
+        if isinstance(value, dict):
+            value=bpy.data.objects[value['name_obj']]
+        setattr(bpy.data.objects[parent_name_obj].modifiers[parent_name],key, value)
     
     def get_modifier_property(self, connection=None,
                           key=None,
@@ -71,11 +71,11 @@ class Interprete:
                           key=None,
                           parent_name_obj=None,
                           parent_name=None,
-                          val=None,
+                          value=None,
                           **kwargs):
-        if isinstance(val, dict):
-            val=bpy.data.objects[val['name_obj']]
-        setattr(bpy.data.objects[parent_name_obj].constraints[parent_name],key, val)
+        if isinstance(value, dict):
+            value=bpy.data.objects[value['name_obj']]
+        setattr(bpy.data.objects[parent_name_obj].constraints[parent_name],key, value)
     
     def get_constraint_property(self, connection=None,
                           key=None,
@@ -134,6 +134,8 @@ class Interprete:
                              connection=None, **kwargs):
         mat=bpy.data.materials[material_name]
         node=mat.node_tree.nodes[from_name]
+        if 'path' in kwargs.keys():
+            value=bpy.data.images.load(kwargs['path'], check_existing=True)
         setattr(node, from_key, value)
         
     def get_shadernode_property(self, key=None, 
@@ -166,6 +168,36 @@ class Interprete:
         node=mat.node_tree.nodes[parent_name]
         socket=node[socket_key]
         res=getattr(socket, key)
+        self.server.send_answer(connection,
+                                    res)
+    
+    def set_light_property(self,key=None,
+                             value=None,
+                             parent_name=None,
+                             connection=None, **kwargs):
+        light=bpy.data.lights[parent_name]
+        setattr(light, key, value)
+        
+    def get_light_property(self, key=None,
+                                  parent_name=None,
+                                  connection=None, **kwargs):
+        light=bpy.data.lights[parent_name]
+        res=getattr(light, key)
+        self.server.send_answer(connection,
+                                    res)
+    
+    def set_object_property(self,key=None,
+                             value=None,
+                             parent_name=None,
+                             connection=None, **kwargs):
+        obj=bpy.data.objects[parent_name]
+        setattr(obj, key, value)
+        
+    def get_object_property(self, key=None,
+                                  parent_name=None,
+                                  connection=None, **kwargs):
+        obj=bpy.data.objects[parent_name]
+        res=getattr(obj, key)
         self.server.send_answer(connection,
                                     res)
     
@@ -202,7 +234,8 @@ class Interprete:
             self.server.send_answer(connection,
                                     dict({'parent':mat.name,
                                           'name':input_node.name,
-                                          'socket_name':input_socket.name}))
+                                          'socket_name':input_socket.name,
+                                          'shader_socket_type':'output'}))
     
     def get_shadernode_output(self, key=None, 
                              material_name=None, 
@@ -211,19 +244,20 @@ class Interprete:
         mat=bpy.data.materials[material_name]
         node=mat.node_tree.nodes[name]
         socket=node.outputs[key]
-        if len(socket.links)==0:
-            self.server.send_answer(connection, 
+        #if len(socket.links)==0:
+        self.server.send_answer(connection, 
                                     dict({'parent':mat.name,
                                           'name':node.name,
                                           'socket_name':socket.name,
                                           'shader_socket_type':'output'}))
-        else:
+        '''else:
             output_node=socket.links[0].to_node
             output_socket=socket.links[0].to_socket
             self.server.send_answer(connection,
                                     dict({'parent':mat.name,
                                           'name':output_node.name,
-                                          'socket_name':output_socket.name}))
+                                          'socket_name':output_socket.name,
+                                          'shader_socket_type':'input'}))'''
     
     def update_material(self, connection=None, **kwargs):
         material=bpy.data.materials.get(kwargs['name'])
@@ -606,10 +640,11 @@ class Interprete:
                                 [item.name for item in bpy.data.materials])
 
     
-    def create_light(self, name='light', connection=None, power=100, radius=0.2,
+    def create_light(self, name='light', light_type='POINT',
+                     connection=None, power=100, radius=0.2,
                      location=[0,0,0]):
         
-        new_light=bpy.data.lights.new(name, type='POINT')
+        new_light=bpy.data.lights.new(name, light_type)
         new_obj=bpy.data.objects.new(name, new_light)
         new_obj.location.x=location[0]
         new_obj.location.y=location[1]
@@ -681,53 +716,6 @@ class Interprete:
         res=[camera.location.x,
              camera.location.y,
              camera.location.z]
-        self.server.send_answer(kwargs['connection'], res)
-    
-    def get_light_position(self, **kwargs):
-        light=bpy.data.objects[kwargs['name_obj']]
-        res=[light.location.x,
-             light.location.y,
-             light.location.z]
-        self.server.send_answer(kwargs['connection'], res)
-    
-    def get_light_power(self, **kwargs):
-        light=bpy.data.lights[kwargs['name']]
-        self.server.send_answer(kwargs['connection'], light.energy)
-    
-    def set_light_power(self, **kwargs):
-        light=bpy.data.lights[kwargs['name']]
-        light.energy=kwargs['power']
-    
-    def set_camera_position(self, **kwargs):
-        camera=bpy.data.objects[kwargs['name_obj']]
-        camera.location.x=kwargs['position'][0]
-        camera.location.y=kwargs['position'][1]
-        camera.location.z=kwargs['position'][2]
-    
-    def set_light_position(self, **kwargs):
-        light=bpy.data.objects[kwargs['name_obj']]
-        light.location.x=kwargs['position'][0]
-        light.location.y=kwargs['position'][1]
-        light.location.z=kwargs['position'][2]
-        
-    def get_camera_rotation(self, **kwargs):
-        camera=bpy.data.objects[kwargs['name_obj']]
-        res=[camera.rotation_euler.x,
-             camera.rotation_euler.y,
-             camera.rotation_euler.z]
-        self.server.send_answer(kwargs['connection'], res)
-    
-    def set_camera_rotation(self, **kwargs):
-        camera=bpy.data.objects[kwargs['name_obj']]
-        camera.rotation_euler.x=kwargs['rotation'][0]
-        camera.rotation_euler.y=kwargs['rotation'][1]
-        camera.rotation_euler.z=kwargs['rotation'][2]
-        
-    def get_object_rotation(self, **kwargs):
-        obj=bpy.data.objects[kwargs['name_obj']]
-        res=[obj.rotation_euler.x,
-             obj.rotation_euler.y,
-             obj.rotation_euler.z]
         self.server.send_answer(kwargs['connection'], res)
     
     def set_object_rotation(self, **kwargs):

@@ -5,7 +5,7 @@ Created on Wed Aug 26 09:56:27 2020
 @author: Thibault
 """
 
-import socket, json
+import socket, json, os
 from parsing import Expression
 import numpy as np
 HOST = '127.0.0.1'
@@ -88,8 +88,9 @@ class ShaderDict(dict):
         
     def __setitem__(self, key, value):
         kwargs=self.params.copy()
-        if isinstance(value, ShaderSocket):
-            kwargs.update(value.todict(from_name=self.name,
+        if hasattr(value, 'to_dict'):
+            kwargs.update(value.to_dict(material_name=self.material_name,
+                                        from_name=self.name,
                                        from_key=key))
             send(parse('set_'+self.func, kwargs=kwargs))
         else:
@@ -129,7 +130,7 @@ class ShaderSocket:
                                       node_name=self.parent,
                                       socket_key=self.key)
     
-    def todict(self, **kwargs):
+    def to_dict(self, **kwargs):
         params=dict({'material_name':self.material_parent,
                      'parent_name':self.parent.name,
                      'key':self.key,
@@ -140,7 +141,15 @@ class ShaderSocket:
     @property
     def properties(self):
         return self._properties
+
+class Image:
     
+    def __init__(self, path):
+        self.path=path
+    
+    def to_dict(self, **kwargs):
+        kwargs.update(dict({'path':self.path}))
+        return kwargs
         
 class ShaderNode:
     
@@ -153,7 +162,8 @@ class ShaderNode:
                          'Texture_coordinates':'ShaderNodeTexCoord',
                          'Separate_XYZ':'ShaderNodeSeparateXYZ',
                          'Principled BSDF':'ShaderNodeBsdfPrincipled',
-                         'Material Output':'ShaderNodeOutputMaterial'})
+                         'Material Output':'ShaderNodeOutputMaterial',
+                         'Image':'ShaderNodeTexImage'})
         if name==None:
             kwargs['shader_type']=self._format_type(shader_type)
             kwargs['parent_name']=parent
@@ -166,7 +176,7 @@ class ShaderNode:
         self._outputs=ShaderDict(self.name, self.parent_name, 'shadernode_output')
         self._properties=ShaderDict(self.name, self.parent_name, 'shadernode_property')
     
-    def todict(self, **kwargs):
+    def to_dict(self, **kwargs):
         params=dict({'parent_name':self.parent_name,
                      'name':self.name})
         params.update(kwargs)
@@ -217,9 +227,9 @@ class PropertyDict(dict):
         kwargs.update(dict({'key':key,
                      'parent_name':self.name,
                      'parent_name_obj':self.name_obj}))
-        if isinstance(value, Object):
-            value=value.todict()
-        kwargs['val']=value
+        if hasattr(value, 'to_dict'):
+            value=value.to_dict()
+        kwargs['value']=value
         send(parse('set_'+self.func,
                    kwargs=kwargs))
     
@@ -326,6 +336,9 @@ class Material:
         self.shadernodes_dimensions[res.name]=[i*dx, j*dy]
         return res
     
+    def get_shader(self, name):
+        return ShaderNode(parent=self.material_object, name=name)
+    
     def coordinate_expression(self, exp, input_shader=None, special_keys=None):
         e=Expression(content=exp, tokens=[])
         if not e.isleaf():
@@ -410,11 +423,33 @@ class Material:
                 alpha=int(color[7:9], 16)/256.
             return [int(color[i:i+2], 16)/256. for i in [1,3,5]] +[alpha]
     
+    def load_image_shader_dir(self, directory):
+        BSDF=self.get_shader('Principled BSDF')
+        output=self.get_shader('Material Output')
+        root='-'.join(os.path.split(directory)[1].split('-')[:-1])
+        colornode=self.add_shader('Image')
+        colornode.properties['image']=Image(os.path.join(directory, root+'_Color.jpg'))
+        BSDF.inputs['Base Color']=colornode.outputs['Color']
+        metalnode=self.add_shader('Image')
+        metalnode.properties['image']=Image(os.path.join(directory, root+'_Metalness.jpg'))
+        BSDF.inputs['Metallic']=metalnode.outputs['Color']
+        roughnessnode=self.add_shader('Image')
+        roughnessnode.properties['image']=Image(os.path.join(directory, root+'_Roughness.jpg'))
+        BSDF.inputs['Roughness']=roughnessnode.outputs['Color']
+        normalnode=self.add_shader('Image')
+        normalnode.properties['image']=Image(os.path.join(directory, root+'_NormalGL.jpg'))
+        BSDF.inputs['Normal']=normalnode.outputs['Color']
+        displacementnode=self.add_shader('Image')
+        displacementnode.properties['image']=Image(os.path.join(directory, root+'_Displacement.jpg'))
+        output.inputs['Displacement']=displacementnode.outputs['Color']
+        
+    
 class Object:
     
     def __init__(self, name_obj=None, **kwargs):
         if name_obj is not None:
             self.name_obj=name_obj
+        self._properties=PropertyDict('', self.name_obj, func='object_property')
     
     def assign_material(self, material):
         kwargs = dict({'name_obj':self.name_obj,
@@ -447,10 +482,14 @@ class Object:
         self.assign_constraint(constraint_type='COPY_LOCATION')
         self.constraint.properties['target']=target
     
-    def todict(self):
+    def to_dict(self):
         return dict({'name_obj':self.name_obj})
-        
     
+    @property
+    def properties(self):
+        return self._properties
+        
+    '''
     @property
     def location(self):
         kwargs = dict({'name_obj':self.name_obj})
@@ -496,7 +535,7 @@ class Object:
                        'scale':val})
         res=dict({'kwargs':kwargs, 'args':[],
                   'command':'set_object_scale'})
-        send(json.dumps(res))
+        send(json.dumps(res))'''
 
 class Camera(Object):
     
@@ -546,7 +585,7 @@ class Curve(Object):
         
 class Plane(Object):
     
-    def __init__(self, name, location, size):
+    def __init__(self, name='plane', location=[0.,0.,0.], size=10):
         self.add_plane(name, location, size)
         
     def add_plane(self, name, location, size):
@@ -563,44 +602,30 @@ class Plane(Object):
         
 class Light(Object):
     
-    def __init__(self, name, location, power, radius=0.25):
-        self.add_light(name, location, power, radius)
+    def __init__(self, name='light', location=[0.,0.,0.],
+                 power=2, radius=0.25, light_type='POINT'):
+        self.add_light(name, location, power, radius, light_type=light_type)
+        self._properties=PropertyDict(self.name,
+                                      self.name_obj,
+                                      func='light_property')
+        self.properties['type']=light_type
         
-    def add_light(self, name, location, power, radius):
+    def add_light(self, name, location, power, radius, light_type='POINT'):
         res=dict()
         kwargs = dict()
         kwargs['location']=location
         kwargs['power']=power
         kwargs['radius']=radius
         kwargs['name']=name
-        res['type']='light'
+        res['light_type']=light_type
         res['args']=[]
         res['command']='create_light'
         res['kwargs']=kwargs
         self.name, self.name_obj=ask(json.dumps(res))
-        
-    @property
-    def power(self):
-        res = dict()
-        kwargs = dict()
-        kwargs['name']=self.name
-        kwargs['name_obj']=self.name_obj
-        res['command']='get_light_power'
-        res['args']=[]
-        res['kwargs']=kwargs
-        return ask(json.dumps(res))
     
-    @power.setter
-    def power(self, val):
-        res = dict()
-        kwargs = dict()
-        kwargs['name']=self.name
-        kwargs['name_obj']=self.name_obj
-        kwargs['power']=val
-        res['command']='set_light_power'
-        res['args']=[]
-        res['kwargs']=kwargs
-        send(json.dumps(res))
+    @property
+    def properties(self):
+        return self._properties
         
 
 class Mesh:
@@ -621,7 +646,7 @@ class Mesh:
             points, cells = self.mesh.points, self.mesh.cells
             res=dict()
             kwargs = dict()
-            kwargs['points']=[[coord for coord in p] for p in points]
+            kwargs['points']=[[float(coord) for coord in p] for p in points]
             kwargs['cells']=[]
             for celltype in cells:
                 if celltype.type=='triangle':
