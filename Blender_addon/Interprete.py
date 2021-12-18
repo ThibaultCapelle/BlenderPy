@@ -19,20 +19,22 @@ class Interprete:
             getattr(self, cmd['command'])(*cmd['args'], **cmd['kwargs'])
     
     def delete_all(self, connection=None):
-        objs = [ob for ob in bpy.context.scene.objects]
-        bpy.ops.object.delete({"selected_objects": objs})
+        #objs = [ob for ob in bpy.context.scene.objects]
+        #bpy.ops.object.delete({"selected_objects": objs})
+        for block in bpy.data.objects:
+            bpy.data.objects.remove(block, do_unlink=True)
+        for block in bpy.data.lights:
+            bpy.data.lights.remove(block, do_unlink=True)
+        for block in bpy.data.cameras:
+            bpy.data.cameras.remove(block, do_unlink=True)
         for block in bpy.data.meshes:
-            if block.users == 0:
-                bpy.data.meshes.remove(block)
+            bpy.data.meshes.remove(block, do_unlink=True)
         for block in bpy.data.materials:
-            if block.users == 0:
-                bpy.data.materials.remove(block)
+            bpy.data.materials.remove(block, do_unlink=True)
         for block in bpy.data.textures:
-            if block.users == 0:
-                bpy.data.textures.remove(block)
+            bpy.data.textures.remove(block, do_unlink=True)
         for block in bpy.data.images:
-            if block.users == 0:
-                bpy.data.images.remove(block)
+            bpy.data.images.remove(block, do_unlink=True)
         self.server.send_answer(connection, "DONE")
     
     def assign_constraint(self, connection=None,

@@ -6,7 +6,7 @@ Created on Wed Aug 26 09:56:27 2020
 """
 
 import socket, json, os
-from parsing import Expression
+from Blender_server.parsing import Expression
 import numpy as np
 HOST = '127.0.0.1'
 PORT = 20000
@@ -251,7 +251,8 @@ class Modifier:
         kwargs['parent_name']=parent
         self.parent_name=parent
         self.name=ask(parse('create_modifier()', kwargs=kwargs))
-        self._properties=PropertyDict(self.name, self.parent_name, func='modifier_property')
+        self._properties=PropertyDict(self.name, self.parent_name,
+                                      func='modifier_property')
     
     @property
     def properties(self):
@@ -430,9 +431,11 @@ class Material:
         colornode=self.add_shader('Image')
         colornode.properties['image']=Image(os.path.join(directory, root+'_Color.jpg'))
         BSDF.inputs['Base Color']=colornode.outputs['Color']
-        metalnode=self.add_shader('Image')
-        metalnode.properties['image']=Image(os.path.join(directory, root+'_Metalness.jpg'))
-        BSDF.inputs['Metallic']=metalnode.outputs['Color']
+        
+        if root+'_Metalness.jpg' in os.listdir(directory):
+            metalnode=self.add_shader('Image')
+            metalnode.properties['image']=Image(os.path.join(directory, root+'_Metalness.jpg'))
+            BSDF.inputs['Metallic']=metalnode.outputs['Color']
         roughnessnode=self.add_shader('Image')
         roughnessnode.properties['image']=Image(os.path.join(directory, root+'_Roughness.jpg'))
         BSDF.inputs['Roughness']=roughnessnode.outputs['Color']
@@ -450,6 +453,8 @@ class Object:
         if name_obj is not None:
             self.name_obj=name_obj
         self._properties=PropertyDict('', self.name_obj, func='object_property')
+        self.constraints=[]
+        self.modifiers=[]
     
     def assign_material(self, material):
         kwargs = dict({'name_obj':self.name_obj,
@@ -458,23 +463,25 @@ class Object:
     
     def follow_path(self, target=None, use_curve_follow=True,
                     forward_axis='FORWARD_X'):
-        self.assign_constraint(constraint_type='FOLLOW_PATH')
-        self.constraint.properties['target']=target
-        self.constraint.properties['use_curve_follow']=use_curve_follow
-        self.constraint.properties['forward_axis']=forward_axis
+        constraint=self.assign_constraint(constraint_type='FOLLOW_PATH')
+        constraint.properties['target']=target
+        constraint.properties['use_curve_follow']=use_curve_follow
+        constraint.properties['forward_axis']=forward_axis
+        self.constraints.append(constraint)
     
     def assign_constraint(self, constraint_type='FOLLOW_PATH', **kwargs):
-        self.constraint=Constraint(parent=self._blender_mesh.name_obj,
+        return Constraint(parent=self._blender_mesh.name_obj,
                                    constraint_type=constraint_type,
                                    **kwargs)
     
     def curve_modifier(self, target=None, deform_axis='POS_X'):
-        self.assign_modifier(modifier_type='CURVE')
-        self.modifier.properties['object']=target
-        self.modifier.properties['deform_axis']=deform_axis
+        modifier=self.assign_modifier(modifier_type='CURVE')
+        modifier.properties['object']=target
+        modifier.properties['deform_axis']=deform_axis
+        self.modifiers.append(modifier)
     
     def assign_modifier(self, modifier_type='CURVE', **kwargs):
-        self.modifier=Modifier(parent=self._blender_mesh.name_obj,
+        return Modifier(parent=self._blender_mesh.name_obj,
                                    modifier_type=modifier_type,
                                    **kwargs)
     
@@ -488,54 +495,6 @@ class Object:
     @property
     def properties(self):
         return self._properties
-        
-    '''
-    @property
-    def location(self):
-        kwargs = dict({'name_obj':self.name_obj})
-        res=dict({'kwargs':kwargs, 'args':[],
-                  'command':'get_object_location'})
-        return ask(json.dumps(res))
-    
-    @location.setter
-    def location(self, val):
-        if len(val)<3:
-            val=list(val)+[0. for i in range(3-len(val))]
-        kwargs = dict({'name_obj':self.name_obj,
-                       'location':val})
-        res=dict({'kwargs':kwargs, 'args':[],
-                  'command':'set_object_location'})
-        send(json.dumps(res))
-        
-    @property
-    def rotation(self):
-        kwargs = dict({'name_obj':self.name_obj})
-        res=dict({'kwargs':kwargs, 'args':[],
-                  'command':'get_object_rotation'})
-        return ask(json.dumps(res))
-    
-    @rotation.setter
-    def rotation(self, val):
-        kwargs = dict({'name_obj':self.name_obj,
-                       'rotation':val})
-        res=dict({'kwargs':kwargs, 'args':[],
-                  'command':'set_object_rotation'})
-        send(json.dumps(res))
-    
-    @property
-    def scale(self):
-        kwargs = dict({'name_obj':self.name_obj})
-        res=dict({'kwargs':kwargs, 'args':[],
-                  'command':'get_object_scale'})
-        return ask(json.dumps(res))
-    
-    @scale.setter
-    def scale(self, val):
-        kwargs = dict({'name_obj':self.name_obj,
-                       'scale':val})
-        res=dict({'kwargs':kwargs, 'args':[],
-                  'command':'set_object_scale'})
-        send(json.dumps(res))'''
 
 class Camera(Object):
     
