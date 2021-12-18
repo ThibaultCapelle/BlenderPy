@@ -258,6 +258,11 @@ class Modifier:
     def properties(self):
         return self._properties
     
+    def apply(self):
+        if self.properties['type']=='BOOLEAN':
+            kwargs=dict({'name':self.name,
+                         'name_obj':self.parent_name})
+            send(parse('apply_modifier', kwargs=kwargs))
         
     
 class Material:
@@ -481,7 +486,7 @@ class Object:
         self.modifiers.append(modifier)
     
     def assign_modifier(self, modifier_type='CURVE', **kwargs):
-        return Modifier(parent=self._blender_mesh.name_obj,
+        return Modifier(parent=self.name_obj,
                                    modifier_type=modifier_type,
                                    **kwargs)
     

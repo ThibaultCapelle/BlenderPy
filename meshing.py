@@ -9,7 +9,7 @@ from shapely import geometry
 import triangle
 import pygmsh
 import numpy as np
-from sending_data import (Material, Mesh, delete_all,
+from Blender_server.sending_data import (Material, Mesh, delete_all,
                           Light, Camera, Curve, Object,
                           ShaderNode, Plane)
 thick_membrane=0.025
@@ -41,6 +41,7 @@ class Plane_Geom(Object):
                                     thickness=self.thickness,
                                     subdivide=self.subdivide)
         self.name_obj=self._blender_mesh.name_obj
+        super().__init__()
         self._blender_mesh.assign_material(self.material)
     
     def format_line(self, line, gmsh=True):
@@ -177,97 +178,99 @@ class Polygon(Plane_Geom):
 
 class Cylinder(Plane_Geom):
     
-    def __init__(self, radius=1, height=1,
+    def __init__(self, name='Cylinder', radius=1, height=1,
                  **kwargs):
-        self.line=geometry.Point(0,0).buffer(1.0).exterior
-        super().__init__(thickness=height, **kwargs)
+        self.line=geometry.Point(0,0).buffer(radius).exterior
+        super().__init__(name=name, thickness=height, **kwargs)
+        
+if __name__=='__main__':
+        
+    width_antenna=0.5
+    thick_substrate=0.5
+    W_cell, H_cell = 10, 7.500
+    width_SMA, length_SMA, width_SMA_bis=1.500, 2.000,  2.000
+    width_cut=.100
+    width_circuit=.120
+    distance_from_side=.300
+    input_gap=.735
+    W_loop, H_loop=1.725,.735
+    edge_loop_distance=.200
     
-width_antenna=0.5
-thick_substrate=0.5
-W_cell, H_cell = 10, 7.500
-width_SMA, length_SMA, width_SMA_bis=1.500, 2.000,  2.000
-width_cut=.100
-width_circuit=.120
-distance_from_side=.300
-input_gap=.735
-W_loop, H_loop=1.725,.735
-edge_loop_distance=.200
-
-
-
-
-delete_all()
-
-path=Path([(0,0), (1,0), (1,1), (0,1), (0,0)], 0.1, name='yolo',
-           thickness=None, cap_style='square', join_style='mitre',
-           characteristic_length_max=1e-1)
-path.send_to_blender(use_triangle=True)
-
-
-antenna=Path([(distance_from_side,
-                      distance_from_side),
-                    (distance_from_side,length_SMA+distance_from_side),
-                    (W_cell/2-input_gap/2,length_SMA+distance_from_side),
-                    (W_cell/2-input_gap/2,H_cell-edge_loop_distance-H_loop),
-                    (W_cell/2-W_loop/2,H_cell-edge_loop_distance-H_loop),
-                    (W_cell/2-W_loop/2,H_cell-edge_loop_distance),
-                    (W_cell/2+W_loop/2,H_cell-edge_loop_distance),
-                    (W_cell/2+W_loop/2,H_cell-edge_loop_distance-H_loop),
-                    (W_cell/2+input_gap/2,H_cell-edge_loop_distance-H_loop),
-                    (W_cell/2+input_gap/2,length_SMA+distance_from_side),
-                    (W_cell/2+width_SMA/2+distance_from_side,
-                     length_SMA+distance_from_side),
-                    (W_cell/2+width_SMA/2+distance_from_side,
-                     distance_from_side)][::-1], width_circuit,
-                     thickness=0.1, subdivide=2)
-arrow=Arrow(length=5, width=0.15, head_width=0.3, thickness=None)
-arrow.send_to_blender()
-curve_2=Curve([[p[0], p[1], 0.0] for p in antenna.points], name='translate')
-#curve=Curve([[p[0], p[1], np.cos(i/100*np.pi)] for i,p in enumerate(antenna.points)], name='hello')
-#curve=Curve([(theta,0.5*np.sin(theta)*np.sin(30*theta),0) for theta in np.linspace(0, 10*np.pi, 3000)], name='hello')
-
-antenna.send_to_blender(use_triangle=True)
-#curve.location=list(antenna.points[-1])+[0.]
-#arrow.follow_path(curve_2)
-arrow.curve_modifier(curve_2)
-'''c=Cylinder(height=arrow.length,
-           subdivide=10,
-           radius=arrow.width)
-c.send_to_blender(use_triangle=True)
-c.rotation=[0,np.pi/2,0]
-c.curve_modifier(curve_2)
-c.copy_location(arrow)'''
-metal=Material('imported', '#6B5252')
-metal.load_image_shader_dir(r'C:\Users\Thibault\Downloads\Metal005_1K-JPG')
-glow=Material("glow", '#D70A0A')
-emission=glow.add_shader('Emission')
-emission.inputs['Strength']=40.
-glow.get_shader('Material Output').inputs['Surface']=emission.outputs['Emission']
-arrow.assign_material(glow)
-arrow.location=[0.,0.,0.2]
-antenna.assign_material(metal)
-light=Light(light_type='SUN', power=2, radius=3, location=[1,0,4])
-plane=Plane(size=100, location=[0., 0., -0.1])
-
-#%%
-from sending_data import (Material)
-
-glow=Material("glow", '#D70A0A')
-coordinates=glow.add_shader('Texture_coordinates')
-separate=glow.add_shader('Separate_XYZ')
-separate.inputs['Vector']=coordinates.outputs['Generated']
-special_keys=dict({'X':separate.outputs['X'], 'Y':separate.outputs['Y']})
-math_shader=glow.coordinate_expression('4e^(-(X^2+Y^2)/(0.1)^2)',
-                                  special_keys=special_keys)
-emission=glow.add_shader('Emission')
-emission.inputs['Strength']=math_shader.outputs['Value']
-add_shader=glow.add_shader('Add')
-add_shader.inputs[0]=glow.get_shader('Principled BSDF').outputs['BSDF']
-add_shader.inputs[1]=emission.outputs['Emission']
-s=glow.get_shader('Material Output')
-s.inputs['Surface']=add_shader.outputs['Shader']
-#%%
-import meshio
-from sending_data import Mesh
-mesh=Mesh(mesh=meshio.read(r'Y:\membrane\Equipment\Homebuilt\Machined parts\Microwave_cavity_push_project\coupling_from_below\bottom.STL'),
-          name='bottom')
+    
+    
+    
+    delete_all()
+    
+    path=Path([(0,0), (1,0), (1,1), (0,1), (0,0)], 0.1, name='yolo',
+               thickness=None, cap_style='square', join_style='mitre',
+               characteristic_length_max=1e-1)
+    path.send_to_blender(use_triangle=True)
+    
+    
+    antenna=Path([(distance_from_side,
+                          distance_from_side),
+                        (distance_from_side,length_SMA+distance_from_side),
+                        (W_cell/2-input_gap/2,length_SMA+distance_from_side),
+                        (W_cell/2-input_gap/2,H_cell-edge_loop_distance-H_loop),
+                        (W_cell/2-W_loop/2,H_cell-edge_loop_distance-H_loop),
+                        (W_cell/2-W_loop/2,H_cell-edge_loop_distance),
+                        (W_cell/2+W_loop/2,H_cell-edge_loop_distance),
+                        (W_cell/2+W_loop/2,H_cell-edge_loop_distance-H_loop),
+                        (W_cell/2+input_gap/2,H_cell-edge_loop_distance-H_loop),
+                        (W_cell/2+input_gap/2,length_SMA+distance_from_side),
+                        (W_cell/2+width_SMA/2+distance_from_side,
+                         length_SMA+distance_from_side),
+                        (W_cell/2+width_SMA/2+distance_from_side,
+                         distance_from_side)][::-1], width_circuit,
+                         thickness=0.1, subdivide=2)
+    arrow=Arrow(length=5, width=0.15, head_width=0.3, thickness=None)
+    arrow.send_to_blender()
+    curve_2=Curve([[p[0], p[1], 0.0] for p in antenna.points], name='translate')
+    #curve=Curve([[p[0], p[1], np.cos(i/100*np.pi)] for i,p in enumerate(antenna.points)], name='hello')
+    #curve=Curve([(theta,0.5*np.sin(theta)*np.sin(30*theta),0) for theta in np.linspace(0, 10*np.pi, 3000)], name='hello')
+    
+    antenna.send_to_blender(use_triangle=True)
+    #curve.location=list(antenna.points[-1])+[0.]
+    #arrow.follow_path(curve_2)
+    arrow.curve_modifier(curve_2)
+    '''c=Cylinder(height=arrow.length,
+               subdivide=10,
+               radius=arrow.width)
+    c.send_to_blender(use_triangle=True)
+    c.rotation=[0,np.pi/2,0]
+    c.curve_modifier(curve_2)
+    c.copy_location(arrow)'''
+    metal=Material('imported', '#6B5252')
+    metal.load_image_shader_dir(r'C:\Users\Thibault\Downloads\Concrete003_1K-JPG')
+    glow=Material("glow", '#D70A0A')
+    emission=glow.add_shader('Emission')
+    emission.inputs['Strength']=40.
+    glow.get_shader('Material Output').inputs['Surface']=emission.outputs['Emission']
+    arrow.assign_material(glow)
+    arrow.location=[0.,0.,0.2]
+    antenna.assign_material(metal)
+    light=Light(light_type='SUN', power=2, radius=3, location=[1,0,4])
+    plane=Plane(size=100, location=[0., 0., -0.1])
+    
+    #%%
+    from sending_data import (Material)
+    
+    glow=Material("glow", '#D70A0A')
+    coordinates=glow.add_shader('Texture_coordinates')
+    separate=glow.add_shader('Separate_XYZ')
+    separate.inputs['Vector']=coordinates.outputs['Generated']
+    special_keys=dict({'X':separate.outputs['X'], 'Y':separate.outputs['Y']})
+    math_shader=glow.coordinate_expression('4e^(-(X^2+Y^2)/(0.1)^2)',
+                                      special_keys=special_keys)
+    emission=glow.add_shader('Emission')
+    emission.inputs['Strength']=math_shader.outputs['Value']
+    add_shader=glow.add_shader('Add')
+    add_shader.inputs[0]=glow.get_shader('Principled BSDF').outputs['BSDF']
+    add_shader.inputs[1]=emission.outputs['Emission']
+    s=glow.get_shader('Material Output')
+    s.inputs['Surface']=add_shader.outputs['Shader']
+    #%%
+    import meshio
+    from sending_data import Mesh
+    mesh=Mesh(mesh=meshio.read(r'Y:\membrane\Equipment\Homebuilt\Machined parts\Microwave_cavity_push_project\coupling_from_below\bottom.STL'),
+              name='bottom')

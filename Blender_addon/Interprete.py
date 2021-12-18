@@ -190,15 +190,15 @@ class Interprete:
     
     def set_object_property(self,key=None,
                              value=None,
-                             parent_name=None,
+                             parent_name_obj=None,
                              connection=None, **kwargs):
-        obj=bpy.data.objects[parent_name]
+        obj=bpy.data.objects[parent_name_obj]
         setattr(obj, key, value)
         
     def get_object_property(self, key=None,
-                                  parent_name=None,
+                                  parent_name_obj=None,
                                   connection=None, **kwargs):
-        obj=bpy.data.objects[parent_name]
+        obj=bpy.data.objects[parent_name_obj]
         res=getattr(obj, key)
         self.server.send_answer(connection,
                                     res)
@@ -238,6 +238,17 @@ class Interprete:
                                           'name':input_node.name,
                                           'socket_name':input_socket.name,
                                           'shader_socket_type':'output'}))
+    
+    def apply_modifier(self, name=None,
+                       name_obj=None,
+                       connection=None,
+                       modifier_type='BOOLEAN',
+                       **kwargs):
+        obj=bpy.data.objects[name_obj]
+        ctx = bpy.context.copy()
+        ctx['object'] = obj
+        ctx['modifier']= obj.modifiers[name]
+        bpy.ops.object.modifier_apply(ctx, modifier=modifier_type)
     
     def get_shadernode_output(self, key=None, 
                              material_name=None, 
