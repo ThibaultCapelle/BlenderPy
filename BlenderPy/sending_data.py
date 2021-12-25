@@ -5,8 +5,8 @@ Created on Wed Aug 26 09:56:27 2020
 @author: Thibault
 """
 
-import socket, json, os
-from Blender_server.parsing import Expression
+import socket, json, os, time
+from BlenderPy.parsing import Expression
 import numpy as np
 HOST = '127.0.0.1'
 PORT = 20000
@@ -76,6 +76,27 @@ def parse(message, kwargs=None, **keyargs):
 
 def delete_all():
     assert ask(parse('delete_all()'))=="DONE"
+    
+class Scene:
+    
+    def __init__(self):
+        self._properties=PropertyDict(func='scene_property')
+        
+    @property
+    def frame_start(self):
+        return self._properties['frame_start']
+    
+    @frame_start.setter
+    def frame_start(self, val):
+        self._properties['frame_start']=val
+        
+    @property
+    def frame_end(self):
+        return self._properties['frame_end']
+    
+    @frame_end.setter
+    def frame_end(self, val):
+        self._properties['frame_end']=val
 
 class ShaderDict(dict):
     
@@ -215,7 +236,7 @@ class Constraint:
     
 class PropertyDict(dict):
     
-    def __init__(self, name, name_obj, func=None, **kwargs):
+    def __init__(self, name=None, name_obj=None, func=None, **kwargs):
         super().__init__()
         self.name=name
         self.name_obj=name_obj
@@ -262,6 +283,7 @@ class Modifier:
         if self.properties['type']=='BOOLEAN':
             kwargs=dict({'name':self.name,
                          'name_obj':self.parent_name})
+            time.sleep(0.1)
             send(parse('apply_modifier', kwargs=kwargs))
         
     
@@ -522,6 +544,7 @@ class Cube(Object):
     
     def __init__(self, name, location, size):
         self.add_cube(name, location, size)
+        super().__init__()
         
     def add_cube(self, name, location, size):
         res=dict()
@@ -534,6 +557,8 @@ class Cube(Object):
         res['command']='create_cube'
         res['kwargs']=kwargs
         self.name, self.name_obj=ask(json.dumps(res))
+
+        
 
 class Curve(Object):
     
@@ -657,6 +682,23 @@ class Mesh:
                        'center_scale':center_scale,
                        'center_rotation':center_rotation})
         assert ask(parse('make_oscillations()', kwargs=kwargs))=="DONE"
+    
+    def insert_keyframe(self, frame='current'):
+         kwargs = dict({'name_msh':self.name_msh, 'frame':frame})
+         send(parse('insert_keyframe_mesh()', kwargs=kwargs))
+    
+    @property
+    def vertices(self):
+        kwargs = dict({'name_msh':self.name_msh})
+        return np.array(ask(parse('get_vertices()', kwargs=kwargs)))
+    
+    @vertices.setter
+    def vertices(self, val):
+        if hasattr(val, 'tolist'):
+            val=val.tolist()
+        kwargs = dict({'name_msh':self.name_msh,
+                       'val':val})
+        send(parse('set_vertices()', kwargs=kwargs))
     
     @property
     def cursor_location(self):

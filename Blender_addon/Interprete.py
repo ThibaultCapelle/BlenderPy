@@ -412,7 +412,32 @@ class Interprete:
             material.node_tree.links.new(SeparateXYZ.outputs['Z'],
                                          ColorRamp.inputs['Fac'])
     
+    def get_scene_property(self, key=None,
+                           connection=None, **kwargs):
+        self.server.send_answer(connection, getattr(bpy.context.scene, key))
     
+    def set_scene_property(self, key=None, value=None,
+                           connection=None, **kwargs):
+        setattr(bpy.context.scene, key, value)
+    
+    def get_vertices(self, name_msh=None,
+                     connection=None, **kwargs):
+        self.server.send_answer(connection,
+                                [[v.co.x, v.co.y, v.co.z] for v in bpy.data.meshes[name_msh].vertices.values()])
+        
+    def set_vertices(self, name_msh=None,
+                     connection=None, val=None, **kwargs):
+        for co,v in zip(val, bpy.data.meshes[name_msh].vertices.values()):
+            v.co=co
+    
+    def insert_keyframe_mesh(self, name_msh=None,
+                     connection=None, frame='current', 
+                     **kwargs):
+        if frame=='current':
+            frame=bpy.context.scene.frame_current
+        for v in bpy.data.meshes[name_msh].vertices.values():
+            v.keyframe_insert('co', frame=frame)
+            
     def make_oscillations(self, **kwargs):
         scene=bpy.context.scene
         scene.frame_end=kwargs['N_frames']

@@ -9,7 +9,7 @@ from shapely import geometry
 import triangle
 import pygmsh
 import numpy as np
-from Blender_server.sending_data import (Material, Mesh, delete_all,
+from BlenderPy.sending_data import (Material, Mesh, delete_all,
                           Light, Camera, Curve, Object,
                           ShaderNode, Plane)
 thick_membrane=0.025
@@ -182,6 +182,15 @@ class Cylinder(Plane_Geom):
                  **kwargs):
         self.line=geometry.Point(0,0).buffer(radius).exterior
         super().__init__(name=name, thickness=height, **kwargs)
+        self.send_to_blender(use_triangle=True)
+
+class Box(Plane_Geom):
+    
+    def __init__(self, name='Box', Lx=1, Ly=1, Lz=1, **kwargs):
+        self.line=geometry.box(-Lx/2,-Ly/2,Lx/2, Ly/2).exterior
+        super().__init__(name=name, thickness=Lz, **kwargs)
+        self.send_to_blender(use_triangle=True)
+        
         
 if __name__=='__main__':
         
