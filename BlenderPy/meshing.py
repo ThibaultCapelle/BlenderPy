@@ -71,20 +71,6 @@ class Plane_Geom(Object):
                 xy.remove(xy[-1])
             return xy
     
-    def polygon_area(self, xs, ys):
-        """https://en.wikipedia.org/wiki/Centroid#Of_a_polygon"""
-        # https://stackoverflow.com/a/30408825/7128154
-        return 0.5 * (np.dot(xs, np.roll(ys, 1)) - np.dot(ys, np.roll(xs, 1)))
-
-    def polygon_centroid(self, points):
-        """https://en.wikipedia.org/wiki/Centroid#Of_a_polygon"""
-        xs, ys=[p[0] for p in points], [p[1] for p in points]
-        xy = np.array([xs, ys])
-        c = np.dot(xy + np.roll(xy, 1, axis=1),
-                   xs * np.roll(ys, 1) - np.roll(xs, 1) * ys
-                   ) / (6 * self.polygon_area(xs, ys))
-        return c
-    
     def generate_polygon_from_shapely_LineString(self, poly):
         if hasattr(poly, 'exterior'):
             self.xy=self.format_line(poly.exterior)
@@ -104,6 +90,9 @@ class Plane_Geom(Object):
                 
             return self.poly
     
+    def generate_shapely_polygon_from_points(self, points):
+        return geometry.Polygon(points[0], holes=points[1])
+        
     def generate_triangulation_from_point_list(self, points):
         xy=points[0]
         self._to_triangle_vertices=xy
@@ -118,6 +107,7 @@ class Plane_Geom(Object):
             self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
                                        [("triangle", t['triangles'].tolist())])
         else:
+            print('we have a fucking hole')
             holes=[]
             for hole in points[1]:
                 holes.append(hole.pop(-1))
@@ -167,6 +157,64 @@ class Plane_Geom(Object):
                            opts="p")
             self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
                                        [("triangle", t['triangles'].tolist())])
+    
+    @property
+    def vertices(self):
+        return self._blender_mesh.vertices
+    
+    @vertices.setter
+    def vertices(self, val):
+        self._blender_mesh.vertices=val
+    
+    @property
+    def xmin(self):
+        return np.min(self.vertices[:,0])
+    
+    @property
+    def xmax(self):
+        return np.max(self.vertices[:,0])
+    
+    @property
+    def ymin(self):
+        return np.min(self.vertices[:,1])
+    
+    @property
+    def ymax(self):
+        return np.max(self.vertices[:,1])
+    
+    @property
+    def zmin(self):
+        return np.min(self.vertices[:,2])
+    
+    @property
+    def zmax(self):
+        return np.max(self.vertices[:,2])
+    
+    @xmin.setter
+    def xmin(self, val):
+        self.x+=val-self.xmin
+    
+    @ymin.setter
+    def ymin(self, val):
+        self.y+=val-self.ymin
+        
+    @zmin.setter
+    def zmin(self, val):
+        self.z+=val-self.zmin
+        
+    @xmax.setter
+    def xmax(self, val):
+        self.x+=val-self.xmax
+        
+    @ymax.setter
+    def ymax(self, val):
+        self.y+=val-self.ymax
+        
+    @zmax.setter
+    def zmax(self, val):
+        self.z+=val-self.zmax
+    
+    
             
     
 class Path(Plane_Geom):

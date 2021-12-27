@@ -1,4 +1,4 @@
-import bpy, json
+import bpy, json, time
 
 import bmesh 
 from mathutils import Vector 
@@ -36,6 +36,9 @@ class Interprete:
         for block in bpy.data.images:
             bpy.data.images.remove(block, do_unlink=True)
         self.server.send_answer(connection, "DONE")
+    
+    def remove_object(self, connection=None, name_obj=None, **kwargs):
+        bpy.data.objects.remove(bpy.data.objects[name_obj], do_unlink=True)
     
     def assign_constraint(self, connection=None,
                           key=None,
@@ -437,6 +440,7 @@ class Interprete:
             frame=bpy.context.scene.frame_current
         for v in bpy.data.meshes[name_msh].vertices.values():
             v.keyframe_insert('co', frame=frame)
+            time.sleep(0.001)
             
     def make_oscillations(self, **kwargs):
         scene=bpy.context.scene

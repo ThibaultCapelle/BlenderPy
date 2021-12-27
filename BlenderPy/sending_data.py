@@ -12,7 +12,7 @@ HOST = '127.0.0.1'
 PORT = 20000
 
 def send(message):
-    print('len : {:010x}'.format(len(message)))
+    #print('len : {:010x}'.format(len(message)))
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
         s.sendall(('{:010x}'.format(len(message))+message).encode())
@@ -22,7 +22,7 @@ def receive_all(sock, n):
     data = bytearray()
     i=1
     while len(data) < n:
-        print('packet number {:}'.format(i))
+        #print('packet number {:}'.format(i))
         packet = sock.recv(n - len(data))
         if not packet:
             return None
@@ -36,7 +36,7 @@ def ask(message):
         s.sendall(('{:010x}'.format(len(message))+message).encode())
         raw_msglen = s.recv(10)
         msglen = int(raw_msglen.decode(),16)
-        print(msglen)
+        #print(msglen)
         data=receive_all(s, msglen)
         return json.loads(data)['content']
 
@@ -71,7 +71,7 @@ def parse(message, kwargs=None, **keyargs):
         res['args']=args
         res['kwargs']=kwargs
     msg=json.dumps(res)
-    print(msg)
+    #print(msg)
     return msg
 
 def delete_all():
@@ -524,6 +524,9 @@ class Object:
     def to_dict(self):
         return dict({'name_obj':self.name_obj})
     
+    def remove(self):
+        send(parse('remove_object', kwargs=self.to_dict()))
+    
     @property
     def properties(self):
         return self._properties
@@ -693,7 +696,7 @@ class Mesh:
             for celltype in cells:
                 if celltype[0]=='triangle':
                     kwargs['cells']+=[[int(ind) for ind in cell] for cell in celltype[1]]
-            print(kwargs)
+            #print(kwargs)
          
         kwargs['name']=name
         kwargs['thickness']=thickness

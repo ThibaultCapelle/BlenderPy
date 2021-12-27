@@ -46,12 +46,19 @@ for cylinder in [cylinder1, cylinder2, cylinder3, cylinder4]:
     boolean.apply()
 #%%
 from BlenderPy import meshing, sending_data
+import numpy as np
 sending_data.delete_all()
-box=meshing.Box()
-verts=box._blender_mesh.vertices   
+box=meshing.Box(Lx=10, Ly=10, Lz=1, refine=0.1)
+#%%
 box._blender_mesh.insert_keyframe(frame=0) 
-verts[0][1]=3
+print('yolo')
+verts=box._blender_mesh.vertices   
+#%%
+for v in verts:
+    v[2]+=np.sin(np.pi/10*v[0])*np.sin(np.pi/10*v[1])
+
+box._blender_mesh.insert_keyframe(frame=0) 
+
 box._blender_mesh.vertices=verts
 box._blender_mesh.insert_keyframe(frame=100) 
-print(sending_data.Scene().frame_start)
-print(sending_data.Scene().frame_end)
+sending_data.Scene().frame_end= 500
