@@ -512,6 +512,11 @@ class Object:
                                    modifier_type=modifier_type,
                                    **kwargs)
     
+    def subtract(self, target):
+        boolean=self.assign_modifier(modifier_type='BOOLEAN')
+        boolean.properties['object']=target
+        boolean.apply()
+    
     def copy_location(self, target=None):
         self.assign_constraint(constraint_type='COPY_LOCATION')
         self.constraint.properties['target']=target
@@ -522,6 +527,44 @@ class Object:
     @property
     def properties(self):
         return self._properties
+    
+    @property
+    def location(self):
+        return self.properties['location']
+    
+    @location.setter
+    def location(self, val):
+        self.properties['location']=val
+    
+    @property
+    def x(self):
+        return self.location[0]
+    
+    @property
+    def y(self):
+        return self.location[1]
+    
+    @property
+    def z(self):
+        return self.location[2]
+    
+    @x.setter
+    def x(self, val):
+        location=self.location
+        location[0]=val
+        self.location=location
+    
+    @y.setter
+    def y(self, val):
+        location=self.location
+        location[1]=val
+        self.location=location
+    
+    @z.setter
+    def z(self, val):
+        location=self.location
+        location[2]=val
+        self.location=location
 
 class Camera(Object):
     

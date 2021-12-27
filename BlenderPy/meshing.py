@@ -6,7 +6,7 @@ Created on Wed Oct 20 10:50:42 2021
 """
 
 from shapely import geometry
-import triangle
+import triangle, pya
 import pygmsh
 import numpy as np
 from BlenderPy.sending_data import (Material, Mesh, delete_all,
@@ -21,7 +21,8 @@ class Plane_Geom(Object):
                  characteristic_length_max=0.03,
                  material=Material('nitrure', '#F5D15B', alpha=0.3, blend_method='BLEND',
                  use_backface_culling=True, blend_method_shadow='NONE'),
-                 rounding_decimals=12, subdivide=1):
+                 rounding_decimals=12, subdivide=1, refine=None):
+        self.refine=refine
         self.subdivide=subdivide
         self.name=name
         self.thickness=thickness
@@ -29,15 +30,20 @@ class Plane_Geom(Object):
         self.material=material
         self.rounding_decimals=rounding_decimals
     
-    def send_to_blender(self, use_triangle=False):
-        if not use_triangle:
+    def send_to_blender(self, use_triangle=False, from_external_loading=False):
+        if not use_triangle and not from_external_loading:
             self._pymesh=pygmsh.generate_mesh(self.geom)
             self._blender_mesh=Mesh(mesh=self._pymesh, name=self.name,
                                     thickness=self.thickness,
                                     subdivide=self.subdivide)
-        else:
+        elif use_triangle and not from_external_loading:
             self.generate_triangulation_from_shapely_LineString(self.line)
             self._blender_mesh=Mesh(cells=self.cells, points=self.cell_points, name=self.name,
+                                    thickness=self.thickness,
+                                    subdivide=self.subdivide)
+        else:
+            self._blender_mesh=Mesh(cells=self.cells, points=self.cell_points,
+                                    name=self.name,
                                     thickness=self.thickness,
                                     subdivide=self.subdivide)
         self.name_obj=self._blender_mesh.name_obj
@@ -65,6 +71,20 @@ class Plane_Geom(Object):
                 xy.remove(xy[-1])
             return xy
     
+    def polygon_area(self, xs, ys):
+        """https://en.wikipedia.org/wiki/Centroid#Of_a_polygon"""
+        # https://stackoverflow.com/a/30408825/7128154
+        return 0.5 * (np.dot(xs, np.roll(ys, 1)) - np.dot(ys, np.roll(xs, 1)))
+
+    def polygon_centroid(self, points):
+        """https://en.wikipedia.org/wiki/Centroid#Of_a_polygon"""
+        xs, ys=[p[0] for p in points], [p[1] for p in points]
+        xy = np.array([xs, ys])
+        c = np.dot(xy + np.roll(xy, 1, axis=1),
+                   xs * np.roll(ys, 1) - np.roll(xs, 1) * ys
+                   ) / (6 * self.polygon_area(xs, ys))
+        return c
+    
     def generate_polygon_from_shapely_LineString(self, poly):
         if hasattr(poly, 'exterior'):
             self.xy=self.format_line(poly.exterior)
@@ -84,6 +104,35 @@ class Plane_Geom(Object):
                 
             return self.poly
     
+    def generate_triangulation_from_point_list(self, points):
+        xy=points[0]
+        self._to_triangle_vertices=xy
+        self._to_triangle_segments=[(len(xy)-1,0)]+\
+                        [(i,i+1) for i in range(len(xy)-1)]
+        if len(points[1])==0:
+            t=triangle.triangulate({'vertices': self._to_triangle_vertices,
+                        'segments': self._to_triangle_segments},
+                       opts="p")
+            if self.refine is not None:
+                t=triangle.triangulate(t, opts="pra{:}".format(self.refine))
+            self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
+                                       [("triangle", t['triangles'].tolist())])
+        else:
+            holes=[]
+            for hole in points[1]:
+                holes.append(hole.pop(-1))
+                N=len(self._to_triangle_vertices)
+                self._to_triangle_segments+=[(N+len(hole)+-1,N)]+\
+                        [(N+i,N+i+1) for i in range(len(hole)-1)]
+                self._to_triangle_vertices+=hole
+                
+            t=triangle.triangulate({'vertices': self._to_triangle_vertices,
+                            'segments': self._to_triangle_segments,
+                            'holes':holes},
+                           opts="p")
+            self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
+                                       [("triangle", t['triangles'].tolist())])
+            
     def generate_triangulation_from_shapely_LineString(self, poly):
         if hasattr(poly, 'exterior'):
             self.xy=self.format_line(poly.exterior, gmsh=False)
@@ -98,6 +147,8 @@ class Plane_Geom(Object):
             t=triangle.triangulate({'vertices': self._to_triangle_vertices,
                         'segments': self._to_triangle_segments},
                        opts="p")
+            if self.refine is not None:
+                t=triangle.triangulate(t, opts="pra{:}".format(self.refine))
             self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
                                        [("triangle", t['triangles'].tolist())])
         else:
@@ -190,7 +241,7 @@ class Box(Plane_Geom):
         self.line=geometry.box(-Lx/2,-Ly/2,Lx/2, Ly/2).exterior
         super().__init__(name=name, thickness=Lz, **kwargs)
         self.send_to_blender(use_triangle=True)
-        
+
         
 if __name__=='__main__':
         
