@@ -697,7 +697,6 @@ class Mesh:
             for celltype in cells:
                 if celltype[0]=='triangle':
                     kwargs['cells']+=[[int(ind) for ind in cell] for cell in celltype[1]]
-            #print(kwargs)
          
         kwargs['name']=name
         kwargs['thickness']=thickness

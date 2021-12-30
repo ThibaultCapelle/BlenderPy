@@ -7,8 +7,42 @@ Created on Sun Dec 26 15:54:46 2021
 
 import pya
 import numpy as np
-
+import struct
 from BlenderPy.meshing import Plane_Geom
+from BlenderPy.sending_data import Mesh
+
+class STLLoader:
+    
+    def __init__(self, filename, **kwargs):
+        self.kwargs=kwargs
+        self.filename=filename
+        with open(self.filename, 'rb') as f:
+            self.header=f.read(80).decode()
+            self.N_triangles=struct.unpack('I', f.read(4))[0]
+            vectors, Ps_s, attrs=[], [], []
+            for i in range(self.N_triangles):
+                vector=list(struct.unpack('fff', f.read(12)))
+                for j in range(3):
+                    Ps_s.append(f.read(12))
+                attr=struct.unpack('H', f.read(2))[0]
+                vectors.append(vector)
+                attrs.append(attr)
+        dict_points=dict()
+        current_index=0
+        self.cells=[]
+        for i in range(self.N_triangles):
+            for j in range(3):
+                P=Ps_s[i*3+j]
+                if P not in dict_points.keys():
+                    dict_points[P]=current_index
+                    current_index+=1
+            self.cells.append([dict_points[Ps_s[3*i+j]] for j in range(3)])
+        self.new_dict_points={v:struct.unpack('fff',k) for k, v in dict_points.items()}
+    
+    def load(self):
+        return Mesh(mesh=None, cells=[['triangle',self.cells]],
+          points=list(self.new_dict_points.values()), **self.kwargs) 
+
 
 class GDSLoader:
     
