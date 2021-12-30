@@ -6,6 +6,7 @@ Created on Sun Dec 26 15:54:46 2021
 """
 
 import pya
+import numpy as np
 
 from BlenderPy.meshing import Plane_Geom
 
@@ -14,39 +15,54 @@ class GDSLoader:
     def __init__(self, filename=None, xmin=None, 
                  xmax=None, ymin=None,
                  ymax=None, layer=None, scaling=1e-3,
-                 cell_name='TOP', **kwargs):
+                 cell_name='TOP', centering=[0.,0.,0.],
+                 merged=True, **kwargs):
         self.scaling=scaling
         self.filename=filename
+        self.centering=centering
         self.layout=pya.Layout()
         self.layout.read(self.filename)
         dbu=self.layout.dbu
-        box=pya.Region(pya.Box(xmin/dbu, ymin/dbu, xmax/dbu, ymax/dbu))
         cell = self.layout.cell(self.layout.cell_by_name(cell_name))
         for i, layer_info in enumerate(self.layout.layer_infos()):
             if layer_info.layer==layer:
                 layer_ind=i
                 break
         shapes=cell.shapes(layer_ind)
-        region_all=pya.Region(shapes)
-        r=region_all.select_inside(box)
+        shapes_inside_box=[]
+        print(len(list(shapes.each())))
+        print(len(shapes_inside_box))
+        for s in shapes.each():
+            bbox=s.bbox()
+            if bbox.left>xmin/dbu and bbox.right<xmax/dbu and bbox.top<ymax/dbu and bbox.bottom>ymin/dbu:
+                shapes_inside_box.append(s)
+        reg=pya.Region([b.polygon for b in shapes_inside_box])
+        x_center, y_center=(0.5*(reg.bbox().left+reg.bbox().right),
+                            0.5*(reg.bbox().top+reg.bbox().bottom))
+        
+        if centering is None:
+            dx, dy, dz=0.,0.,0.
+        else:
+            dx, dy, dz=(centering[0]/dbu-x_center,
+                        centering[1]/dbu-y_center,
+                        centering[2]/dbu)
         res=[]
-        for s in r.each():
+        if merged:
+            iterator=reg.each_merged()
+        else:
+            iterator=reg.each()
+        for s in iterator:
             shape=[[],[]]
             for p in s.each_point_hull():
-                shape[0].append([p.x*dbu*self.scaling,
-                                 p.y*dbu*self.scaling,
-                                 0.])
+                shape[0].append([(p.x+dx)*dbu*self.scaling,
+                                 (p.y+dy)*dbu*self.scaling,
+                                 dz*dbu])
             holes=[[] for i in range(s.holes())]
-            print('total:{:}, hull:{:}, number of holes:{:}'\
-                  .format(s.num_points(),
-                          s.num_points_hull(),
-                          s.holes()))
             for i in range(s.holes()):
                 for p in s.each_point_hole(i):
                     holes[i].append([p.x*dbu*self.scaling,
                                      p.y*dbu*self.scaling,
                                      0.])
-                print('hole nr {:} has {:} points'.format(i, len(holes[i])))
             shape[1]=holes
             res.append(shape)
         self.polygons=res    
@@ -76,6 +92,7 @@ class GDSLoader:
             '''plane_geom.generate_triangulation_from_point_list(shape)
             plane_geom.send_to_blender(from_external_loading=True)'''
             res.append(plane_geom)
+            #time.sleep(0.2)
         return res
 
 if __name__=='__main__':

@@ -516,6 +516,7 @@ class Object:
         boolean=self.assign_modifier(modifier_type='BOOLEAN')
         boolean.properties['object']=target
         boolean.apply()
+        print('something was applied')
     
     def copy_location(self, target=None):
         self.assign_constraint(constraint_type='COPY_LOCATION')
