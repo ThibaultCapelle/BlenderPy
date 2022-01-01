@@ -11,11 +11,11 @@ import pygmsh
 import numpy as np
 from BlenderPy.sending_data import (Material, Mesh, delete_all,
                           Light, Camera, Curve, Object,
-                          ShaderNode, Plane)
+                          ShaderNode, Plane, Geometric_entity)
 thick_membrane=0.025
 
-
-class Plane_Geom(Object):
+    
+class Plane_Geom(Object, Geometric_entity):
     
     def __init__(self, name='', thickness=1,
                  characteristic_length_max=0.03,
@@ -165,54 +165,6 @@ class Plane_Geom(Object):
     @vertices.setter
     def vertices(self, val):
         self._blender_mesh.vertices=val
-    
-    @property
-    def xmin(self):
-        return np.min(self.vertices[:,0])
-    
-    @property
-    def xmax(self):
-        return np.max(self.vertices[:,0])
-    
-    @property
-    def ymin(self):
-        return np.min(self.vertices[:,1])
-    
-    @property
-    def ymax(self):
-        return np.max(self.vertices[:,1])
-    
-    @property
-    def zmin(self):
-        return np.min(self.vertices[:,2])
-    
-    @property
-    def zmax(self):
-        return np.max(self.vertices[:,2])
-    
-    @xmin.setter
-    def xmin(self, val):
-        self.x+=val-self.xmin
-    
-    @ymin.setter
-    def ymin(self, val):
-        self.y+=val-self.ymin
-        
-    @zmin.setter
-    def zmin(self, val):
-        self.z+=val-self.zmin
-        
-    @xmax.setter
-    def xmax(self, val):
-        self.x+=val-self.xmax
-        
-    @ymax.setter
-    def ymax(self, val):
-        self.y+=val-self.ymax
-        
-    @zmax.setter
-    def zmax(self, val):
-        self.z+=val-self.zmax
     
     
             

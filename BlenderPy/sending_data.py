@@ -77,6 +77,56 @@ def parse(message, kwargs=None, **keyargs):
 def delete_all():
     assert ask(parse('delete_all()'))=="DONE"
     
+class Geometric_entity:
+    
+    @property
+    def xmin(self):
+        return self.x+np.min(self.vertices[:,0])
+    
+    @property
+    def xmax(self):
+        return self.x+np.max(self.vertices[:,0])
+    
+    @property
+    def ymin(self):
+        return self.y+np.min(self.vertices[:,1])
+    
+    @property
+    def ymax(self):
+        return self.y+np.max(self.vertices[:,1])
+    
+    @property
+    def zmin(self):
+        return self.z+np.min(self.vertices[:,2])
+    
+    @property
+    def zmax(self):
+        return self.z+np.max(self.vertices[:,2])
+    
+    @xmin.setter
+    def xmin(self, val):
+        self.x=val-self.xmin
+    
+    @ymin.setter
+    def ymin(self, val):
+        self.y=val-self.ymin
+        
+    @zmin.setter
+    def zmin(self, val):
+        self.z=val-self.zmin
+        
+    @xmax.setter
+    def xmax(self, val):
+        self.x=val-self.xmax
+        
+    @ymax.setter
+    def ymax(self, val):
+        self.y=val-self.ymax
+        
+    @zmax.setter
+    def zmax(self, val):
+        self.z=val-self.zmax
+    
 class Scene:
     
     def __init__(self):
@@ -184,7 +234,9 @@ class ShaderNode:
                          'Separate_XYZ':'ShaderNodeSeparateXYZ',
                          'Principled BSDF':'ShaderNodeBsdfPrincipled',
                          'Material Output':'ShaderNodeOutputMaterial',
-                         'Image':'ShaderNodeTexImage'})
+                         'Image':'ShaderNodeTexImage',
+                         'Glossy':'ShaderNodeBsdfGlossy',
+                         'Noise':'ShaderNodeTexNoise'})
         if name==None:
             kwargs['shader_type']=self._format_type(shader_type)
             kwargs['parent_name']=parent
@@ -414,8 +466,24 @@ class Material:
         params.update(kwargs)
         send(parse('z_dependant_color()', kwargs=params))
     
-    def glowing(self, **kwargs):
-        send(parse('glowing()', kwargs=kwargs))
+    def surface_noise(self, scale=3, detail=2):
+        noise=self.add_shader('Noise')
+        coord=self.add_shader('Texture_coordinates')
+        output=self.get_shader('Material Output')
+        noise.inputs['Vector']=coord.outputs['Generated']
+        output.inputs['Displacement']=noise.outputs['Fac']
+        noise.inputs['Scale']=scale
+        noise.inputs['Detail']=detail
+    
+    def glowing(self, color='#FFFFFF', strength=10, **kwargs):
+        emission=self.add_shader('Emission')
+        emission.inputs['Color']=self.convert_color(color)
+        emission.inputs['Strength']=strength
+        output=self.get_shader('Material Output')
+        add_shader=self.add_shader('Add')
+        add_shader.inputs[0]=output.inputs['Surface']
+        output.inputs['Surface']=add_shader.outputs['Shader']
+        add_shader.inputs[1]=emission.outputs['Emission']
     
     def metallic_texture(self, **kwargs):
         send(parse('metallic_texture()', kwargs=kwargs))
@@ -472,21 +540,51 @@ class Material:
         displacementnode=self.add_shader('Image')
         displacementnode.properties['image']=Image(os.path.join(directory, root+'_Displacement.jpg'))
         output.inputs['Displacement']=displacementnode.outputs['Color']
-        
+
+class Metallic_Material(Material):
+
+    def __init__(self, name, color, target=None, randomness=1, detail=10,
+                 roughness=0.5, **kwargs):
+        super().__init__(name, color, **kwargs) 
+        output=self.get_shader('Material Output')
+        glossy=self.add_shader('Glossy')
+        output.inputs['Surface']=glossy.outputs['BSDF']
+        glossy.inputs['Color']=self.convert_color(color)
+        noise=self.add_shader('Noise')
+        coord=self.add_shader('Texture_coordinates')
+        noise.inputs['Vector']=coord.outputs['Generated']
+        output.inputs['Displacement']=noise.outputs['Fac']
+        noise.inputs['Scale']=randomness
+        noise.inputs['Detail']=detail
+        noise.inputs['Roughness']=roughness
+        coord.properties['object']=target
+        '''kwargs=dict()
+        kwargs['name_mat']=self.material_object
+        kwargs['randomness']=randomness
+        kwargs['color']=color
+        send(parse('metallic_texture()', kwargs=kwargs))'''
     
 class Object:
     
-    def __init__(self, name_obj=None, **kwargs):
+    def __init__(self, name_obj=None, filepath=None, **kwargs):
         if name_obj is not None:
             self.name_obj=name_obj
         self._properties=PropertyDict('', self.name_obj, func='object_property')
         self.constraints=[]
         self.modifiers=[]
+        if filepath is not None:
+            self.load(filepath)
     
     def assign_material(self, material):
         kwargs = dict({'name_obj':self.name_obj,
                        'name_mat':material.material_object})
         send(parse('assign_material()', kwargs=kwargs))
+    
+    def load(self, filepath):
+        with open(filepath, 'r') as f:
+            data=json.load(f)
+        for k, v in data.items():
+            self.properties[k]=v
     
     def follow_path(self, target=None, use_curve_follow=True,
                     forward_axis='FORWARD_X'):
@@ -516,21 +614,29 @@ class Object:
         boolean=self.assign_modifier(modifier_type='BOOLEAN')
         boolean.properties['object']=target
         boolean.apply()
-        print('something was applied')
     
     def copy_location(self, target=None):
         self.assign_constraint(constraint_type='COPY_LOCATION')
         self.constraint.properties['target']=target
     
-    def to_dict(self):
-        return dict({'name_obj':self.name_obj})
+    def to_dict(self, **kwargs):
+        kwargs.update(dict({'name_obj':self.name_obj}))
+        return kwargs
     
     def remove(self):
         send(parse('remove_object', kwargs=self.to_dict()))
-    
+        
     @property
     def properties(self):
         return self._properties
+    
+    @property
+    def scale(self):
+        return self.properties['scale']
+    
+    @scale.setter
+    def scale(self, val):
+        self.properties['scale']=val
     
     @property
     def location(self):
@@ -572,8 +678,10 @@ class Object:
 
 class Camera(Object):
     
-    def __init__(self, name, location, rotation):
+    def __init__(self, name='camera', location=[5,5,5], rotation=[0,0,0],
+                 **kwargs):
         self.add_camera(name, location, rotation)
+        super().__init__(**kwargs)
     
     def add_camera(self, name, location, rotation):
         res=dict()
@@ -610,18 +718,25 @@ class Cube(Object):
 class Curve(Object):
     
     def __init__(self, points, **kwargs):
-        res=dict()
         kwargs['points']=points
-        res['points']=points
-        res['type']='curve'
-        res['args']=[]
-        res['command']='create_curve'
-        res['kwargs']=kwargs
-        self.name, self.name_obj=ask(json.dumps(res))
+        self.name, self.name_obj=ask(parse('create_curve()', kwargs=kwargs)) 
+        super().__init__()
+    
+    @property
+    def points(self):
+        kwargs=dict({'name':self.name, 'name_obj':self.name_obj})
+        return np.array(ask(parse('get_curve_points()', kwargs=kwargs)))
+    
+    @points.setter
+    def points(self, val):
+        if hasattr(val, 'tolist'):
+            val=val.tolist()
+        kwargs=dict({'name':self.name, 'points':val})
+        send(parse('set_curve_points()', kwargs=kwargs))
         
 class Plane(Object):
     
-    def __init__(self, name='plane', location=[0.,0.,0.], size=10):
+    def __init__(self, name='plane', location=[0.,0.,0.], size=10, **kwargs):
         self.add_plane(name, location, size)
         
     def add_plane(self, name, location, size):
@@ -664,7 +779,7 @@ class Light(Object):
         return self._properties
         
 
-class Mesh:
+class Mesh(Object, Geometric_entity):
     
     def __init__(self, mesh=None, cells=None, points=None,
                  thickness=None, name='mesh', subdivide=1, **kwargs):
@@ -676,6 +791,7 @@ class Mesh:
         self.name_obj, self.name_msh = self.send_mesh(self.mesh, 
                                                       thickness=self.thickness,
                                                       name=name)
+        super().__init__()
         
     def send_mesh(self, mesh, thickness=None, name='mesh'):
         if self.mesh is not None:
@@ -732,6 +848,16 @@ class Mesh:
     def insert_keyframe(self, frame='current'):
          kwargs = dict({'name_msh':self.name_msh, 'frame':frame})
          send(parse('insert_keyframe_mesh()', kwargs=kwargs))
+        
+    def cut_mesh(self, plane_points, plane_normals):
+        kwargs = dict({'name_msh':self.name_msh,
+                       'planes_co':plane_points,
+                       'planes_no':plane_normals})
+        send(parse('cut_mesh()', kwargs=kwargs))
+    
+    @property
+    def parent(self):
+        return Object(self.name_obj)
     
     @property
     def vertices(self):

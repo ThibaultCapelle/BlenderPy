@@ -64,8 +64,6 @@ class GDSLoader:
                 break
         shapes=cell.shapes(layer_ind)
         shapes_inside_box=[]
-        print(len(list(shapes.each())))
-        print(len(shapes_inside_box))
         for s in shapes.each():
             bbox=s.bbox()
             if bbox.left>xmin/dbu and bbox.right<xmax/dbu and bbox.top<ymax/dbu and bbox.bottom>ymin/dbu:

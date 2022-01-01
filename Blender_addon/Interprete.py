@@ -1,7 +1,7 @@
 import bpy, json, time
 
 import bmesh 
-from mathutils import Vector 
+from mathutils import Vector, Matrix
 from bmesh.types import BMVert 
 import numpy as np
 
@@ -327,6 +327,19 @@ class Interprete:
         bpy.data.collections[0].objects.link(new_obj)
         self.server.send_answer(kwargs['connection'], [new_curve.name, new_obj.name])
     
+    def get_curve_points(self, connection=None, name_obj=None, name=None, **kwargs):
+        curve=bpy.data.curves[name].splines[0]
+        self.server.send_answer(connection, [[v.co.x, v.co.y, v.co.z] for v in curve.points.values()])
+    
+    def set_curve_points(self, name=None, points=None, **kwargs):
+        curve=bpy.data.curves[name].splines[0]
+        for co,v in zip(points, curve.points.values()):
+            v.co=co+[0.]
+        
+    def set_origin(self, name_obj=None, pos=None, **kwargs):
+        obj=bpy.data.objects[name_obj]
+        obj.data.transform(Matrix.Translation(Vector([-pos[0], -pos[1], -pos[2]])))
+        obj.matrix_world.translation += Vector([pos[0], pos[1], pos[2]])
     
     def draw_curve(self, points=None, **kwargs):
         print(bpy.context.scene)
@@ -513,16 +526,15 @@ class Interprete:
         material.node_tree.links.new(add.outputs['Shader'],
                                          output.inputs['Surface'])
     
-    def metallic_texture(self, connection=None, name='metal',
-                         Voronoi_scale=3.3,
-                         bump_strength=0.458,
-                         bump_distance=4.2,
-                         noise_scale=36.8,
-                         noise_detail=5,
-                         noise_scale_rough=1,
-                         noise_detail_rough=7,
+    def metallic_texture(self, connection=None, name_mat='metal',
+                         randomness=1,
                          **kwargs):
-        material=bpy.data.materials.get(name)
+        material=bpy.data.materials.get(name_mat)
+        if 'Principled BSDF' in material.node_tree.nodes.keys():
+            material.node_tree.nodes.remove(material.node_tree.nodes['Principled BSDF'])
+        glossy=material.node_tree.nodes.new(type="ShaderNodeBsdfGlossy")
+        material.node_tree.links.new(bump.outputs['Normal'],
+                                         Principled_BDSF.inputs['Normal'])
         # Normal input of BDSF
         Texcoords=material.node_tree.nodes.new(type="ShaderNodeTexCoord")
         mapping=material.node_tree.nodes.new(type="ShaderNodeMapping")
@@ -805,14 +817,29 @@ class Interprete:
         return mat
     
     def assign_material(self, **kwargs):
-        bpy.data.objects[kwargs['name_obj']].select_set(True)
-        bpy.context.view_layer.objects.active = bpy.data.objects[kwargs['name_obj']]
+        #bpy.data.objects[kwargs['name_obj']].select_set(True)
+        #bpy.context.view_layer.objects.active = bpy.data.objects[kwargs['name_obj']]
         ob = bpy.data.objects[kwargs['name_obj']]
         if ob.data.materials:
             ob.data.materials[0] = bpy.data.materials.get(kwargs['name_mat'])
         else:
             ob.data.materials.append(bpy.data.materials.get(kwargs['name_mat']))
-
+            
+    def cut_mesh(self, name_msh=None, planes_co=None,
+                 planes_no=None, **kwargs):
+        mesh=bpy.data.meshes[name_msh]
+        bm = bmesh.new()
+        bm.from_mesh(mesh)
+        print('Nverts0: {:}'.format(len(bm.verts)))
+        for i, (co, no) in enumerate(zip(planes_co, planes_no)):
+            print('slicing plane number {:}'.format(i))
+            bmesh.ops.bisect_plane(bm, geom=bm.verts[:]+bm.edges[:]+bm.faces[:],
+                                   dist=1e-6,
+                                   plane_co=co, plane_no=no)
+        print('Nverts1: {:}'.format(len(bm.verts)))
+        bm.normal_update() 
+        bm.to_mesh(mesh) 
+        bm.free()
 
 
 
@@ -880,21 +907,12 @@ class Object:
         print('entering extrude')
         print(self.thickness)
         if self.thickness is not None:
-            print('thickness is not None')
-            self.select_obj()
-            # Create BMesh object  
-            bm = bmesh.new() 
-            bm.from_mesh(self.mesh_data) 
-            # Get geometry to extrude 
-            bm.faces.ensure_lookup_table()
-            faces = bm.faces 
-            # Extrude 
-            extruded = bmesh.ops.extrude_face_region(bm, geom=faces)
-            # Move extruded geometry 
-            print('I started the extrusion')
-            translate_verts = [v for v in extruded['geom'] if isinstance(v, BMVert)]
-            up = Vector((0, 0, self.thickness)) 
-            bmesh.ops.translate(bm, vec=up, verts=translate_verts) 
+            mesh=bpy.data.meshes[self.name_msh]
+            bm = bmesh.new()   # create an empty BMesh
+            bm.from_mesh(mesh)
+            r = bmesh.ops.extrude_face_region(bm, geom=bm.faces[:])
+            verts = [e for e in r['geom'] if isinstance(e, bmesh.types.BMVert)]
+            bmesh.ops.translate(bm, vec=Vector((0,0,self.thickness)), verts=verts)
             print('extrusion was done')
             for i in range(self.subdivide-1):
                 print('I will subdivide')
@@ -903,11 +921,9 @@ class Object:
                                            dist=0.001,
                                        plane_co=[0,0,(i+1)*self.thickness/self.subdivide],
                                        plane_no=[0,0,1])
-        # Remove doubles 
-            bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=0.001) 
             # Update mesh and free Bmesh 
             bm.normal_update() 
-            bm.to_mesh(self.obj.data) 
+            bm.to_mesh(mesh) 
             bm.free()
         
         
