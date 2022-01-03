@@ -7,7 +7,7 @@ Created on Wed Aug 26 10:05:13 2020
 
 import socket, threading, json
 from .interprete import Interprete
-from mathutils import Vector
+from mathutils import Vector, Matrix, Euler
 
 HOST = '127.0.0.1'
 PORT = 20000
@@ -46,14 +46,34 @@ class Server:
             s.sendall(('{:010x}'.format(len(message))+message).encode())
     
     def send_answer(self, conn, message):
-        if isinstance(message, Vector):
+        if isinstance(message, Vector) or isinstance(message, Euler):
             message_list=[]
             if hasattr(message, 'x'):
                 message_list.append(message.x)
             if hasattr(message, 'y'):    
                 message_list.append(message.y)
             if hasattr(message, 'z'):    
-                message_list.append(message.z)    
+                message_list.append(message.z)
+            if hasattr(message, 'w'):    
+                message_list.append(message.w)
+            message=message_list
+        elif isinstance(message, Matrix):
+            message_list=[]
+            for i in range(4):
+                row_l = []
+                try:
+                    row=message.row[i]
+                except IndexError:
+                    break
+                if hasattr(row, 'x'):
+                    row_l.append(row.x)
+                if hasattr(row, 'y'):    
+                    row_l.append(row.y)
+                if hasattr(row, 'z'):    
+                    row_l.append(row.z)
+                if hasattr(row, 'w'):    
+                    row_l.append(row.w)
+                message_list.append(row_l)  
             message=message_list
         message=json.dumps(dict({'content':message}))
         conn.sendall(('{:010x}'.format(len(message))+message).encode())

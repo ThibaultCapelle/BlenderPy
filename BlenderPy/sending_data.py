@@ -80,28 +80,42 @@ def delete_all():
 class Geometric_entity:
     
     @property
+    def vertices_absolute(self):
+        mat=self.matrix_world
+        verts=self.vertices
+        verts_4D=np.transpose(np.hstack([verts, np.ones((len(verts),1))]))
+        return np.transpose(np.dot(mat, verts_4D))
+    
+    @vertices_absolute.setter
+    def vertices_absolute(self, val):
+        mat=np.linalg.inv(self.matrix_world)
+        if np.array(val).shape[1]!=4:
+            val=np.hstack([np.array(val), np.ones((len(val),1))])
+        self.vertices=np.transpose(np.dot(mat, np.transpose(val)))
+        
+    @property
     def xmin(self):
-        return self.x+np.min(self.vertices[:,0])
+        return np.min(self.vertices_absolute[:,0])
     
     @property
     def xmax(self):
-        return self.x+np.max(self.vertices[:,0])
+        return np.max(self.vertices_absolute[:,0])
     
     @property
     def ymin(self):
-        return self.y+np.min(self.vertices[:,1])
+        return np.min(self.vertices_absolute[:,1])
     
     @property
     def ymax(self):
-        return self.y+np.max(self.vertices[:,1])
+        return np.max(self.vertices_absolute[:,1])
     
     @property
     def zmin(self):
-        return self.z+np.min(self.vertices[:,2])
+        return np.min(self.vertices_absolute[:,2])
     
     @property
     def zmax(self):
-        return self.z+np.max(self.vertices[:,2])
+        return np.max(self.vertices_absolute[:,2])
     
     @xmin.setter
     def xmin(self, val):
@@ -126,6 +140,33 @@ class Geometric_entity:
     @zmax.setter
     def zmax(self, val):
         self.z=val-self.zmax
+    
+    @property
+    def center(self):
+        return np.array([0.5*(self.xmin+self.xmax),
+                         0.5*(self.ymin+self.ymax),
+                         0.5*(self.zmin+self.zmax)])
+    
+    @center.setter
+    def center(self, val):
+        center=self.center
+        self.x+=val[0]-center[0]
+        self.y+=val[1]-center[1]
+        self.z+=val[2]-center[2]
+    
+    @property
+    def dx(self):
+        return self.xmax-self.xmin
+    
+    @property
+    def dy(self):
+        return self.ymax-self.ymin
+    
+    @property
+    def dz(self):
+        return self.zmax-self.zmin
+    
+    
     
 class Scene:
     
@@ -647,6 +688,14 @@ class Object:
         self.properties['location']=val
     
     @property
+    def rotation(self):
+        return self.properties['rotation_euler']
+    
+    @rotation.setter
+    def rotation(self, val):
+        self.properties['rotation_euler']=val
+    
+    @property
     def x(self):
         return self.location[0]
     
@@ -675,6 +724,10 @@ class Object:
         location=self.location
         location[2]=val
         self.location=location
+    
+    @property
+    def matrix_world(self):
+        return np.array(self.properties['matrix_world'])
 
 class Camera(Object):
     
@@ -858,6 +911,10 @@ class Mesh(Object, Geometric_entity):
     @property
     def parent(self):
         return Object(self.name_obj)
+    
+    @property
+    def scale(self):
+        return self.parent.scale
     
     @property
     def vertices(self):
