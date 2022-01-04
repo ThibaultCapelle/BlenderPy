@@ -15,7 +15,7 @@ from BlenderPy.sending_data import (Material, Mesh, delete_all,
 thick_membrane=0.025
 
     
-class Plane_Geom(Object, Geometric_entity):
+class Plane_Geom(Mesh, Geometric_entity):
     
     def __init__(self, name='', thickness=1,
                  characteristic_length_max=0.03,
@@ -33,22 +33,19 @@ class Plane_Geom(Object, Geometric_entity):
     def send_to_blender(self, use_triangle=False, from_external_loading=False):
         if not use_triangle and not from_external_loading:
             self._pymesh=pygmsh.generate_mesh(self.geom)
-            self._blender_mesh=Mesh(mesh=self._pymesh, name=self.name,
+            super().__init__(mesh=self._pymesh, name=self.name,
                                     thickness=self.thickness,
                                     subdivide=self.subdivide)
         elif use_triangle and not from_external_loading:
             self.generate_triangulation_from_shapely_LineString(self.line)
-            self._blender_mesh=Mesh(cells=self.cells, points=self.cell_points, name=self.name,
+            super().__init__(cells=self.cells, points=self.cell_points, name=self.name,
                                     thickness=self.thickness,
                                     subdivide=self.subdivide)
         else:
-            self._blender_mesh=Mesh(cells=self.cells, points=self.cell_points,
+            super().__init__(cells=self.cells, points=self.cell_points,
                                     name=self.name,
                                     thickness=self.thickness,
                                     subdivide=self.subdivide)
-        self.name_obj=self._blender_mesh.name_obj
-        super().__init__()
-        self._blender_mesh.assign_material(self.material)
     
     def format_line(self, line, gmsh=True):
         if not gmsh:
@@ -157,14 +154,6 @@ class Plane_Geom(Object, Geometric_entity):
                            opts="p")
             self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
                                        [("triangle", t['triangles'].tolist())])
-    
-    @property
-    def vertices(self):
-        return self._blender_mesh.vertices
-    
-    @vertices.setter
-    def vertices(self, val):
-        self._blender_mesh.vertices=val
     
     
             

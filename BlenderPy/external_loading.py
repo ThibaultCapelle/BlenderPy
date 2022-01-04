@@ -11,6 +11,45 @@ import struct
 from BlenderPy.meshing import Plane_Geom
 from BlenderPy.sending_data import Mesh
 
+class VTULoader:
+    
+    def __init__(self, filename, **kwargs):
+        self.kwargs=kwargs
+        self.filename=filename
+        with open(filename, 'r') as f:
+            lines=f.readlines()
+        reading_points=False
+        reading_cells=False
+        reading_data=False
+        self.data, self.points, self.cells= [], [], []
+        for line in lines:
+            if line.startswith('<'):
+                if line.startswith('<PointData>'):
+                    reading_data=True
+                elif line.startswith('</PointData>'):
+                    reading_data=False
+                if line.startswith('<Points>'):
+                    reading_points=True
+                elif line.startswith('</Points>'):
+                    reading_points=False
+                if line.startswith('<Cells>'):
+                    reading_cells=True
+                elif line.startswith('</DataArray>'):
+                    reading_cells=False
+            else:
+                if reading_data:
+                    self.data.append(float(line))
+                if reading_points:
+                    self.points.append([float(x) for x in line.split(' ')])
+                if reading_cells:
+                    self.cells.append([int(p) for p in line.split(' ')])
+        for i in range(len(self.data)):
+            self.points[i][2]=self.data[i]
+            
+    def load(self):
+        return Mesh(mesh=None, cells=[['triangle',self.cells]],
+                    points=list(self.points), **self.kwargs) 
+
 class STLLoader:
     
     def __init__(self, filename, **kwargs):

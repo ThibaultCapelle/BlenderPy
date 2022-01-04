@@ -91,7 +91,7 @@ class Geometric_entity:
         mat=np.linalg.inv(self.matrix_world)
         if np.array(val).shape[1]!=4:
             val=np.hstack([np.array(val), np.ones((len(val),1))])
-        self.vertices=np.transpose(np.dot(mat, np.transpose(val)))
+        self.vertices=np.transpose(np.dot(mat, np.transpose(val)))[:,:3]
         
     @property
     def xmin(self):
@@ -636,7 +636,7 @@ class Object:
         self.constraints.append(constraint)
     
     def assign_constraint(self, constraint_type='FOLLOW_PATH', **kwargs):
-        return Constraint(parent=self._blender_mesh.name_obj,
+        return Constraint(parent=self.name_obj,
                                    constraint_type=constraint_type,
                                    **kwargs)
     
@@ -766,6 +766,21 @@ class Cube(Object):
         res['kwargs']=kwargs
         self.name, self.name_obj=ask(json.dumps(res))
 
+class Lattice(Object):
+    
+    def __init__(self, **kwargs):
+        self.name, self.name_obj=ask(parse('create_lattice()', kwargs=kwargs)) 
+        self._lattice_properties=PropertyDict(name=self.name, function='lattice_property')
+        super().__init__()
+    
+    @property
+    def lattice_properties(self):
+        return self._lattice_properties
+    
+    @property
+    def points(self):
+        kwargs=dict({'name':self.name})
+        return np.array(ask(parse('get_lattice_points()', kwargs=kwargs)))
         
 
 class Curve(Object):
@@ -911,11 +926,7 @@ class Mesh(Object, Geometric_entity):
     @property
     def parent(self):
         return Object(self.name_obj)
-    
-    @property
-    def scale(self):
-        return self.parent.scale
-    
+
     @property
     def vertices(self):
         kwargs = dict({'name_msh':self.name_msh})

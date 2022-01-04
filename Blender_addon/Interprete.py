@@ -308,6 +308,18 @@ class Interprete:
         bpy.data.objects[kwargs['name']].select_set(True)
         bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
     
+    def create_lattice(self, connection=None, name="lattice",
+                       **kwargs):
+        new_lattice=bpy.data.lattices.new(name)
+        new_obj=bpy.data.objects.new(name, new_lattice)
+        bpy.data.collections[0].objects.link(new_obj)
+        self.server.send_answer(connection, [new_lattice.name, new_obj.name])
+    
+    def get_lattice_points(self, connection=None, name=None,
+                              **kwargs):
+        lat=bpy.data.lattices[name]
+        return [[p.co.x, p.co.y, p.co.z] for p in lat.points]
+    
     def create_curve(self, location=[0,0,0], name="curve",
                      points=[(0,0,0), (1,0,0)], **kwargs):
         new_curve=bpy.data.curves.new(name, 'CURVE')
