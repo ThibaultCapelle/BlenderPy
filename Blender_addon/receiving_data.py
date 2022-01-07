@@ -5,7 +5,9 @@ Created on Wed Aug 26 10:05:13 2020
 @author: Thibault
 """
 
-import socket, threading, json
+import socket
+import threading
+import json
 from .interprete import Interprete
 from mathutils import Vector, Matrix, Euler
 

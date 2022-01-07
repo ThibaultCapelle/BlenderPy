@@ -8,9 +8,6 @@ bl_info = {
     "category": "Generic",
 }
 
-import bpy
-
-#from .panels import Launch_server, Stop_server, Test_Panel
 
 modulesNames = ['panels', 'printing', 'receiving_data', 'interprete', 'saving_operator']
  

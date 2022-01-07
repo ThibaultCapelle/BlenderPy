@@ -5,7 +5,10 @@ Created on Wed Aug 26 09:56:27 2020
 @author: Thibault
 """
 
-import socket, json, os, time
+import socket
+import json
+import os
+import time
 from BlenderPy.parsing import Expression
 import numpy as np
 HOST = '127.0.0.1'
@@ -77,7 +80,7 @@ def parse(message, kwargs=None, **keyargs):
 def delete_all():
     assert ask(parse('delete_all()'))=="DONE"
     
-class Geometric_entity:
+class GeometricEntity:
     
     @property
     def vertices_absolute(self):
@@ -596,7 +599,7 @@ class Material:
         displacementnode.properties['image']=Image(os.path.join(directory, root+'_Displacement.jpg'))
         output.inputs['Displacement']=displacementnode.outputs['Color']
 
-class Metallic_Material(Material):
+class MetallicMaterial(Material):
 
     def __init__(self, name, color, target=None, randomness=1, detail=10,
                  roughness=0.5, **kwargs):
@@ -614,7 +617,7 @@ class Metallic_Material(Material):
         noise.inputs['Roughness']=roughness
         coord.properties['object']=target
 
-class Emission_Material(Material):
+class EmissionMaterial(Material):
     
     def __init__(self, color='#AF2020', expression=None, strength=None, **kwargs):
          super().__init__(**kwargs)
@@ -637,7 +640,7 @@ class Emission_Material(Material):
          elif strength is not None:
              emission.inputs['Strength']=strength
 
-class Z_Color_Ramp_Material(Material):
+class ZColorRampMaterial(Material):
     
     def __init__(self, colors=None, positions=None, **kwargs):
         super().__init__(**kwargs)
@@ -651,7 +654,7 @@ class Z_Color_Ramp_Material(Material):
         principled=self.get_shader('Principled BSDF')
         principled.inputs['Base Color']=color_ramp.outputs['Color']
             
-class Gaussian_Laser_Material(Emission_Material):
+class GaussianLaserMaterial(EmissionMaterial):
     
     def __init__(self, alpha=0.001, waist=0.1, strength=3, **kwargs):
         expression='{:}e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))'.format(strength, alpha, waist**2)
@@ -903,7 +906,7 @@ class Light(Object):
         return self._properties
         
 
-class Mesh(Object, Geometric_entity):
+class Mesh(Object, GeometricEntity):
     
     def __init__(self, mesh=None, cells=None, points=None,
                  thickness=None, name='mesh', subdivide=1, **kwargs):

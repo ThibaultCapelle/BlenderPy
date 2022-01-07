@@ -193,11 +193,11 @@ class Expression:
                         self.operation=t.content
     
     
-    def isleaf(self):
+    def is_leaf(self):
         return len(self.tokens)==1 and not isinstance(self.tokens[0], Expression) and self.operation is None
                     
     def get_leaves(self):
-        if self.isleaf():
+        if self.is_leaf():
             return [self.tokens[0].content]
         leaves=[]
         if len(self.tokens)==1 and isinstance(self.tokens[0], Expression):
@@ -215,7 +215,7 @@ class Expression:
             self.__dict__.update(self.tokens[0].__dict__)
     
     def get_tree(self):
-        if self.isleaf():
+        if self.is_leaf():
             return self.tokens[0].content
         else:
             return dict({self.operation:[node.get_tree() for node in self.nodes]})

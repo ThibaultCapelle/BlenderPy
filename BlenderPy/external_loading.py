@@ -139,20 +139,6 @@ class GDSLoader:
         self.polygons=res    
         self.kwargs=kwargs
         
-    def polygon_area(self, xs, ys):
-        """https://en.wikipedia.org/wiki/Centroid#Of_a_polygon"""
-        # https://stackoverflow.com/a/30408825/7128154
-        return 0.5 * (np.dot(xs, np.roll(ys, 1)) - np.dot(ys, np.roll(xs, 1)))
-
-    def polygon_centroid(self, points):
-        """https://en.wikipedia.org/wiki/Centroid#Of_a_polygon"""
-        xs, ys=[p[0] for p in points], [p[1] for p in points]
-        xy = np.array([xs, ys])
-        c = np.dot(xy + np.roll(xy, 1, axis=1),
-                   xs * np.roll(ys, 1) - np.roll(xs, 1) * ys
-                   ) / (6 * self.polygon_area(xs, ys))
-        return c
-        
     def load(self):
         res=[]
         for shape in self.polygons:
@@ -160,10 +146,7 @@ class GDSLoader:
             plane_geom.generate_triangulation_from_shapely_LineString\
             (plane_geom.generate_shapely_polygon_from_points(shape))
             plane_geom.send_to_blender(from_external_loading=True)
-            '''plane_geom.generate_triangulation_from_point_list(shape)
-            plane_geom.send_to_blender(from_external_loading=True)'''
             res.append(plane_geom)
-            #time.sleep(0.2)
         return res
 
 if __name__=='__main__':

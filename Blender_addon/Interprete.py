@@ -1,8 +1,8 @@
-import bpy, json, time
+import bpy
+import time
 
 import bmesh 
-from mathutils import Vector, Matrix
-from bmesh.types import BMVert 
+from mathutils import Vector
 import numpy as np
 
 class Interprete:
@@ -19,8 +19,6 @@ class Interprete:
             getattr(self, cmd['command'])(*cmd['args'], **cmd['kwargs'])
     
     def delete_all(self, connection=None):
-        #objs = [ob for ob in bpy.context.scene.objects]
-        #bpy.ops.object.delete({"selected_objects": objs})
         for block in bpy.data.objects:
             bpy.data.objects.remove(block, do_unlink=True)
         for block in bpy.data.lights:
@@ -277,20 +275,11 @@ class Interprete:
         mat=bpy.data.materials[material_name]
         node=mat.node_tree.nodes[name]
         socket=node.outputs[key]
-        #if len(socket.links)==0:
         self.server.send_answer(connection, 
                                     dict({'parent':mat.name,
                                           'name':node.name,
                                           'socket_name':socket.name,
                                           'shader_socket_type':'output'}))
-        '''else:
-            output_node=socket.links[0].to_node
-            output_socket=socket.links[0].to_socket
-            self.server.send_answer(connection,
-                                    dict({'parent':mat.name,
-                                          'name':output_node.name,
-                                          'socket_name':output_socket.name,
-                                          'shader_socket_type':'input'}))'''
     
     def update_material(self, connection=None, **kwargs):
         material=bpy.data.materials.get(kwargs['name'])
@@ -364,98 +353,6 @@ class Interprete:
         curve=bpy.data.curves[name].splines[0]
         for co,v in zip(points, curve.points.values()):
             v.co=co+[0.]
-        
-    def set_origin(self, name_obj=None, pos=None, **kwargs):
-        obj=bpy.data.objects[name_obj]
-        obj.data.transform(Matrix.Translation(Vector([-pos[0], -pos[1], -pos[2]])))
-        obj.matrix_world.translation += Vector([pos[0], pos[1], pos[2]])
-    
-    def draw_curve(self, points=None, **kwargs):
-        print(bpy.context.scene)
-        win      = bpy.context.window
-        scr      = win.screen
-        areas3d  = [area for area in scr.areas if area.type == 'VIEW_3D']
-        region   = [region for region in areas3d[0].regions if region.type == 'WINDOW']
-        override = {'window':win,
-            'screen':scr,
-            'area'  :areas3d[0],
-            'region':region,
-            'scene' :bpy.context.scene,
-            }
-        bpy.ops.curve.primitive_nurbs_path_add(radius=1,
-                                               enter_editmode=True,
-                                               align='WORLD',
-                                               location=(0, 0, 0),
-                                               scale=(1, 1, 1))
-        #bpy.ops.object.mode_set(mode='EDIT_CURVE')
-        print(bpy.context.mode)
-        stroke=[]
-        for point in points:
-            stroke.append({"name":"",
-                           "location":points,
-                           "pressure":1,
-                           "size":0,
-                           "pen_flip":False,
-                           "time":0,
-                           "is_start":False})
-        bpy.ops.curve.draw(override,
-                           error_threshold=0.042712,
-                           fit_method='REFIT',
-                           corner_angle=1.22173,
-                           use_cyclic=False,
-                           stroke=stroke,
-                           wait_for_input=False)
-
-    
-    def z_dependant_color(self, connection=None, **kwargs):
-        material=bpy.data.materials.get(kwargs['name'])
-        
-        ColorRamp=material.node_tree.nodes.new(type="ShaderNodeValToRGB")
-        SeparateXYZ=material.node_tree.nodes.new(type="ShaderNodeSeparateXYZ")
-        Principled_BDSF=material.node_tree.nodes['Principled BSDF']
-        material.node_tree.links.new(ColorRamp.outputs['Color'],
-                                     Principled_BDSF.inputs['Base Color'])
-        material.node_tree.links.new(ColorRamp.outputs['Alpha'],
-                                     Principled_BDSF.inputs['Alpha'])
-        for element in ColorRamp.color_ramp.elements[:-1]:
-            ColorRamp.color_ramp.elements.remove(element)
-        element=ColorRamp.color_ramp.elements[0]
-        element.position=kwargs['positions'][0]
-        element.color=kwargs['colors'][0]
-        for position, color in zip(kwargs['positions'][1:],
-                                   kwargs['colors'][1:]):
-            new_element=ColorRamp.color_ramp.elements.new(position)
-            new_element.color=color
-        if 'name_msh' in kwargs.keys():
-            msh=bpy.data.meshes.get(kwargs['name_msh'])
-            bm=bmesh.new()
-            bm.from_mesh(msh)
-            
-            zmin, zmax=(np.min([v.co.z for v in bm.verts]),
-                        np.max([v.co.z for v in bm.verts]))
-            bm.free()
-            Geometry=material.node_tree.nodes.new(type="ShaderNodeNewGeometry")
-            material.node_tree.links.new(Geometry.outputs['Position'],
-                                         SeparateXYZ.inputs['Vector'])
-            add=material.node_tree.nodes.new(type="ShaderNodeMath")
-            add.operation='ADD'
-            add.inputs[1].default_value=kwargs['z_offset']
-            
-            material.node_tree.links.new(SeparateXYZ.outputs['Z'],
-                                         add.inputs[0])
-            divide=material.node_tree.nodes.new(type="ShaderNodeMath")
-            divide.operation='DIVIDE'
-            divide.inputs[1].default_value=kwargs['z_scale']
-            material.node_tree.links.new(add.outputs[0],
-                                         divide.inputs[0])
-            material.node_tree.links.new(divide.outputs[0],
-                                         ColorRamp.inputs['Fac'])
-        else:
-            Texcoords=material.node_tree.nodes.new(type="ShaderNodeTexCoord")
-            material.node_tree.links.new(Texcoords.outputs['Generated'],
-                                         SeparateXYZ.inputs['Vector'])
-            material.node_tree.links.new(SeparateXYZ.outputs['Z'],
-                                         ColorRamp.inputs['Fac'])
     
     def get_scene_property(self, key=None,
                            connection=None, **kwargs):
@@ -537,184 +434,6 @@ class Interprete:
                     obj.keyframe_insert("location")
                     obj.keyframe_insert("rotation_euler")
         self.server.send_answer(kwargs['connection'], "DONE")
-    
-    def glowing(self, connection=None, color=[0.8984375, 0.1484375,
-                       0.1484375, 1.],
-                strength=100, name="glow",
-                **kwargs):
-        material=bpy.data.materials.get(name)
-        Principled_BSDF=material.node_tree.nodes['Principled BSDF']
-        emission=material.node_tree.nodes.new(type="ShaderNodeEmission")
-        emission.inputs['Color'].default_value= color
-        add=material.node_tree.nodes.new(type="ShaderNodeAddShader")
-        output=material.node_tree.nodes['Material Output']
-        material.node_tree.links.new(emission.outputs['Emission'],
-                                         add.inputs[0])
-        material.node_tree.links.new(Principled_BSDF.outputs['BSDF'],
-                                         add.inputs[1])
-        material.node_tree.links.new(add.outputs['Shader'],
-                                         output.inputs['Surface'])
-    
-    def metallic_texture(self, connection=None, name_mat='metal',
-                         randomness=1,
-                         **kwargs):
-        material=bpy.data.materials.get(name_mat)
-        if 'Principled BSDF' in material.node_tree.nodes.keys():
-            material.node_tree.nodes.remove(material.node_tree.nodes['Principled BSDF'])
-        glossy=material.node_tree.nodes.new(type="ShaderNodeBsdfGlossy")
-        material.node_tree.links.new(bump.outputs['Normal'],
-                                         Principled_BDSF.inputs['Normal'])
-        # Normal input of BDSF
-        Texcoords=material.node_tree.nodes.new(type="ShaderNodeTexCoord")
-        mapping=material.node_tree.nodes.new(type="ShaderNodeMapping")
-        noise_1=material.node_tree.nodes.new(type="ShaderNodeTexNoise")
-        voronoi_1=material.node_tree.nodes.new(type="ShaderNodeTexVoronoi")
-        coloramp=material.node_tree.nodes.new(type="ShaderNodeValToRGB")
-        bump=material.node_tree.nodes.new(type="ShaderNodeBump")
-        Principled_BDSF=material.node_tree.nodes['Principled BSDF']
-        material.node_tree.links.new(bump.outputs['Normal'],
-                                         Principled_BDSF.inputs['Normal'])
-        material.node_tree.links.new(coloramp.outputs['Color'],
-                                         bump.inputs['Normal'])
-        material.node_tree.links.new(voronoi_1.outputs['Color'],
-                                         coloramp.inputs['Fac'])
-        material.node_tree.links.new(noise_1.outputs['Color'],
-                                         voronoi_1.inputs['Vector'])
-        material.node_tree.links.new(mapping.outputs['Vector'],
-                                         noise_1.inputs['Vector'])
-        material.node_tree.links.new(Texcoords.outputs['Object'],
-                                         mapping.inputs['Vector'])
-        # Roughness input of BDSF
-        noise_2=material.node_tree.nodes.new(type="ShaderNodeTexNoise")
-        coloramp_2=material.node_tree.nodes.new(type="ShaderNodeValToRGB")
-        material.node_tree.links.new(coloramp_2.outputs['Color'],
-                                         Principled_BDSF.inputs['Roughness'])
-        material.node_tree.links.new(noise_2.outputs['Color'],
-                                         coloramp_2.inputs['Fac'])
-        
-    def gaussian_laser(self, connection=None, **kwargs):
-        W0=kwargs['W0']
-        ZR=kwargs['ZR']
-        I=kwargs['I']
-        material=bpy.data.materials.get(kwargs['name'])
-        Texcoords=material.node_tree.nodes.new(type="ShaderNodeTexCoord")
-        Texcoords.location.x=-100
-        SeparateXYZ=material.node_tree.nodes.new(type="ShaderNodeSeparateXYZ")
-        SeparateXYZ.location.x=Texcoords.location.x+Texcoords.width+20
-        material.node_tree.links.new(Texcoords.outputs['Generated'],
-                                     SeparateXYZ.inputs['Vector'])
-        
-        
-        diffx, diffy, diffz=(material.node_tree.nodes.new(type="ShaderNodeMath"),
-                             material.node_tree.nodes.new(type="ShaderNodeMath"),
-                             material.node_tree.nodes.new(type="ShaderNodeMath"))
-        diffx.location.y=500
-        diffy.location.y=0
-        diffz.location.y=-500
-        diffx.location.x=SeparateXYZ.location.x+SeparateXYZ.width+20
-        diffy.location.x=diffx.location.x
-        diffz.location.x=diffx.location.x
-        for op, coord in zip([diffx, diffy, diffz], ['X', 'Y', 'Z']):
-            op.operation='SUBTRACT'
-            material.node_tree.links.new(SeparateXYZ.outputs[coord],
-                                         op.inputs[0])
-            op.inputs[1].default_value=0.5
-        
-        powx=material.node_tree.nodes.new(type="ShaderNodeMath")
-        powx.operation='POWER'
-        powx.location.x=diffz.location.x+diffz.width+20
-        powx.location.y=200
-        powy=material.node_tree.nodes.new(type="ShaderNodeMath")
-        powy.operation='POWER'
-        powy.location.x=powx.location.x
-        powy.location.y=-200
-        material.node_tree.links.new(diffx.outputs[0],
-                                     powx.inputs[0])
-        powx.inputs[1].default_value=2
-        material.node_tree.links.new(diffy.outputs[0],
-                                     powy.inputs[0])
-        powy.inputs[1].default_value=2
-        add=material.node_tree.nodes.new(type="ShaderNodeMath")
-        add.operation='ADD'
-        material.node_tree.links.new(powx.outputs[0],
-                                     add.inputs[0])   
-        material.node_tree.links.new(powy.outputs[0],
-                                     add.inputs[1])
-        minus=material.node_tree.nodes.new(type="ShaderNodeMath")
-        minus.operation='SUBTRACT'
-        minus.inputs[0].default_value=0
-        material.node_tree.links.new(add.outputs[0],
-                                     minus.inputs[1])
-        divide=material.node_tree.nodes.new(type="ShaderNodeMath")
-        divide.operation='DIVIDE'
-        divide.inputs[1].default_value=ZR
-        material.node_tree.links.new(diffz.outputs[0],
-                                     divide.inputs[0])
-        powz=material.node_tree.nodes.new(type="ShaderNodeMath")
-        powz.operation='POWER'
-        material.node_tree.links.new(divide.outputs[0],
-                                     powz.inputs[0])
-        powz.inputs[1].default_value=2
-        
-        addz=material.node_tree.nodes.new(type="ShaderNodeMath")
-        addz.operation='ADD'
-        addz.inputs[1].default_value=1
-        material.node_tree.links.new(powz.outputs[0],
-                                     addz.inputs[0])
-        #1+(z/ZR)**2
-        
-        multiply=material.node_tree.nodes.new(type="ShaderNodeMath")
-        multiply.operation='MULTIPLY'
-        multiply.inputs[1].default_value=W0*W0
-        material.node_tree.links.new(addz.outputs[0],
-                                     multiply.inputs[0])
-        #w(z)**2
-        divide=material.node_tree.nodes.new(type="ShaderNodeMath")
-        divide.operation='DIVIDE'
-        material.node_tree.links.new(minus.outputs[0],
-                                     divide.inputs[0])
-        material.node_tree.links.new(multiply.outputs[0],
-                                     divide.inputs[1])
-        
-        powfinal=material.node_tree.nodes.new(type="ShaderNodeMath")
-        powfinal.operation='POWER'
-        powfinal.inputs[0].default_value=2.71
-        material.node_tree.links.new(divide.outputs[0],
-                                     powfinal.inputs[1])
-        #e(-r**2/w(z)**2)
-        wz=material.node_tree.nodes.new(type="ShaderNodeMath")
-        wz.operation='SQRT'
-        material.node_tree.links.new(multiply.outputs[0],
-                                     wz.inputs[0])
-        
-        divide=material.node_tree.nodes.new(type="ShaderNodeMath")
-        divide.operation='DIVIDE'
-        divide.inputs[0].default_value=W0
-        material.node_tree.links.new(wz.outputs[0],
-                                     divide.inputs[1])
-        multiply=material.node_tree.nodes.new(type="ShaderNodeMath")
-        multiply.operation='MULTIPLY'
-        material.node_tree.links.new(divide.outputs[0],
-                                     multiply.inputs[0])
-        material.node_tree.links.new(powfinal.outputs[0],
-                                     multiply.inputs[1])
-        
-        multiplyfinal=material.node_tree.nodes.new(type="ShaderNodeMath")
-        multiplyfinal.operation='MULTIPLY'
-        material.node_tree.links.new(multiply.outputs[0],
-                                     multiplyfinal.inputs[0])
-        multiplyfinal.inputs[1].default_value=I
-        
-        emission=material.node_tree.nodes.new(type="ShaderNodeEmission")
-        emission.inputs['Color'].default_value=[0.8984375, 0.1484375,
-                       0.1484375, 1.] #'#E62626'
-        material.node_tree.links.new(multiplyfinal.outputs[0],
-                                     emission.inputs['Strength'])
-        output=material.node_tree.nodes['Material Output']
-        material.node_tree.links.new(emission.outputs['Emission'],
-                                     output.inputs['Volume'])
-        material.node_tree.nodes.remove(material.node_tree.nodes['Principled BSDF'])
-        bpy.context.scene.eevee.volumetric_tile_size = '2'
 
         
     def get_material_names(self, connection=None):

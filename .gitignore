@@ -1,4 +1,4 @@
 *.pyc
 *.zip
 *.vtk
-Blender_addon/sandbox.py
+BlenderPy.egg-info/*

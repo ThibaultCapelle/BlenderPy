@@ -6,16 +6,14 @@ Created on Wed Oct 20 10:50:42 2021
 """
 
 from shapely import geometry
-import triangle, pya
+import triangle
 import pygmsh
 import numpy as np
 from BlenderPy.sending_data import (Material, Mesh, delete_all,
                           Light, Camera, Curve, Object,
-                          ShaderNode, Plane, Geometric_entity)
-thick_membrane=0.025
-
+                          ShaderNode, Plane, GeometricEntity)
     
-class Plane_Geom(Mesh, Geometric_entity):
+class PlaneGeom(Mesh, GeometricEntity):
     
     def __init__(self, name='', thickness=1,
                  characteristic_length_max=0.03,
@@ -37,7 +35,7 @@ class Plane_Geom(Mesh, Geometric_entity):
                                     thickness=self.thickness,
                                     subdivide=self.subdivide)
         elif use_triangle and not from_external_loading:
-            self.generate_triangulation_from_shapely_LineString(self.line)
+            self.generate_triangulation_from_shapely_linestring(self.line)
             super().__init__(cells=self.cells, points=self.cell_points, name=self.name,
                                     thickness=self.thickness,
                                     subdivide=self.subdivide)
@@ -68,7 +66,7 @@ class Plane_Geom(Mesh, Geometric_entity):
                 xy.remove(xy[-1])
             return xy
     
-    def generate_polygon_from_shapely_LineString(self, poly):
+    def generate_polygon_from_shapely_linestring(self, poly):
         if hasattr(poly, 'exterior'):
             self.xy=self.format_line(poly.exterior)
         else:
@@ -120,7 +118,7 @@ class Plane_Geom(Mesh, Geometric_entity):
             self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
                                        [("triangle", t['triangles'].tolist())])
             
-    def generate_triangulation_from_shapely_LineString(self, poly):
+    def generate_triangulation_from_shapely_linestring(self, poly):
         if hasattr(poly, 'exterior'):
             self.xy=self.format_line(poly.exterior, gmsh=False)
         else:
@@ -158,7 +156,7 @@ class Plane_Geom(Mesh, Geometric_entity):
     
             
     
-class Path(Plane_Geom):
+class Path(PlaneGeom):
 
     def __init__(self, points, width, cap_style='flat',
                  join_style='round', resolution=16,
@@ -182,9 +180,9 @@ class Path(Plane_Geom):
                                 cap_style=self.cap_style,
                                 join_style=self.join_style,
                                 resolution=self.resolution)
-        self.generate_polygon_from_shapely_LineString(self.line)
+        self.generate_polygon_from_shapely_linestring(self.line)
         
-class Arrow(Plane_Geom):
+class Arrow(PlaneGeom):
     
     def __init__(self, head_width=0.1, head_length=0.2,
                  length=1, width=0.05, **kwargs):
@@ -197,13 +195,13 @@ class Arrow(Plane_Geom):
     
     def generate(self):
         self.line=geometry.LineString([(0,0,0), (self.length,0,0)]).buffer(self.width/2.)
-        self.poly=self.generate_polygon_from_shapely_LineString(self.line)
+        self.poly=self.generate_polygon_from_shapely_linestring(self.line)
         self.head=self.geom.add_polygon([(self.length,-self.head_width/2,0),
                                          (self.length+self.head_length,0,0),
                                          (self.length,self.head_width/2,0)])
         self.arrow=self.geom.boolean_union([self.poly, self.head])
     
-class Polygon(Plane_Geom):
+class Polygon(PlaneGeom):
     
     def __init__(self, points,
                  **kwargs):
@@ -216,7 +214,7 @@ class Polygon(Plane_Geom):
         self.xy=self.format_line(self.line)
         self.geom.add_polygon(self.xy)
 
-class Cylinder(Plane_Geom):
+class Cylinder(PlaneGeom):
     
     def __init__(self, name='Cylinder', radius=1, height=1,
                  **kwargs):
@@ -224,7 +222,7 @@ class Cylinder(Plane_Geom):
         super().__init__(name=name, thickness=height, **kwargs)
         self.send_to_blender(use_triangle=True)
 
-class Box(Plane_Geom):
+class Box(PlaneGeom):
     
     def __init__(self, name='Box', Lx=1, Ly=1, Lz=1, **kwargs):
         self.line=geometry.box(-Lx/2,-Ly/2,Lx/2, Ly/2).exterior

@@ -6,7 +6,7 @@ Created on Sat Jan  1 14:40:44 2022
 """
 
 import bpy
-import json, os
+import json
 from bpy_extras.io_utils import ImportHelper
 from mathutils import Vector, Euler
 
