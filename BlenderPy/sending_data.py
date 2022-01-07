@@ -267,6 +267,7 @@ class ShaderNode:
     
     def __init__(self, parent=None, shader_type='Emission',
                  name=None, **kwargs):
+        self.shader_type=shader_type
         assert parent is not None
         self._shadertype_dict=dict({'Emission':'ShaderNodeEmission',
                          'Add':'ShaderNodeAddShader',
@@ -277,7 +278,8 @@ class ShaderNode:
                          'Material Output':'ShaderNodeOutputMaterial',
                          'Image':'ShaderNodeTexImage',
                          'Glossy':'ShaderNodeBsdfGlossy',
-                         'Noise':'ShaderNodeTexNoise'})
+                         'Noise':'ShaderNodeTexNoise',
+                         'Color_Ramp':'ShaderNodeValToRGB'})
         if name==None:
             kwargs['shader_type']=self._format_type(shader_type)
             kwargs['parent_name']=parent
@@ -299,6 +301,9 @@ class ShaderNode:
     def _format_type(self, key):
         assert key in self._shadertype_dict.keys()
         return self._shadertype_dict[key]
+    
+    def remove(self):
+        send(parse('remove_shader()', kwargs=self.to_dict()))
     
     @property
     def inputs(self):
@@ -382,15 +387,18 @@ class Modifier:
     
 class Material:
     
-    def __init__(self, name, color, alpha=1., transmission=0,
+    def __init__(self, name='material', color='#FFFFFF', alpha=1., transmission=0,
                  use_screen_refraction=False, refraction_depth=0.,
                  blend_method='OPAQUE', blend_method_shadow='OPAQUE',
-                 use_backface_culling=False,
+                 use_backface_culling=False, create_new=True,
                  metallic=0.,
                  **kwargs):
-        names = self.get_material_names()
-        if name in names:
-            self.material_object = self.get_material(name)
+        if not create_new:
+            names = self.get_material_names()
+            if name in names:
+                self.material_object = self.get_material(name)
+            else:
+                self.material_object = self.create_material(name)
         else:
             self.material_object = self.create_material(name)
         self.color=self.convert_color(color)
@@ -408,7 +416,13 @@ class Material:
                          '/':'DIVIDE',
                          '+':'ADD',
                          '-':'SUBTRACT',
-                         '^':'POWER'})
+                         '^':'POWER',
+                         '>':'GREATER_THAN',
+                         '<':'LESS_THAN',
+                         'ABS':'ABSOLUTE',
+                         'sqrt':'SQRT',
+                         'cos':'COSINE',
+                         'sin':'SINE'})
         names=['Principled BSDF', 'Material Output']
         self.shadernodes_dimensions=dict()
         for name in names:
@@ -599,11 +613,49 @@ class Metallic_Material(Material):
         noise.inputs['Detail']=detail
         noise.inputs['Roughness']=roughness
         coord.properties['object']=target
-        '''kwargs=dict()
-        kwargs['name_mat']=self.material_object
-        kwargs['randomness']=randomness
-        kwargs['color']=color
-        send(parse('metallic_texture()', kwargs=kwargs))'''
+
+class Emission_Material(Material):
+    
+    def __init__(self, color='#AF2020', expression=None, strength=None, **kwargs):
+         super().__init__(**kwargs)
+         emission=self.add_shader('Emission')
+         #emission.inputs['Color']=self.convert_color(color)
+         output=self.get_shader('Material Output')
+         output.inputs['Volume']=emission.outputs['Emission']
+         Principled=self.get_shader('Principled BSDF')
+         Principled.remove()
+         
+         if expression is not None:
+             coords=self.add_shader('Texture_coordinates')
+             sepxyz=self.add_shader('Separate_XYZ')
+             sepxyz.inputs['Vector']=coords.outputs['Generated']
+             shader=self.coordinate_expression(expression, 
+                                               special_keys=dict({'x':sepxyz.outputs['X'],
+                                                             'y':sepxyz.outputs['Y'],
+                                                             'z':sepxyz.outputs['Z']}))
+             emission.inputs['Strength']=shader.outputs['Value']
+         elif strength is not None:
+             emission.inputs['Strength']=strength
+
+class Z_Color_Ramp_Material(Material):
+    
+    def __init__(self, colors=None, positions=None, **kwargs):
+        super().__init__(**kwargs)
+        coord=self.add_shader('Texture_coordinates')
+        sep=self.add_shader('Separate_XYZ')
+        sep.inputs['Vector']=coord.outputs['Generated']
+        color_ramp=self.add_shader('Color_Ramp')
+        color_ramp.inputs['Fac']=sep.outputs['Z']
+        color_ramp.properties['color_ramp']=dict({'positions':positions,
+                             'colors':[self.convert_color(color) for color in colors]})
+        principled=self.get_shader('Principled BSDF')
+        principled.inputs['Base Color']=color_ramp.outputs['Color']
+            
+class Gaussian_Laser_Material(Emission_Material):
+    
+    def __init__(self, alpha=0.001, waist=0.1, strength=3, **kwargs):
+        expression='{:}e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))'.format(strength, alpha, waist**2)
+        super().__init__(expression=expression, **kwargs) 
     
 class Object:
     
@@ -617,8 +669,12 @@ class Object:
             self.load(filepath)
     
     def assign_material(self, material):
-        kwargs = dict({'name_obj':self.name_obj,
-                       'name_mat':material.material_object})
+        if isinstance(material, list):
+            kwargs = dict({'name_obj':self.name_obj,
+                           'name_mat':[mat.material_object for mat in material]})
+        else:
+            kwargs = dict({'name_obj':self.name_obj,
+                           'name_mat':material.material_object})
         send(parse('assign_material()', kwargs=kwargs))
     
     def load(self, filepath):
@@ -891,11 +947,6 @@ class Mesh(Object, Geometric_entity):
         res['kwargs']=kwargs
         return ask(json.dumps(res)) 
     
-    def assign_material(self, material):
-        kwargs = dict({'name_obj':self.name_obj,
-                       'name_mat':material.material_object})
-        send(parse('assign_material()', kwargs=kwargs))
-    
     def make_oscillations(self, target_scale=[1,1,1],
                           target_rotation =[0,0,0], target_motion=[0,0,0],
                           center_scale=[1,1,1], center_rotation=[0,0,0],
@@ -922,6 +973,21 @@ class Mesh(Object, Geometric_entity):
                        'planes_co':plane_points,
                        'planes_no':plane_normals})
         send(parse('cut_mesh()', kwargs=kwargs))
+    
+    def divide(self, Nx=None, Ny=None, Nz=None):
+        if Nx is not None:
+            xs=np.linspace(self.xmin, self.xmax, Nx)
+            self.cut_mesh([[x,0,0] for x in xs],
+                          [[1,0,0] for x in xs])
+        if Ny is not None:
+            ys=np.linspace(self.ymin, self.ymax, Ny)
+            self.cut_mesh([[0,y,0] for y in ys],
+                          [[0,1,0] for y in ys])
+        if Nz is not None:
+            zs=np.linspace(self.zmin, self.zmax, Nz)
+            self.cut_mesh([[0,0,z] for z in zs],
+                          [[0,0,1] for z in zs])
+        
     
     @property
     def parent(self):

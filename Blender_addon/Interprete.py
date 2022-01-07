@@ -141,7 +141,20 @@ class Interprete:
         node=mat.node_tree.nodes[from_name]
         if 'path' in kwargs.keys():
             value=bpy.data.images.load(kwargs['path'], check_existing=True)
-        setattr(node, from_key, value)
+            setattr(node, from_key, value)
+        elif isinstance(value, dict):
+            if from_key=='color_ramp':
+                for element in node.color_ramp.elements[:-1]:
+                    node.color_ramp.elements.remove(element)
+                element=node.color_ramp.elements[0]
+                element.position=value['positions'][0]
+                element.color=value['colors'][0]
+                for position, color in zip(value['positions'][1:],
+                                           value['colors'][1:]):
+                    new_element=node.color_ramp.elements.new(position)
+                    new_element.color=color
+        else:
+            setattr(node, from_key, value)
         
     def get_shadernode_property(self, key=None, 
                              material_name=None, 
@@ -150,6 +163,10 @@ class Interprete:
         mat=bpy.data.materials[material_name]
         node=mat.node_tree.nodes[name]
         res=getattr(node, key)
+        if isinstance(res, bpy.types.ColorRamp):
+            res=[(el.position, [el.color[0], el.color[1],
+                                el.color[2], el.color[3]])\
+                 for el in res.elements]
         self.server.send_answer(connection,
                                     res)
     
@@ -704,8 +721,12 @@ class Interprete:
         assert connection is not None
         self.server.send_answer(connection,
                                 [item.name for item in bpy.data.materials])
-
     
+    def remove_shader(self, parent_name=None, name=None, **kwargs):
+        mat=bpy.data.materials[parent_name]
+        node=mat.node_tree.nodes[name]
+        mat.node_tree.nodes.remove(node)
+       
     def create_light(self, name='light', light_type='POINT',
                      connection=None, power=100, radius=0.2,
                      location=[0,0,0]):
@@ -828,14 +849,17 @@ class Interprete:
         self.nodes = mat.node_tree.nodes
         return mat
     
-    def assign_material(self, **kwargs):
+    def assign_material(self, name_obj=None, name_mat=None, **kwargs):
         #bpy.data.objects[kwargs['name_obj']].select_set(True)
         #bpy.context.view_layer.objects.active = bpy.data.objects[kwargs['name_obj']]
-        ob = bpy.data.objects[kwargs['name_obj']]
-        if ob.data.materials:
-            ob.data.materials[0] = bpy.data.materials.get(kwargs['name_mat'])
+        ob = bpy.data.objects[name_obj]
+        ob.data.materials.clear()
+        if isinstance(name_mat, list):
+            for name in name_mat:
+                mat=bpy.data.materials.get(name)
+                ob.data.materials.append(mat)
         else:
-            ob.data.materials.append(bpy.data.materials.get(kwargs['name_mat']))
+            ob.data.materials.append(bpy.data.materials.get(name_mat))
             
     def cut_mesh(self, name_msh=None, planes_co=None,
                  planes_no=None, **kwargs):
