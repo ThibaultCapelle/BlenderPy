@@ -524,7 +524,7 @@ class Material:
         params.update(kwargs)
         send(parse('z_dependant_color()', kwargs=params))
     
-    def surface_noise(self, scale=3, detail=2):
+    def surface_noise(self, scale=3, detail=2, roughness=0.5):
         noise=self.add_shader('Noise')
         coord=self.add_shader('Texture_coordinates')
         output=self.get_shader('Material Output')
@@ -532,6 +532,7 @@ class Material:
         output.inputs['Displacement']=noise.outputs['Fac']
         noise.inputs['Scale']=scale
         noise.inputs['Detail']=detail
+        noise.inputs['Roughness']=roughness
     
     def glowing(self, color='#FFFFFF', strength=10, **kwargs):
         emission=self.add_shader('Emission')
@@ -686,6 +687,9 @@ class Object:
         for k, v in data.items():
             self.properties[k]=v
     
+    def duplicate(self):
+        return Object(name_obj=ask(parse('duplicate()', name_obj=self.name_obj)))
+    
     def follow_path(self, target=None, use_curve_follow=True,
                     forward_axis='FORWARD_X'):
         constraint=self.assign_constraint(constraint_type='FOLLOW_PATH')
@@ -768,21 +772,15 @@ class Object:
     
     @x.setter
     def x(self, val):
-        location=self.location
-        location[0]=val
-        self.location=location
+        self.location=dict({'x':val})
     
     @y.setter
     def y(self, val):
-        location=self.location
-        location[1]=val
-        self.location=location
+        self.location=dict({'y':val})
     
     @z.setter
     def z(self, val):
-        location=self.location
-        location[2]=val
-        self.location=location
+        self.location=dict({'z':val})
     
     @property
     def matrix_world(self):
@@ -882,28 +880,27 @@ class Light(Object):
     
     def __init__(self, name='light', location=[0.,0.,0.],
                  power=2, radius=0.25, light_type='POINT'):
-        self.add_light(name, location, power, radius, light_type=light_type)
-        self._properties=PropertyDict(self.name,
-                                      self.name_obj,
-                                      func='light_property')
-        self.properties['type']=light_type
+        self.add_light(name, light_type=light_type)
+        super().__init__()
+        self._light_properties=PropertyDict(self.name,
+                                           self.name_obj,
+                                           func='light_property')
+        self.light_properties['energy']=power
+        self.light_properties['shadow_soft_size']=radius
+        self.location=location
         
-    def add_light(self, name, location, power, radius, light_type='POINT'):
+    def add_light(self, name, light_type='POINT'):
         res=dict()
         kwargs = dict()
-        kwargs['location']=location
-        kwargs['power']=power
-        kwargs['radius']=radius
-        kwargs['name']=name
-        res['light_type']=light_type
+        kwargs['light_type']=light_type
         res['args']=[]
         res['command']='create_light'
         res['kwargs']=kwargs
         self.name, self.name_obj=ask(json.dumps(res))
     
     @property
-    def properties(self):
-        return self._properties
+    def light_properties(self):
+        return self._light_properties
         
 
 class Mesh(Object, GeometricEntity):
@@ -938,7 +935,9 @@ class Mesh(Object, GeometricEntity):
             kwargs['points']=[[coord for coord in p] for p in points]
             kwargs['cells']=[]
             for celltype in cells:
-                if celltype[0]=='triangle':
+                if not isinstance(celltype[0], str):
+                    kwargs['cells']+=[[int(ind) for ind in celltype]]
+                elif celltype[0]=='triangle':
                     kwargs['cells']+=[[int(ind) for ind in cell] for cell in celltype[1]]
          
         kwargs['name']=name
@@ -948,6 +947,7 @@ class Mesh(Object, GeometricEntity):
         res['args']=[]
         res['command']='create_mesh'
         res['kwargs']=kwargs
+        print(kwargs)
         return ask(json.dumps(res)) 
     
     def make_oscillations(self, target_scale=[1,1,1],

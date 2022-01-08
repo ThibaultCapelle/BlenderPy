@@ -217,17 +217,25 @@ class Polygon(PlaneGeom):
 class Cylinder(PlaneGeom):
     
     def __init__(self, name='Cylinder', radius=1, height=1,
-                 **kwargs):
-        self.line=geometry.Point(0,0).buffer(radius).exterior
+                 N_points=32, **kwargs):
+        #self.line=geometry.Point(0,0).buffer(radius).exterior
+        self.cell_points=[[radius*np.cos(theta), radius*np.sin(theta), -height/2] 
+                        for theta in np.linspace(0, 2*np.pi, N_points)]
+        self.cells=[[i for i in range(N_points)]]
         super().__init__(name=name, thickness=height, **kwargs)
-        self.send_to_blender(use_triangle=True)
+        self.send_to_blender(from_external_loading=True)
 
 class Box(PlaneGeom):
     
     def __init__(self, name='Box', Lx=1, Ly=1, Lz=1, **kwargs):
-        self.line=geometry.box(-Lx/2,-Ly/2,Lx/2, Ly/2).exterior
+        #self.line=geometry.box(-Lx/2,-Ly/2,Lx/2, Ly/2).exterior
+        self.cell_points=[[-Lx/2, -Ly/2, -Lz/2],
+                          [-Lx/2, Ly/2, -Lz/2],
+                          [Lx/2, Ly/2, -Lz/2],
+                          [Lx/2, -Ly/2, -Lz/2]]
+        self.cells=[[0, 1, 2, 3]]
         super().__init__(name=name, thickness=Lz, **kwargs)
-        self.send_to_blender(use_triangle=True)
+        self.send_to_blender(from_external_loading=True)
 
         
 if __name__=='__main__':
