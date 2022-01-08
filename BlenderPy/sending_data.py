@@ -175,6 +175,14 @@ class Scene:
     
     def __init__(self):
         self._properties=PropertyDict(func='scene_property')
+    
+    @property
+    def frame_current(self):
+        return self._properties['frame_current']
+    
+    @frame_current.setter
+    def frame_current(self, val):
+        self._properties['frame_current']=val
         
     @property
     def frame_start(self):
@@ -479,7 +487,7 @@ class Material:
     
     def coordinate_expression(self, exp, input_shader=None, special_keys=None):
         e=Expression(content=exp, tokens=[])
-        if not e.isleaf():
+        if not e.is_leaf():
             tree=e.get_tree()
             tree['parent']=None
             return self.distribute_shaders(tree,input_shader=input_shader,
@@ -524,12 +532,24 @@ class Material:
         params.update(kwargs)
         send(parse('z_dependant_color()', kwargs=params))
     
-    def surface_noise(self, scale=3, detail=2, roughness=0.5):
+    def surface_noise(self, scale=3, detail=2, roughness=0.5,
+                      orientation='Z', origin='Generated'):
         noise=self.add_shader('Noise')
         coord=self.add_shader('Texture_coordinates')
+        sepxyz=self.add_shader('Separate_XYZ')
+        sepxyz.inputs['Vector']=coord.outputs['Normal']
+        sup=self.add_shader('Math')
+        sup.properties['operation']=self.operations['>']
+        sup.inputs[0]=sepxyz.outputs[orientation]
+        sup.inputs[1]=0.5
+        mult=self.add_shader('Math')
+        mult.properties['operation']=self.operations['*']
+        mult.inputs[0]=sup.outputs['Value']
+        
         output=self.get_shader('Material Output')
-        noise.inputs['Vector']=coord.outputs['Generated']
-        output.inputs['Displacement']=noise.outputs['Fac']
+        noise.inputs['Vector']=coord.outputs[origin]
+        mult.inputs[1]=noise.outputs['Fac']
+        output.inputs['Displacement']=mult.outputs['Value']
         noise.inputs['Scale']=scale
         noise.inputs['Detail']=detail
         noise.inputs['Roughness']=roughness
@@ -698,6 +718,10 @@ class Object:
         constraint.properties['forward_axis']=forward_axis
         self.constraints.append(constraint)
     
+    def insert_keyframe(self, key, frame='current'):
+        send(parse('insert_keyframe_object()', key=key, frame=frame,
+                   name_obj=self.name_obj))
+        
     def assign_constraint(self, constraint_type='FOLLOW_PATH', **kwargs):
         return Constraint(parent=self.name_obj,
                                    constraint_type=constraint_type,
@@ -947,7 +971,6 @@ class Mesh(Object, GeometricEntity):
         res['args']=[]
         res['command']='create_mesh'
         res['kwargs']=kwargs
-        print(kwargs)
         return ask(json.dumps(res)) 
     
     def make_oscillations(self, target_scale=[1,1,1],
@@ -967,7 +990,7 @@ class Mesh(Object, GeometricEntity):
                        'center_rotation':center_rotation})
         assert ask(parse('make_oscillations()', kwargs=kwargs))=="DONE"
     
-    def insert_keyframe(self, frame='current'):
+    def insert_mesh_keyframe(self, frame='current'):
          kwargs = dict({'name_msh':self.name_msh, 'frame':frame})
          send(parse('insert_keyframe_mesh()', kwargs=kwargs))
         

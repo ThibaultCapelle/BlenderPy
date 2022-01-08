@@ -5,13 +5,130 @@ Created on Wed Oct 20 10:50:42 2021
 @author: Thibault
 """
 
-from shapely import geometry
+from shapely import geometry, affinity
 import triangle
 import pygmsh
 import numpy as np
 from BlenderPy.sending_data import (Material, Mesh, delete_all,
                           Light, Camera, Curve, Object,
                           ShaderNode, Plane, GeometricEntity)
+
+class Polygon():
+    
+    def __init__(self, points=[], holes=[]):
+        self.points=points
+        self.holes=holes
+    
+    def to_shapely(self):
+        return geometry.Polygon(self.points, holes=self.holes)
+    
+    def from_shapely(self, poly):
+        self.points, self.holes=self.polygon_to_points(poly)
+    
+    def substract(self, other):
+        assert isinstance(other, Polygon)
+        diff=self.to_shapely().difference(other.to_shapely())
+        self.from_shapely(diff)
+    
+    def duplicate(self):
+        return Polygon(points=self.points.copy(),
+                       holes=self.holes.copy())
+        
+    def xy_to_points(self, line):
+        xs, ys=(np.array(line.xy[0]),
+                np.array(line.xy[1]))
+        return [[x,y] for x,y in zip(xs, ys)]
+    
+    def polygon_to_points(self, polygon):
+        points_ext=self.xy_to_points(polygon.exterior)
+        points_int=[]
+        for i, interior in enumerate(polygon.interiors):
+            points_int.append(self.xy_to_points(interior))
+        return points_ext, points_int
+
+    
+    def translate(self, vect):
+        for i, p in enumerate(self.points):
+            self.points[i]=[p[0]+vect[0],
+                            p[1]+vect[1]]
+        for i, hole in enumerate(self.holes):
+            for j, p in enumerate(hole):
+                self.holes[i][j]=[p[0]+vect[0],
+                                  p[1]+vect[1]]
+    
+    @property
+    def left(self):
+        return np.min([p[0] for p in self.points])
+    
+    @left.setter
+    def left(self, val):
+        self.translate([val-self.left,
+                        0.])
+    
+    @property
+    def right(self):
+        return np.max([p[0] for p in self.points])
+    
+    @right.setter
+    def right(self, val):
+        self.translate([val-self.right,
+                        0.])
+    
+    @property
+    def bottom(self):
+        return np.min([p[1] for p in self.points])
+    
+    @bottom.setter
+    def bottom(self, val):
+        self.translate([0.,
+                        val-self.bottom])
+    
+    @property
+    def top(self):
+        return np.max([p[1] for p in self.points])
+    
+    @top.setter
+    def top(self, val):
+        self.translate([0.,
+                        val-self.top])
+    
+    @property
+    def center(self):
+        return [0.5*(self.left+self.right),
+                0.5*(self.bottom+self.top)]
+        
+    @center.setter
+    def center(self, val):
+        previous_center=self.center
+        self.translate([val[0]-previous_center[0],
+                        val[1]-previous_center[1]])
+    
+    @property
+    def width(self):
+        return self.right-self.left
+    
+    @property
+    def height(self):
+        return self.top-self.bottom
+    
+class Circle(Polygon):
+    
+    def __init__(self, x0=0, y0=0, radius=1., N=32):
+        points=[[x0+radius*np.cos(theta),
+                 y0+radius*np.sin(theta)] 
+                 for theta in np.linspace(0, 2*np.pi, N)]
+        super().__init__(points=points)
+
+class Rectangle(Polygon):
+    
+    def __init__(self, x0=0, y0=0, Lx=1, Ly=1):
+        points=[[x0-Lx/2, x0-Ly/2],
+                [x0-Lx/2, x0+Ly/2],
+                [x0+Lx/2, x0+Ly/2],
+                [x0+Lx/2, x0-Ly/2]]
+        super().__init__(points=points)
+
+        
     
 class PlaneGeom(Mesh, GeometricEntity):
     
@@ -201,7 +318,7 @@ class Arrow(PlaneGeom):
                                          (self.length,self.head_width/2,0)])
         self.arrow=self.geom.boolean_union([self.poly, self.head])
     
-class Polygon(PlaneGeom):
+'''class Polygon(PlaneGeom):
     
     def __init__(self, points,
                  **kwargs):
@@ -212,7 +329,7 @@ class Polygon(PlaneGeom):
     def generate(self):
         self.line=geometry.LineString(self.points)
         self.xy=self.format_line(self.line)
-        self.geom.add_polygon(self.xy)
+        self.geom.add_polygon(self.xy)'''
 
 class Cylinder(PlaneGeom):
     
