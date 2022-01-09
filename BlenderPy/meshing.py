@@ -12,7 +12,114 @@ import numpy as np
 from BlenderPy.sending_data import (Material, Mesh, delete_all,
                           Light, Camera, Curve, Object,
                           ShaderNode, Plane, GeometricEntity)
+from abc import abstractmethod
 
+class Vector:
+    
+    def __init__(self, *args):
+        if len(args)==2:
+            self.z=0.
+            if isinstance(args[0], tuple) and isinstance(args[1], tuple):
+                self.x=args[1][0]-args[0][0]
+                self.y=args[1][1]-args[0][1]
+            else:
+                self.x=args[0]
+                self.y=args[1]
+        elif len(args)==1:
+            self.z=0.
+            if isinstance(args[0], tuple):
+                self.x=args[0][0]
+                self.y=args[0][1]
+            elif isinstance(args[0], list):
+                self.x=args[0][0]
+                self.y=args[0][1]
+                if(len(args[0])==2):
+                    self.z=0
+                else:
+                    self.z=args[0][2]
+            elif np.isscalar(args[0]):
+                self.x=np.real(args[0])
+                self.y=np.imag(args[0])
+            else:
+                raise TypeError
+        elif len(args)==3:
+                self.x=args[0]
+                self.y=args[1]
+                self.z=args[2]
+    
+    def norm(self):
+        return np.sqrt(self.x**2+self.y**2+self.z**2)
+    
+    def normalize(self):
+        return self/self.norm()
+    
+    def compl(self):
+        return self.x+1j*self.y
+    
+    def cross3(self, other):
+        assert isinstance(other, Vector)
+        return Vector(self.y*other.z-self.z*other.y,
+                      self.z*other.x-self.x*other.z,
+                      self.x*other.y-self.y*other.x)
+    
+    def cross(self, other):
+        assert isinstance(other, Vector)
+        return self.x*other.y-self.y*other.x
+    
+    def __add__(self,other):
+        if not other.__class__ is Vector:
+            print("Erreur: l'argument n'est pas un Vector")
+            return NotImplemented
+        else:
+            return Vector(self.x+other.x, self.y+other.y, self.z+other.z)
+        
+    def __sub__(self, other):
+        return Vector(self.x-other.x, self.y-other.y, self.z-other.z)
+    
+    def __mul__(self,other):
+        if not other.__class__ is Vector:
+            return Vector(self.x*other, self.y*other, self.z*other)
+        else:
+            return self.x*other.x+self.y*other.y
+    
+    def __rmul__(self, other):
+        if not other.__class__ is Vector:
+            return Vector(self.x*other, self.y*other, self.z*other)
+        else:
+            return self.x*other.x+self.y*other.y
+    
+    def __truediv__(self,other):
+        return Vector(self.x/other, self.y/other)
+    
+    def __str__(self):
+        return 'x:{:}, y:{:}'.format(self.x, self.y)
+
+class Transformation:
+    
+    def __init__(self):
+        pass
+    
+    @abstractmethod
+    def update(self, points):
+        pass
+
+class Mirror(Transformation):
+    
+    def __init__(self, point, ax):
+        assert isinstance(ax, list)
+        self.point=Vector(point)
+        self.ax=Vector(ax)
+        self.up=Vector(0,0,1)
+        self.norm=self.up.cross3(self.ax)
+    
+    def update(self, points):
+        for i, point in enumerate(points):
+            p=Vector(point)
+            p0=self.point
+            res=p0+((p-p0)*self.ax)*self.ax-((p-p0)*self.norm)*self.norm
+            points[i]=res
+        return points
+    
 class MultiPolygon():
     
     def __init__(self, polygons=[]):
@@ -77,6 +184,8 @@ class MultiPolygon():
     def height(self):
         return self.top-self.bottom
 
+
+
 class Polygon():
     
     def __init__(self, points=[], holes=[]):
@@ -119,6 +228,11 @@ class Polygon():
             for j, p in enumerate(hole):
                 self.holes[i][j]=[p[0]+vect[0],
                                   p[1]+vect[1]]
+    
+    def mirror(self, point, ax):
+        mir=Mirror(point, ax)
+        self.points=[[p.x, p.y] for p in mir.update(self.points)]
+        return self
     
     @property
     def left(self):
@@ -183,6 +297,27 @@ class Circle(Polygon):
                  for theta in np.linspace(0, 2*np.pi, N)]
         super().__init__(points=points)
 
+class AngularSector(Polygon):
+    
+    def __init__(self, x0=0, y0=0, radius=1., N=32,
+                 theta_1=0, theta_2=np.pi/2):
+        points=[[x0+radius*np.cos(theta),
+                 y0+radius*np.sin(theta)] 
+                 for theta in np.linspace(theta_1, theta_2, N)]+[[0.,0.]]
+        super().__init__(points=points)
+
+class RoundCorner(Polygon):
+    
+    def __init__(self, x0=0, y0=0, radius=1., N=32,
+                 theta_1=0, theta_2=np.pi/2, width=0.1):
+        points=[[x0+(radius+width/2)*np.cos(theta),
+                 y0+(radius+width/2)*np.sin(theta)] 
+                 for theta in np.linspace(theta_1, theta_2, N)]
+        points+=[[x0+(radius-width/2)*np.cos(theta),
+                 y0+(radius-width/2)*np.sin(theta)] 
+                 for theta in np.linspace(theta_2, theta_1, N)]
+        super().__init__(points=points)
+        
 class Rectangle(Polygon):
     
     def __init__(self, x0=0, y0=0, Lx=1, Ly=1):
@@ -201,6 +336,7 @@ class PlaneGeom(Mesh, GeometricEntity):
                  material=Material('nitrure', '#F5D15B', alpha=0.3, blend_method='BLEND',
                  use_backface_culling=True, blend_method_shadow='NONE'),
                  rounding_decimals=12, subdivide=1, refine=None):
+        print('bonjour')
         self.refine=refine
         self.subdivide=subdivide
         self.name=name
@@ -210,6 +346,7 @@ class PlaneGeom(Mesh, GeometricEntity):
         self.rounding_decimals=rounding_decimals
         if polygon is not None:
             if isinstance(polygon, Polygon):
+                print('hello')
                 if len(polygon.holes)==0:
                     self.cell_points=[[p[0], p[1], 0.] for p in polygon.points]
                     self.cells=[[i for i, p in enumerate(polygon.points)]]
