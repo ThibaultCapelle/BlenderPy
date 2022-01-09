@@ -215,13 +215,13 @@ class ShaderDict(dict):
             kwargs.update(value.to_dict(material_name=self.material_name,
                                         from_name=self.name,
                                        from_key=key))
-            send(parse('set_'+self.func, kwargs=kwargs))
+            ask(parse('set_'+self.func, kwargs=kwargs))
         else:
             kwargs.update(dict({'material_name':self.material_name,
                                 'from_name':self.name,
                                 'from_key':key,
                                 'value':value}))
-            send(parse('set_'+self.func, kwargs=kwargs))
+            ask(parse('set_'+self.func, kwargs=kwargs))
     
     def __getitem__(self, key):
         kwargs=self.params.copy()
@@ -360,7 +360,7 @@ class PropertyDict(dict):
         if hasattr(value, 'to_dict'):
             value=value.to_dict()
         kwargs['value']=value
-        send(parse('set_'+self.func,
+        ask(parse('set_'+self.func,
                    kwargs=kwargs))
     
     def __getitem__(self, key):
@@ -393,7 +393,7 @@ class Modifier:
             kwargs=dict({'name':self.name,
                          'name_obj':self.parent_name})
             time.sleep(0.1)
-            send(parse('apply_modifier', kwargs=kwargs))
+            print(ask(parse('apply_modifier', kwargs=kwargs)))
         
     
 class Material:
@@ -680,6 +680,21 @@ class GaussianLaserMaterial(EmissionMaterial):
     def __init__(self, alpha=0.001, waist=0.1, strength=3, **kwargs):
         expression='{:}e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))'.format(strength, alpha, waist**2)
         super().__init__(expression=expression, **kwargs) 
+
+class Collection:
+    
+    def __init__(self, name=None, **kwargs):
+        self.name_col=ask(parse('create_collection()', name=name))
+        self._properties=PropertyDict('', self.name_col, func='collection_property')
+    
+    def link(self, obj):
+        assert isinstance(obj, Object)
+        ask(parse('link_object', name_col=self.name_col,
+                  name_obj=obj.name_obj))
+    
+    @property
+    def properties(self):
+        return self._properties
     
 class Object:
     

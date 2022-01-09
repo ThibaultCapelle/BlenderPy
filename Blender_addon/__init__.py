@@ -9,7 +9,7 @@ bl_info = {
 }
 
 
-modulesNames = ['panels', 'printing', 'receiving_data', 'interprete', 'saving_operator']
+modulesNames = ['panels', 'receiving_data', 'interprete', 'saving_operator']
  
 import sys
 import importlib

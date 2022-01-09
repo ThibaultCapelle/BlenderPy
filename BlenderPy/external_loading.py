@@ -8,7 +8,7 @@ Created on Sun Dec 26 15:54:46 2021
 import pya
 import numpy as np
 import struct
-from BlenderPy.meshing import Plane_Geom
+from BlenderPy.meshing import PlaneGeom
 from BlenderPy.sending_data import Mesh
 
 class VTULoader:
@@ -142,8 +142,8 @@ class GDSLoader:
     def load(self):
         res=[]
         for shape in self.polygons:
-            plane_geom=Plane_Geom(**self.kwargs)
-            plane_geom.generate_triangulation_from_shapely_LineString\
+            plane_geom=PlaneGeom(**self.kwargs)
+            plane_geom.generate_triangulation_from_shapely_linestring\
             (plane_geom.generate_shapely_polygon_from_points(shape))
             plane_geom.send_to_blender(from_external_loading=True)
             res.append(plane_geom)

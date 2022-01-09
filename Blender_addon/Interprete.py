@@ -23,16 +23,22 @@ class Interprete:
             bpy.data.objects.remove(block, do_unlink=True)
         for block in bpy.data.lights:
             bpy.data.lights.remove(block, do_unlink=True)
+            time.sleep(0.01)
         for block in bpy.data.cameras:
             bpy.data.cameras.remove(block, do_unlink=True)
+            time.sleep(0.01)
         for block in bpy.data.meshes:
             bpy.data.meshes.remove(block, do_unlink=True)
+            time.sleep(0.01)
         for block in bpy.data.materials:
             bpy.data.materials.remove(block, do_unlink=True)
+            time.sleep(0.01)
         for block in bpy.data.textures:
             bpy.data.textures.remove(block, do_unlink=True)
+            time.sleep(0.01)
         for block in bpy.data.images:
             bpy.data.images.remove(block, do_unlink=True)
+            time.sleep(0.01)
         self.server.send_answer(connection, "DONE")
     
     def remove_object(self, connection=None, name_obj=None, **kwargs):
@@ -57,6 +63,7 @@ class Interprete:
         if isinstance(value, dict):
             value=bpy.data.objects[value['name_obj']]
         setattr(bpy.data.objects[parent_name_obj].modifiers[parent_name],key, value)
+        self.server.send_answer(connection, 'FINISHED')
     
     def get_modifier_property(self, connection=None,
                           key=None,
@@ -79,6 +86,7 @@ class Interprete:
         if isinstance(value, dict):
             value=bpy.data.objects[value['name_obj']]
         setattr(bpy.data.objects[parent_name_obj].constraints[parent_name],key, value)
+        self.server.send_answer(connection, 'FINISHED')
     
     def get_constraint_property(self, connection=None,
                           key=None,
@@ -128,6 +136,7 @@ class Interprete:
             from_socket=mat.node_tree.nodes[parent_name].outputs[key]
             mat.node_tree.links.new(from_socket,
                                     to_socket)
+        self.server.send_answer(connection, 'FINISHED')
     
     def set_shadernode_property(self, material_name=None, 
                              from_name=None,
@@ -153,6 +162,7 @@ class Interprete:
                     new_element.color=color
         else:
             setattr(node, from_key, value)
+        self.server.send_answer(connection, 'FINISHED')
         
     def get_shadernode_property(self, key=None, 
                              material_name=None, 
@@ -178,6 +188,7 @@ class Interprete:
         node=mat.node_tree.nodes[parent_name]
         socket=node[socket_key]
         setattr(socket, key, value)
+        self.server.send_answer(connection, 'FINISHED')
         
     def get_shadersocket_property(self, material_name=None, 
                                   key=None,
@@ -197,6 +208,7 @@ class Interprete:
                              connection=None, **kwargs):
         light=bpy.data.lights[parent_name]
         setattr(light, key, value)
+        self.server.send_answer(connection, 'FINISHED')
         
     def get_light_property(self, key=None,
                                   parent_name=None,
@@ -211,7 +223,13 @@ class Interprete:
                              parent_name_obj=None,
                              connection=None, **kwargs):
         obj=bpy.data.objects[parent_name_obj]
-        setattr(obj, key, value)
+        if key=='location' and isinstance(value, dict):
+            for k,v in value.items():
+                setattr(obj.location, k, v)
+        else:
+            print(key)
+            setattr(obj, key, value)
+        self.server.send_answer(connection, 'FINISHED')
         
     def get_object_property(self, key=None,
                                   parent_name_obj=None,
@@ -220,6 +238,11 @@ class Interprete:
         res=getattr(obj, key)
         self.server.send_answer(connection,
                                     res)
+    
+    def create_collection(self, connection=None,
+                          name=None):
+        col=bpy.data.collections.new(name)
+        self.server.send_answer(connection, col.name)
     
     def set_shadernode_output(self, material_name=None, 
                              from_name=None,
@@ -234,6 +257,7 @@ class Interprete:
         to_socket=mat.node_tree.nodes[parent_name].inputs[key]
         mat.node_tree.links.new(from_socket,
                                     to_socket)
+        self.server.send_answer(connection, 'FINISHED')
     
     def get_shadernode_input(self, key=None, 
                              material_name=None, 
@@ -266,7 +290,7 @@ class Interprete:
         ctx = bpy.context.copy()
         ctx['object'] = obj
         ctx['modifier']= obj.modifiers[name]
-        bpy.ops.object.modifier_apply(ctx, modifier=modifier_type)
+        self.server.send_answer(bpy.ops.object.modifier_apply(ctx, modifier=modifier_type))
     
     def get_shadernode_output(self, key=None, 
                              material_name=None, 
@@ -361,6 +385,7 @@ class Interprete:
     def set_scene_property(self, key=None, value=None,
                            connection=None, **kwargs):
         setattr(bpy.context.scene, key, value)
+        self.server.send_answer(connection, 'FINISHED')
     
     def get_vertices(self, name_msh=None,
                      connection=None, **kwargs):
@@ -380,6 +405,14 @@ class Interprete:
         for v in bpy.data.meshes[name_msh].vertices.values():
             v.keyframe_insert('co', frame=frame)
             time.sleep(0.001)
+    
+    def insert_keyframe_object(self, name_obj=None,
+                               connection=None, frame='current',
+                               key=None, **kwargs):
+        if frame=='current':
+            frame=bpy.context.scene.frame_current
+        ob=bpy.data.objects[name_obj]
+        ob.keyframe_insert(key, frame=frame)
             
     def make_oscillations(self, **kwargs):
         scene=bpy.context.scene
@@ -445,18 +478,18 @@ class Interprete:
         mat=bpy.data.materials[parent_name]
         node=mat.node_tree.nodes[name]
         mat.node_tree.nodes.remove(node)
+    
+    def duplicate(self, connection=None, name_obj=None):
+        ob=bpy.data.objects[name_obj]
+        ob_copy=ob.copy()
+        bpy.data.collections[0].objects.link(ob_copy)
+        self.server.send_answer(connection, ob_copy.name)
        
     def create_light(self, name='light', light_type='POINT',
-                     connection=None, power=100, radius=0.2,
-                     location=[0,0,0]):
-        
+                     connection=None):
         new_light=bpy.data.lights.new(name, light_type)
         new_obj=bpy.data.objects.new(name, new_light)
-        new_obj.location.x=location[0]
-        new_obj.location.y=location[1]
-        new_obj.location.z=location[2]
         bpy.data.collections[0].objects.link(new_obj)
-        new_light.energy=power
         self.server.send_answer(connection, [new_light.name, new_obj.name])
     
     def create_plane(self, **kwargs):

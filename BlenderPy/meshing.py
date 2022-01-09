@@ -13,6 +13,70 @@ from BlenderPy.sending_data import (Material, Mesh, delete_all,
                           Light, Camera, Curve, Object,
                           ShaderNode, Plane, GeometricEntity)
 
+class MultiPolygon():
+    
+    def __init__(self, polygons=[]):
+        self.polygons=polygons
+    
+    def translate(self, val):
+        for p in self.polygons:
+            p.translate(val)
+    
+    @property
+    def left(self):
+        return np.min([p.left for p in self.polygons])
+    
+    @left.setter
+    def left(self, val):
+        self.translate([val-self.left,
+                        0.])
+    
+    @property
+    def right(self):
+        return np.max([p.right for p in self.polygons])
+    
+    @right.setter
+    def right(self, val):
+        self.translate([val-self.right,
+                        0.])
+    
+    @property
+    def bottom(self):
+        return np.min([p.bottom for p in self.polygons])
+    
+    @bottom.setter
+    def bottom(self, val):
+        self.translate([0.,
+                        val-self.bottom])
+    
+    @property
+    def top(self):
+        return np.max([p.top for p in self.polygons])
+    
+    @top.setter
+    def top(self, val):
+        self.translate([0.,
+                        val-self.top])
+    
+    @property
+    def center(self):
+        return [0.5*(self.left+self.right),
+                0.5*(self.bottom+self.top)]
+        
+    @center.setter
+    def center(self, val):
+        previous_center=self.center
+        self.translate([val[0]-previous_center[0],
+                        val[1]-previous_center[1]])
+    
+    @property
+    def width(self):
+        return self.right-self.left
+    
+    @property
+    def height(self):
+        return self.top-self.bottom
+
 class Polygon():
     
     def __init__(self, points=[], holes=[]):
@@ -132,7 +196,7 @@ class Rectangle(Polygon):
     
 class PlaneGeom(Mesh, GeometricEntity):
     
-    def __init__(self, name='', thickness=1,
+    def __init__(self, polygon=None, name='', thickness=1,
                  characteristic_length_max=0.03,
                  material=Material('nitrure', '#F5D15B', alpha=0.3, blend_method='BLEND',
                  use_backface_culling=True, blend_method_shadow='NONE'),
@@ -144,7 +208,40 @@ class PlaneGeom(Mesh, GeometricEntity):
         self.geom=pygmsh.opencascade.geometry.Geometry(characteristic_length_max=characteristic_length_max)
         self.material=material
         self.rounding_decimals=rounding_decimals
-    
+        if polygon is not None:
+            if isinstance(polygon, Polygon):
+                if len(polygon.holes)==0:
+                    self.cell_points=[[p[0], p[1], 0.] for p in polygon.points]
+                    self.cells=[[i for i, p in enumerate(polygon.points)]]
+                    self.send_to_blender(from_external_loading=True)
+                else:
+                    self.generate_triangulation_from_point_list([polygon.points,
+                                                                 polygon.holes])
+                    self.send_to_blender(from_external_loading=True)
+            elif isinstance(polygon, MultiPolygon):
+                self.cell_points, self.cells=[], []
+                offset=0
+                for poly in polygon.polygons:
+                    if len(poly.holes)==0:
+                        self.cell_points+=[[p[0],
+                                            p[1],
+                                            0.] for p in poly.points]
+                        self.cells.append([offset+i for
+                                           i,p in enumerate(poly.points)])
+                    else:
+                        res = self.generate_triangulation_from_point_list(
+                                                             [poly.points,
+                                                              poly.holes],
+                                                              overwrite=False)
+                        points, cells=res
+                        self.cell_points+=points
+                        for cell in cells:
+                            self.cells.append([offset+p for
+                                               p in cell])
+                    offset=len(self.cell_points)
+                self.send_to_blender(from_external_loading=True)
+                        
+                            
     def send_to_blender(self, use_triangle=False, from_external_loading=False):
         if not use_triangle and not from_external_loading:
             self._pymesh=pygmsh.generate_mesh(self.geom)
@@ -205,7 +302,7 @@ class PlaneGeom(Mesh, GeometricEntity):
     def generate_shapely_polygon_from_points(self, points):
         return geometry.Polygon(points[0], holes=points[1])
         
-    def generate_triangulation_from_point_list(self, points):
+    def generate_triangulation_from_point_list(self, points, overwrite=True):
         xy=points[0]
         self._to_triangle_vertices=xy
         self._to_triangle_segments=[(len(xy)-1,0)]+\
@@ -216,13 +313,17 @@ class PlaneGeom(Mesh, GeometricEntity):
                        opts="p")
             if self.refine is not None:
                 t=triangle.triangulate(t, opts="pra{:}".format(self.refine))
-            self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
-                                       [("triangle", t['triangles'].tolist())])
+            if overwrite:
+                self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
+                                                 [("triangle", t['triangles'].tolist())])
+            else:
+                return ([p+[0.] for p in t['vertices'].tolist()],
+                         [("triangle", t['triangles'].tolist())])
         else:
-            print('we have a fucking hole')
             holes=[]
             for hole in points[1]:
-                holes.append(hole.pop(-1))
+                holes.append([np.mean([p[0] for p in hole]),
+                              np.mean([p[1] for p in hole])])
                 N=len(self._to_triangle_vertices)
                 self._to_triangle_segments+=[(N+len(hole)+-1,N)]+\
                         [(N+i,N+i+1) for i in range(len(hole)-1)]
@@ -232,8 +333,12 @@ class PlaneGeom(Mesh, GeometricEntity):
                             'segments': self._to_triangle_segments,
                             'holes':holes},
                            opts="p")
-            self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
+            if overwrite:
+                self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
                                        [("triangle", t['triangles'].tolist())])
+            else:
+                return ([p+[0.] for p in t['vertices'].tolist()],
+                         [("triangle", t['triangles'].tolist())])
             
     def generate_triangulation_from_shapely_linestring(self, poly):
         if hasattr(poly, 'exterior'):

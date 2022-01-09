@@ -5,7 +5,6 @@ Created on Thu Aug 27 17:54:45 2020
 @author: Thibault
 """
 
-from .printing import printing_stuff, printing_other_stuff
 from .receiving_data import Server
 
       
