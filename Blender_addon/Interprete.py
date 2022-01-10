@@ -290,7 +290,9 @@ class Interprete:
         ctx = bpy.context.copy()
         ctx['object'] = obj
         ctx['modifier']= obj.modifiers[name]
-        self.server.send_answer(bpy.ops.object.modifier_apply(ctx, modifier=modifier_type))
+        bpy.ops.object.modifier_apply(ctx, modifier=modifier_type)
+        self.server.send_answer(connection,
+                                'FINISHED')
     
     def get_shadernode_output(self, key=None, 
                              material_name=None, 

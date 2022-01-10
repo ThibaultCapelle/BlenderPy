@@ -15,7 +15,6 @@ HOST = '127.0.0.1'
 PORT = 20000
 
 def send(message):
-    #print('len : {:010x}'.format(len(message)))
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
         s.sendall(('{:010x}'.format(len(message))+message).encode())
@@ -25,7 +24,6 @@ def receive_all(sock, n):
     data = bytearray()
     i=1
     while len(data) < n:
-        #print('packet number {:}'.format(i))
         packet = sock.recv(n - len(data))
         if not packet:
             return None
@@ -39,7 +37,6 @@ def ask(message):
         s.sendall(('{:010x}'.format(len(message))+message).encode())
         raw_msglen = s.recv(10)
         msglen = int(raw_msglen.decode(),16)
-        #print(msglen)
         data=receive_all(s, msglen)
         return json.loads(data)['content']
 
@@ -74,7 +71,6 @@ def parse(message, kwargs=None, **keyargs):
         res['args']=args
         res['kwargs']=kwargs
     msg=json.dumps(res)
-    #print(msg)
     return msg
 
 def delete_all():
@@ -393,7 +389,7 @@ class Modifier:
             kwargs=dict({'name':self.name,
                          'name_obj':self.parent_name})
             time.sleep(0.1)
-            print(ask(parse('apply_modifier', kwargs=kwargs)))
+            ask(parse('apply_modifier', kwargs=kwargs))
         
     
 class Material:
@@ -520,7 +516,7 @@ class Material:
                             tree['shader'].inputs[i]=special_keys[node]
                             
         else:
-            print(tree)
+            pass
         return return_shader
         
         
