@@ -88,6 +88,21 @@ class Interprete:
         setattr(bpy.data.objects[parent_name_obj].constraints[parent_name],key, value)
         self.server.send_answer(connection, 'FINISHED')
     
+    def get_camera_property(self, connection=None,
+                          key=None,
+                          parent_name=None,
+                          **kwargs):
+        res=getattr(bpy.data.cameras[parent_name], key)
+        self.server.send_answer(connection, res)
+    
+    def set_camera_property(self, connection=None,
+                          key=None,
+                          parent_name=None,
+                          value=None,
+                          **kwargs):
+        setattr(bpy.data.cameras[parent_name],key, value)
+        self.server.send_answer(connection, 'FINISHED')
+    
     def get_constraint_property(self, connection=None,
                           key=None,
                           parent_name_obj=None,
@@ -382,11 +397,21 @@ class Interprete:
     
     def get_scene_property(self, key=None,
                            connection=None, **kwargs):
-        self.server.send_answer(connection, getattr(bpy.context.scene, key))
+        scene=bpy.context.scene
+        if isinstance(key, list):
+            while(len(key)>1):
+                scene=getattr(scene, key.pop(0))
+            key=key[0]
+        self.server.send_answer(connection, getattr(scene, key))
     
     def set_scene_property(self, key=None, value=None,
                            connection=None, **kwargs):
-        setattr(bpy.context.scene, key, value)
+        scene=bpy.context.scene
+        if isinstance(key, list):
+            while(len(key)>1):
+                scene=getattr(scene, key.pop(0))
+            key=key[0]
+        setattr(scene, key, value)
         self.server.send_answer(connection, 'FINISHED')
     
     def get_vertices(self, name_msh=None,
@@ -401,12 +426,15 @@ class Interprete:
     
     def insert_keyframe_mesh(self, name_msh=None,
                      connection=None, frame='current', 
+                     waiting_time_between_points=0.01,
                      **kwargs):
         if frame=='current':
             frame=bpy.context.scene.frame_current
-        for v in bpy.data.meshes[name_msh].vertices.values():
+        for i,v in enumerate(bpy.data.meshes[name_msh].vertices.values()):
+            print('keyframing point nr {:}'.format(i))
             v.keyframe_insert('co', frame=frame)
-            time.sleep(0.001)
+            time.sleep(waiting_time_between_points)
+        self.server.send_answer(connection, 'FINISHED')
     
     def insert_keyframe_object(self, name_obj=None,
                                connection=None, frame='current',
@@ -415,6 +443,24 @@ class Interprete:
             frame=bpy.context.scene.frame_current
         ob=bpy.data.objects[name_obj]
         ob.keyframe_insert(key, frame=frame)
+        self.server.send_answer(connection, 'FINISHED')
+    
+    def insert_keyframe_shadersocket(self, connection=None,
+                                     material_name=None,
+                                     parent_name=None,
+                                     key=None,
+                                     key_to_keyframe=None,
+                                     shader_socket_type=None,
+                                     frame='current',
+                                     **kwargs):
+        mat=bpy.data.materials[material_name]
+        node=mat.node_tree.nodes[parent_name]
+        if shader_socket_type=='input':
+            socket=node.inputs[key]
+        elif shader_socket_type=='output':
+            socket=node.outputs[key]
+        socket.keyframe_insert(key_to_keyframe, frame=frame)
+        self.server.send_answer(connection, 'FINISHED')
             
     def make_oscillations(self, **kwargs):
         scene=bpy.context.scene
@@ -550,6 +596,7 @@ class Interprete:
         new_obj.rotation_euler.z=rotation[2]
         
         bpy.data.collections[0].objects.link(new_obj)
+        bpy.context.scene.camera=new_obj
         self.server.send_answer(kwargs['connection'], [new_cam.name, new_obj.name])
     
     def get_camera_position(self, **kwargs):
@@ -696,7 +743,7 @@ class Object:
     def extrude(self):
         print('entering extrude')
         print(self.thickness)
-        if self.thickness is not None:
+        if self.thickness is not None and self.thickness>0 :
             mesh=bpy.data.meshes[self.name_msh]
             bm = bmesh.new()   # create an empty BMesh
             bm.from_mesh(mesh)
