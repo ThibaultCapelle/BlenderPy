@@ -8,7 +8,7 @@ Created on Sun Dec 26 15:54:46 2021
 import pya
 import numpy as np
 import struct
-from BlenderPy.meshing import PlaneGeom
+from BlenderPy.meshing import PlaneGeom, Polygon, MultiPolygon
 from BlenderPy.sending_data import Mesh
 
 class VTULoader:
@@ -105,7 +105,8 @@ class GDSLoader:
         shapes_inside_box=[]
         for s in shapes.each():
             bbox=s.bbox()
-            if bbox.left>xmin/dbu and bbox.right<xmax/dbu and bbox.top<ymax/dbu and bbox.bottom>ymin/dbu:
+            if (bbox.left>xmin/dbu and bbox.right<xmax/dbu
+                and bbox.top<ymax/dbu and bbox.bottom>ymin/dbu):
                 shapes_inside_box.append(s)
         reg=pya.Region([b.polygon for b in shapes_inside_box])
         x_center, y_center=(0.5*(reg.bbox().left+reg.bbox().right),
@@ -140,14 +141,21 @@ class GDSLoader:
         self.kwargs=kwargs
         
     def load(self):
-        res=[]
-        for shape in self.polygons:
+        #res=[]
+        if len(self.polygons)==1:
+            poly=Polygon(points=self.polygons[0][0],
+                         holes=self.polygons[0][1])
+        else:
+            poly=MultiPolygon([Polygon(points=p[0],
+                                       holes=p[1]) for p in self.polygons])
+        return PlaneGeom(polygon=poly, **self.kwargs)
+        '''for shape in self.polygons:
             plane_geom=PlaneGeom(**self.kwargs)
             plane_geom.generate_triangulation_from_shapely_linestring\
             (plane_geom.generate_shapely_polygon_from_points(shape))
             plane_geom.send_to_blender(from_external_loading=True)
             res.append(plane_geom)
-        return res
+        return res'''
 
 if __name__=='__main__':
     from BlenderPy.meshing import Box
