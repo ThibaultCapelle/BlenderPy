@@ -34,7 +34,7 @@ class Vector:
             if isinstance(args[0], tuple):
                 self.x=args[0][0]
                 self.y=args[0][1]
-            elif isinstance(args[0], list):
+            elif isinstance(args[0], list) or isinstance(args[0], np.ndarray):
                 self.x=args[0][0]
                 self.y=args[0][1]
                 if(len(args[0])==2):
@@ -93,10 +93,10 @@ class Vector:
             return self.x*other.x+self.y*other.y
     
     def __truediv__(self,other):
-        return Vector(self.x/other, self.y/other)
+        return Vector(self.x/other, self.y/other, self.z/other)
     
     def __str__(self):
-        return 'x:{:}, y:{:}'.format(self.x, self.y)
+        return 'x:{:}, y:{:}, z:{:}'.format(self.x, self.y, self.z)
 
 class Transformation:
     
@@ -132,6 +132,13 @@ class MultiPolygon():
     def translate(self, val):
         for p in self.polygons:
             p.translate(val)
+    
+    def append(self, val):
+        if isinstance(val, Polygon):
+            self.polygons.append(val)
+        elif isinstance(val, MultiPolygon):
+            for p in val.polygons:
+                self.polygons.append(p)
     
     @property
     def left(self):
@@ -211,6 +218,16 @@ class Polygon():
             for poly in other.polygons:
                 diff=diff.difference(poly.to_shapely())
             self.from_shapely(diff)
+    
+    def intersect(self, other):
+        if isinstance(other, Polygon):
+            inter=self.to_shapely().intersection(other.to_shapely())
+            self.from_shapely(inter)
+        elif isinstance(other, MultiPolygon):
+            inter=self.to_shapely()
+            for poly in other.polygons:
+                inter=inter.difference(poly.to_shapely())
+            self.from_shapely(inter)
     
     def duplicate(self):
         return Polygon(points=self.points.copy(),
@@ -442,8 +459,8 @@ class PlaneGeom(Mesh, GeometricEntity):
     
     def __init__(self, polygon=None, name='', thickness=1,
                  characteristic_length_max=0.03,
-                 #material=Material('nitrure', '#F5D15B', alpha=0.3, blend_method='BLEND',
-                 #use_backface_culling=True, blend_method_shadow='NONE'),
+                 material=Material('nitrure', '#F5D15B', alpha=0.3, blend_method='BLEND',
+                 use_backface_culling=True, blend_method_shadow='NONE'),
                  rounding_decimals=12, subdivide=1, refine=None):
         time.sleep(0.1)
         time.sleep(0.1)
@@ -452,7 +469,7 @@ class PlaneGeom(Mesh, GeometricEntity):
         self.name=name
         self.thickness=thickness
         self.geom=pygmsh.opencascade.geometry.Geometry(characteristic_length_max=characteristic_length_max)
-        #self.material=material
+        self.material=material
         self.rounding_decimals=rounding_decimals
         time.sleep(0.1)
         if polygon is not None:
@@ -497,17 +514,20 @@ class PlaneGeom(Mesh, GeometricEntity):
             self._pymesh=pygmsh.generate_mesh(self.geom)
             super().__init__(mesh=self._pymesh, name=self.name,
                                     thickness=self.thickness,
-                                    subdivide=self.subdivide)
+                                    subdivide=self.subdivide,
+                                    material=self.material)
         elif use_triangle and not from_external_loading:
             self.generate_triangulation_from_shapely_linestring(self.line)
             super().__init__(cells=self.cells, points=self.cell_points, name=self.name,
                                     thickness=self.thickness,
-                                    subdivide=self.subdivide)
+                                    subdivide=self.subdivide,
+                                    material=self.material)
         else:
             super().__init__(cells=self.cells, points=self.cell_points,
                                     name=self.name,
                                     thickness=self.thickness,
-                                    subdivide=self.subdivide)
+                                    subdivide=self.subdivide,
+                                    material=self.material)
     
     def format_line(self, line, gmsh=True):
         if not gmsh:
@@ -647,6 +667,7 @@ class Path(PlaneGeom):
         self.cap_style=self.cap_style_dict[cap_style]
         self.join_style=self.join_style_dict[join_style]
         self.generate()
+        self.send_to_blender(use_triangle=True)
     
     def generate(self):
         self.line=geometry.LineString(self.points).buffer(self.width/2.,
@@ -664,7 +685,17 @@ class Arrow(PlaneGeom):
         self.head_length=head_length
         self.length=length
         self.width=width
-        self.generate()
+        #self.generate()
+        self.cell_points=[[-width/2, -length, 0.],
+                          [width/2, -length, 0.],
+                          [width/2, 0., 0.],
+                          [head_width/2, 0., 0.],
+                          [0., head_length, 0.],
+                          [-head_width/2, 0., 0.],
+                          [-width/2, 0., 0.]]
+        self.cells=[[i for i,p in enumerate(self.cell_points)]]
+        super().__init__(**kwargs)
+        self.send_to_blender(from_external_loading=True)
     
     def generate(self):
         self.line=geometry.LineString([(0,0,0), (self.length,0,0)]).buffer(self.width/2.)
@@ -673,19 +704,6 @@ class Arrow(PlaneGeom):
                                          (self.length+self.head_length,0,0),
                                          (self.length,self.head_width/2,0)])
         self.arrow=self.geom.boolean_union([self.poly, self.head])
-    
-'''class Polygon(PlaneGeom):
-    
-    def __init__(self, points,
-                 **kwargs):
-        super().__init__(**kwargs)
-        self.points=points
-        self.generate()
-    
-    def generate(self):
-        self.line=geometry.LineString(self.points)
-        self.xy=self.format_line(self.line)
-        self.geom.add_polygon(self.xy)'''
 
 class Cylinder(PlaneGeom):
     
@@ -710,95 +728,109 @@ class Box(PlaneGeom):
         super().__init__(name=name, thickness=Lz, **kwargs)
         self.send_to_blender(from_external_loading=True)
 
+class Isocahedron(Mesh):
+    
+    def __init__(self, radius=1, refine=0, **kwargs):
+        self.radius=radius
+        self.initialize(self.radius)
+        for i in range(refine):
+            self.refine()
+        super().__init__(cells=self.cells, points=self.points)
+        
+    def initialize(self, radius):
+        C0 = (1 + np.sqrt(5)) / 4
+        norm = np.sqrt(0.5**2+C0**2)
+        self.points=list(radius/norm*np.array([[0.5,  0.0,   C0],
+                                        [0.5,  0.0,  -C0],
+                                        [-0.5,  0.0,   C0],
+                                        [-0.5,  0.0,  -C0],
+                                        [C0,  0.5,  0.0],
+                                        [C0, -0.5,  0.0],
+                                        [-C0,  0.5,  0.0],
+                                        [-C0, -0.5,  0.0],
+                                        [0.0,   C0,  0.5],
+                                        [0.0,   C0, -0.5],
+                                        [0.0,  -C0,  0.5],
+                                        [0.0,  -C0, -0.5]]))
+
+        self.cells=[[  0,  2, 10 ],
+                    [  0, 10,  5 ],
+                    [  0,  5,  4 ],
+                    [  0,  4,  8 ],
+                    [  0,  8,  2 ],
+                    [  3,  1, 11 ],
+                    [  3, 11,  7 ],
+                    [  3,  7,  6 ],
+                    [  3,  6,  9 ],
+                    [  3,  9,  1 ],
+                    [  2,  6,  7 ],
+                    [  2,  7, 10 ],
+                    [ 10,  7, 11 ],
+                    [ 10, 11,  5 ],
+                    [  5, 11,  1 ],
+                    [  5,  1,  4 ],
+                    [  4,  1,  9 ],
+                    [  4,  9,  8 ],
+                    [  8,  9,  6 ],
+                    [  8,  6,  2 ]]
+    
+    def refine(self):
+        edges=dict()
+        for i, f in enumerate(self.cells):
+            for pair in [[0,1], [1,2], [0,2]]:
+                ordered=(np.min([f[pair[0]], f[pair[1]]]),
+                         np.max([f[pair[0]], f[pair[1]]]))
+                if not ordered in edges.keys():
+                    edges[ordered]=[i]
+                else:
+                    edges[ordered].append(i)
+
+        faces_to_edges=dict()
+        for i, f in enumerate(self.cells):
+            for pair in [[0,1], [1,2], [0,2]]:
+                ordered=(np.min([f[pair[0]], f[pair[1]]]),
+                         np.max([f[pair[0]], f[pair[1]]]))
+                if not i in faces_to_edges.keys():
+                    faces_to_edges[i]=[ordered]
+                else:
+                    faces_to_edges[i].append(ordered)   
+        
+        middle_points=dict()
+        i=len(self.points)
+        for v in edges.keys():
+            self.points.append(self.get_middle_point(self.points[v[0]],
+                                                     self.points[v[1]]))
+            middle_points[v]=i
+            i+=1
+            
+        new_faces=[]
+        for f, edges in faces_to_edges.items():
+            if edges[0][0] in edges[1]:
+                new_faces.append([edges[0][0], middle_points[edges[0]],
+                                  middle_points[edges[1]]])
+                new_faces.append([edges[0][1], middle_points[edges[0]],
+                                  middle_points[edges[2]]])
+            else:
+                new_faces.append([edges[0][0], middle_points[edges[0]],
+                                  middle_points[edges[2]]])
+                new_faces.append([edges[0][1], middle_points[edges[0]],
+                                  middle_points[edges[1]]])
+            for point in self.cells[f]:
+                if point not in edges[0]:
+                    break
+            new_faces.append([point, middle_points[edges[1]],
+                              middle_points[edges[2]]])
+            new_faces.append([middle_points[edges[0]],
+                              middle_points[edges[1]],
+                              middle_points[edges[2]]])
+        self.cells=new_faces
+
+    def get_middle_point(self, p1, p2):
+        middle=0.5*(Vector(p1)+Vector(p2))
+        middle=middle.normalize()*self.radius
+        return [middle.x, middle.y, middle.z]
+
         
 if __name__=='__main__':
         
-    width_antenna=0.5
-    thick_substrate=0.5
-    W_cell, H_cell = 10, 7.500
-    width_SMA, length_SMA, width_SMA_bis=1.500, 2.000,  2.000
-    width_cut=.100
-    width_circuit=.120
-    distance_from_side=.300
-    input_gap=.735
-    W_loop, H_loop=1.725,.735
-    edge_loop_distance=.200
-    
-    
-    
-    
-    delete_all()
-    
-    path=Path([(0,0), (1,0), (1,1), (0,1), (0,0)], 0.1, name='yolo',
-               thickness=None, cap_style='square', join_style='mitre',
-               characteristic_length_max=1e-1)
-    path.send_to_blender(use_triangle=True)
-    
-    
-    antenna=Path([(distance_from_side,
-                          distance_from_side),
-                        (distance_from_side,length_SMA+distance_from_side),
-                        (W_cell/2-input_gap/2,length_SMA+distance_from_side),
-                        (W_cell/2-input_gap/2,H_cell-edge_loop_distance-H_loop),
-                        (W_cell/2-W_loop/2,H_cell-edge_loop_distance-H_loop),
-                        (W_cell/2-W_loop/2,H_cell-edge_loop_distance),
-                        (W_cell/2+W_loop/2,H_cell-edge_loop_distance),
-                        (W_cell/2+W_loop/2,H_cell-edge_loop_distance-H_loop),
-                        (W_cell/2+input_gap/2,H_cell-edge_loop_distance-H_loop),
-                        (W_cell/2+input_gap/2,length_SMA+distance_from_side),
-                        (W_cell/2+width_SMA/2+distance_from_side,
-                         length_SMA+distance_from_side),
-                        (W_cell/2+width_SMA/2+distance_from_side,
-                         distance_from_side)][::-1], width_circuit,
-                         thickness=0.1, subdivide=2)
-    arrow=Arrow(length=5, width=0.15, head_width=0.3, thickness=None)
-    arrow.send_to_blender()
-    curve_2=Curve([[p[0], p[1], 0.0] for p in antenna.points], name='translate')
-    #curve=Curve([[p[0], p[1], np.cos(i/100*np.pi)] for i,p in enumerate(antenna.points)], name='hello')
-    #curve=Curve([(theta,0.5*np.sin(theta)*np.sin(30*theta),0) for theta in np.linspace(0, 10*np.pi, 3000)], name='hello')
-    
-    antenna.send_to_blender(use_triangle=True)
-    #curve.location=list(antenna.points[-1])+[0.]
-    #arrow.follow_path(curve_2)
-    arrow.curve_modifier(curve_2)
-    '''c=Cylinder(height=arrow.length,
-               subdivide=10,
-               radius=arrow.width)
-    c.send_to_blender(use_triangle=True)
-    c.rotation=[0,np.pi/2,0]
-    c.curve_modifier(curve_2)
-    c.copy_location(arrow)'''
-    metal=Material('imported', '#6B5252')
-    metal.load_image_shader_dir(r'C:\Users\Thibault\Downloads\Concrete003_1K-JPG')
-    glow=Material("glow", '#D70A0A')
-    emission=glow.add_shader('Emission')
-    emission.inputs['Strength']=40.
-    glow.get_shader('Material Output').inputs['Surface']=emission.outputs['Emission']
-    arrow.assign_material(glow)
-    arrow.location=[0.,0.,0.2]
-    antenna.assign_material(metal)
-    light=Light(light_type='SUN', power=2, radius=3, location=[1,0,4])
-    plane=Plane(size=100, location=[0., 0., -0.1])
-    
-    #%%
-    from sending_data import (Material)
-    
-    glow=Material("glow", '#D70A0A')
-    coordinates=glow.add_shader('Texture_coordinates')
-    separate=glow.add_shader('Separate_XYZ')
-    separate.inputs['Vector']=coordinates.outputs['Generated']
-    special_keys=dict({'X':separate.outputs['X'], 'Y':separate.outputs['Y']})
-    math_shader=glow.coordinate_expression('4e^(-(X^2+Y^2)/(0.1)^2)',
-                                      special_keys=special_keys)
-    emission=glow.add_shader('Emission')
-    emission.inputs['Strength']=math_shader.outputs['Value']
-    add_shader=glow.add_shader('Add')
-    add_shader.inputs[0]=glow.get_shader('Principled BSDF').outputs['BSDF']
-    add_shader.inputs[1]=emission.outputs['Emission']
-    s=glow.get_shader('Material Output')
-    s.inputs['Surface']=add_shader.outputs['Shader']
-    #%%
-    import meshio
-    from sending_data import Mesh
-    mesh=Mesh(mesh=meshio.read(r'Y:\membrane\Equipment\Homebuilt\Machined parts\Microwave_cavity_push_project\coupling_from_below\bottom.STL'),
-              name='bottom')
+    pass
