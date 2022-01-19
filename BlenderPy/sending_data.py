@@ -78,6 +78,15 @@ def delete_all():
     
 class GeometricEntity:
     
+    def set_origin(self, position):
+        verts=self.vertices_absolute
+        x,y,z=self.x, self.y, self.z
+        verts[:,0]-=position[0]-x
+        verts[:,1]-=position[1]-y
+        verts[:,2]-=position[2]-z
+        self.vertices_absolute=verts
+        self.location=position
+    
     @property
     def vertices_absolute(self):
         mat=self.matrix_world
@@ -169,8 +178,31 @@ class GeometricEntity:
     
 class Scene:
     
-    def __init__(self):
+    def __init__(self, use_bloom=True, volumetric_tile_size=2,
+                 frame_current=1, frame_start=1,
+                 frame_end=250):
         self._properties=PropertyDict(func='scene_property')
+        self.use_bloom=use_bloom
+        self.volumetric_tile_size=volumetric_tile_size
+        self.frame_current=frame_current
+        self.frame_start=frame_start
+        self.frame_end=frame_end
+    
+    @property
+    def volumetric_tile_size(self):
+        return int(self._properties[['eevee', 'volumetric_tile_size']])
+    
+    @volumetric_tile_size.setter
+    def volumetric_tile_size(self, val):
+        self._properties[['eevee', 'volumetric_tile_size']]=str(val)
+    
+    @property
+    def use_bloom(self):
+        return self._properties[['eevee', 'use_bloom']]
+    
+    @use_bloom.setter
+    def use_bloom(self, val):
+        self._properties[['eevee', 'use_bloom']]=val
     
     @property
     def frame_current(self):
@@ -252,10 +284,16 @@ class ShaderSocket:
     def to_dict(self, **kwargs):
         params=dict({'material_name':self.material_parent,
                      'parent_name':self.parent.name,
+                     'shader_socket_type':self.shader_socket_type,
                      'key':self.key,
                      'value':self.value})
         params.update(kwargs)
         return params
+    
+    def insert_keyframe(self, key, frame='current'):
+        ask(parse('insert_keyframe_shadersocket()',
+                   **self.to_dict(key_to_keyframe=key, 
+                                  frame=frame)))
     
     @property
     def properties(self):
@@ -281,6 +319,7 @@ class ShaderNode:
                          'Math':'ShaderNodeMath',
                          'Texture_coordinates':'ShaderNodeTexCoord',
                          'Separate_XYZ':'ShaderNodeSeparateXYZ',
+                         'Combine_XYZ':'ShaderNodeCombineXYZ',
                          'Principled BSDF':'ShaderNodeBsdfPrincipled',
                          'Material Output':'ShaderNodeOutputMaterial',
                          'Image':'ShaderNodeTexImage',
@@ -478,7 +517,15 @@ class Material:
         self.shadernodes_dimensions[res.name]=[i*dx, j*dy]
         return res
     
-    def get_shader(self, name):
+    def get_shader(self, name=None, find_math_operation=None):
+        if find_math_operation is not None:
+            for node_name in self.shadernodes_dimensions.keys():
+                if 'Math' in node_name:
+                    node=self.get_shader(
+                            parent=self.material_object, 
+                            name=node_name)
+                    if node._properties['operation']==find_math_operation:
+                        return node
         return ShaderNode(parent=self.material_object, name=name)
     
     def coordinate_expression(self, exp, input_shader=None, special_keys=None):
@@ -533,6 +580,10 @@ class Material:
         noise=self.add_shader('Noise')
         coord=self.add_shader('Texture_coordinates')
         sepxyz=self.add_shader('Separate_XYZ')
+        sepxyz2=self.add_shader('Separate_XYZ')
+        combine=self.add_shader('Combine_XYZ')
+        combine.inputs['X']=sepxyz2.outputs['X']
+        combine.inputs['Y']=sepxyz2.outputs['Y']
         sepxyz.inputs['Vector']=coord.outputs['Normal']
         sup=self.add_shader('Math')
         sup.properties['operation']=self.operations['>']
@@ -543,7 +594,8 @@ class Material:
         mult.inputs[0]=sup.outputs['Value']
         
         output=self.get_shader('Material Output')
-        noise.inputs['Vector']=coord.outputs[origin]
+        sepxyz2.inputs['Vector']=coord.outputs[origin]
+        noise.inputs['Vector']=combine.outputs['Vector']
         mult.inputs[1]=noise.outputs['Fac']
         output.inputs['Displacement']=mult.outputs['Value']
         noise.inputs['Scale']=scale
@@ -618,28 +670,40 @@ class Material:
 
 class MetallicMaterial(Material):
 
-    def __init__(self, name, color, target=None, randomness=1, detail=10,
-                 roughness=0.5, **kwargs):
+    def __init__(self, name, color, randomness=1, detail=10,
+                 roughness=0.5, orientation='Z', origin='Generated',
+                 **kwargs):
         super().__init__(name, color, **kwargs) 
         output=self.get_shader('Material Output')
         glossy=self.add_shader('Glossy')
+        coord=self.add_shader('Texture_coordinates')
         output.inputs['Surface']=glossy.outputs['BSDF']
         glossy.inputs['Color']=self.convert_color(color)
         noise=self.add_shader('Noise')
         coord=self.add_shader('Texture_coordinates')
-        noise.inputs['Vector']=coord.outputs['Generated']
-        output.inputs['Displacement']=noise.outputs['Fac']
+        noise.inputs['Vector']=coord.outputs[origin]
+        
         noise.inputs['Scale']=randomness
         noise.inputs['Detail']=detail
         noise.inputs['Roughness']=roughness
-        coord.properties['object']=target
+        sepxyz=self.add_shader('Separate_XYZ')
+        sepxyz.inputs['Vector']=coord.outputs['Normal']
+        sup=self.add_shader('Math')
+        sup.properties['operation']=self.operations['>']
+        sup.inputs[0]=sepxyz.outputs[orientation]
+        sup.inputs[1]=0.5
+        mult=self.add_shader('Math')
+        mult.properties['operation']=self.operations['*']
+        mult.inputs[0]=sup.outputs['Value']
+        mult.inputs[1]=noise.outputs['Fac']
+        output.inputs['Displacement']=mult.outputs['Value']
 
 class EmissionMaterial(Material):
     
     def __init__(self, color='#AF2020', expression=None, strength=None, **kwargs):
          super().__init__(**kwargs)
          emission=self.add_shader('Emission')
-         #emission.inputs['Color']=self.convert_color(color)
+         emission.inputs['Color']=self.convert_color(color)
          output=self.get_shader('Material Output')
          output.inputs['Volume']=emission.outputs['Emission']
          Principled=self.get_shader('Principled BSDF')
@@ -653,7 +717,7 @@ class EmissionMaterial(Material):
                                                special_keys=dict({'x':sepxyz.outputs['X'],
                                                              'y':sepxyz.outputs['Y'],
                                                              'z':sepxyz.outputs['Z']}))
-             emission.inputs['Strength']=shader.outputs['Value']
+             emission.inputs['Strength']=shader.outputs['Value'] 
          elif strength is not None:
              emission.inputs['Strength']=strength
 
@@ -730,7 +794,7 @@ class Object:
         self.constraints.append(constraint)
     
     def insert_keyframe(self, key, frame='current'):
-        send(parse('insert_keyframe_object()', key=key, frame=frame,
+        ask(parse('insert_keyframe_object()', key=key, frame=frame,
                    name_obj=self.name_obj))
         
     def assign_constraint(self, constraint_type='FOLLOW_PATH', **kwargs):
@@ -827,6 +891,8 @@ class Camera(Object):
                  **kwargs):
         self.add_camera(name, location, rotation)
         super().__init__(**kwargs)
+        self._cam_properties=PropertyDict(self.name, '',
+                                          func='camera_property')
     
     def add_camera(self, name, location, rotation):
         res=dict()
@@ -839,6 +905,10 @@ class Camera(Object):
         res['command']='create_camera'
         res['kwargs']=kwargs
         self.name, self.name_obj=ask(json.dumps(res))
+    
+    @property
+    def cam_properties(self):
+        return self._cam_properties
         
 class Cube(Object):
     
@@ -941,7 +1011,8 @@ class Light(Object):
 class Mesh(Object, GeometricEntity):
     
     def __init__(self, mesh=None, cells=None, points=None,
-                 thickness=None, name='mesh', subdivide=1, **kwargs):
+                 thickness=None, name='mesh', subdivide=1,
+                 material=None, **kwargs):
         self.subdivide=subdivide
         self.thickness=thickness
         self.cells=cells
@@ -951,6 +1022,8 @@ class Mesh(Object, GeometricEntity):
                                                       thickness=self.thickness,
                                                       name=name)
         super().__init__()
+        if material is not None:
+            self.assign_material(material)
         
     def send_mesh(self, mesh, thickness=None, name='mesh'):
         if self.mesh is not None:
@@ -1001,9 +1074,12 @@ class Mesh(Object, GeometricEntity):
                        'center_rotation':center_rotation})
         assert ask(parse('make_oscillations()', kwargs=kwargs))=="DONE"
     
-    def insert_mesh_keyframe(self, frame='current'):
-         kwargs = dict({'name_msh':self.name_msh, 'frame':frame})
-         send(parse('insert_keyframe_mesh()', kwargs=kwargs))
+    def insert_mesh_keyframe(self, frame='current',
+                             waiting_time_between_points=0.01):
+         kwargs = dict({'name_msh':self.name_msh,
+                        'frame':frame,
+                        'waiting_time_between_points':waiting_time_between_points})
+         ask(parse('insert_keyframe_mesh()', kwargs=kwargs))
         
     def cut_mesh(self, plane_points, plane_normals):
         kwargs = dict({'name_msh':self.name_msh,
@@ -1024,8 +1100,7 @@ class Mesh(Object, GeometricEntity):
             zs=np.linspace(self.zmin, self.zmax, Nz)
             self.cut_mesh([[0,0,z] for z in zs],
                           [[0,0,1] for z in zs])
-        
-    
+
     @property
     def parent(self):
         return Object(self.name_obj)
