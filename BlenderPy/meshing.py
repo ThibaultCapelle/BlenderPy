@@ -140,6 +140,17 @@ class MultiPolygon():
             for p in val.polygons:
                 self.polygons.append(p)
     
+    def to_shapely(self):
+        return geometry.MultiPolygon(polygons=[p.to_shapely()
+                                               for p in self.polygons])
+    
+    def from_shapely(self, poly):
+        self.polygons=[]
+        for p in poly.geoms:
+            polygon=Polygon()
+            polygon.from_shapely(p)
+            self.polygon.append(polygon)
+    
     @property
     def left(self):
         return np.min([p.left for p in self.polygons])
@@ -210,14 +221,23 @@ class Polygon():
         self.points, self.holes=self.polygon_to_points(poly)
     
     def subtract(self, other):
-        if isinstance(other, Polygon):
+        if isinstance(other, Polygon) or isinstance(other, MultiPolygon):
             diff=self.to_shapely().difference(other.to_shapely())
-            self.from_shapely(diff)
-        elif isinstance(other, MultiPolygon):
+        '''elif isinstance(other, MultiPolygon):
             diff=self.to_shapely()
             for poly in other.polygons:
-                diff=diff.difference(poly.to_shapely())
+                diff=diff.difference(poly.to_shapely())'''
+        if isinstance(diff, geometry.multipolygon.MultiPolygon):
+            res=MultiPolygon()
+            polys=list(diff)
+            for poly in polys:
+                p=Polygon()
+                p.from_shapely(poly)
+                res.polygons.append(p)
+            return res
+        elif isinstance(diff, geometry.polygon.Polygon):
             self.from_shapely(diff)
+            return self
     
     def intersect(self, other):
         if isinstance(other, Polygon):
@@ -735,7 +755,9 @@ class Isocahedron(Mesh):
         self.initialize(self.radius)
         for i in range(refine):
             self.refine()
-        super().__init__(cells=self.cells, points=self.points)
+        super().__init__(cells=self.cells, 
+                         points=self.points,
+                         **kwargs)
         
     def initialize(self, radius):
         C0 = (1 + np.sqrt(5)) / 4
