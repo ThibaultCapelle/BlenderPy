@@ -108,7 +108,8 @@ class GDSLoader:
             if (bbox.left>xmin/dbu and bbox.right<xmax/dbu
                 and bbox.top<ymax/dbu and bbox.bottom>ymin/dbu):
                 shapes_inside_box.append(s)
-        reg=pya.Region([b.polygon for b in shapes_inside_box])
+        reg=pya.Region([b.polygon for b in shapes_inside_box if
+                        not b.is_text()])
         x_center, y_center=(0.5*(reg.bbox().left+reg.bbox().right),
                             0.5*(reg.bbox().top+reg.bbox().bottom))
         
@@ -137,25 +138,18 @@ class GDSLoader:
                                      0.])
             shape[1]=holes
             res.append(shape)
-        self.polygons=res    
+        if len(res)==1:
+            self.polygons=Polygon(points=res[0][0],
+                                  holes=res[0][1])
+        else:
+            self.polygons=MultiPolygon([Polygon(points=p[0],
+                                       holes=p[1]) for p in res])   
         self.kwargs=kwargs
+    
+    
         
     def load(self):
-        #res=[]
-        if len(self.polygons)==1:
-            poly=Polygon(points=self.polygons[0][0],
-                         holes=self.polygons[0][1])
-        else:
-            poly=MultiPolygon([Polygon(points=p[0],
-                                       holes=p[1]) for p in self.polygons])
-        return PlaneGeom(polygon=poly, **self.kwargs)
-        '''for shape in self.polygons:
-            plane_geom=PlaneGeom(**self.kwargs)
-            plane_geom.generate_triangulation_from_shapely_linestring\
-            (plane_geom.generate_shapely_polygon_from_points(shape))
-            plane_geom.send_to_blender(from_external_loading=True)
-            res.append(plane_geom)
-        return res'''
+        return PlaneGeom(polygon=self.polygons, **self.kwargs)
 
 if __name__=='__main__':
     from BlenderPy.meshing import Box
