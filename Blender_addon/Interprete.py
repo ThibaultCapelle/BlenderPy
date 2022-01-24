@@ -198,10 +198,14 @@ class Interprete:
                              socket_key=None,
                              value=None,
                              parent_name=None,
+                             shader_socket_type=None,
                              connection=None, **kwargs):
         mat=bpy.data.materials[material_name]
         node=mat.node_tree.nodes[parent_name]
-        socket=node[socket_key]
+        if shader_socket_type=='input':
+            socket=node.inputs[socket_key]
+        elif shader_socket_type=='output':
+            socket=node.outputs[socket_key]
         setattr(socket, key, value)
         self.server.send_answer(connection, 'FINISHED')
         
@@ -209,10 +213,14 @@ class Interprete:
                                   key=None,
                                   socket_key=None,
                                   parent_name=None,
+                                  shader_socket_type=None,
                                   connection=None, **kwargs):
         mat=bpy.data.materials[material_name]
         node=mat.node_tree.nodes[parent_name]
-        socket=node[socket_key]
+        if shader_socket_type=='input':
+            socket=node.inputs[socket_key]
+        elif shader_socket_type=='output':
+            socket=node.outputs[socket_key]
         res=getattr(socket, key)
         self.server.send_answer(connection,
                                     res)
@@ -222,14 +230,18 @@ class Interprete:
                              parent_name=None,
                              connection=None, **kwargs):
         light=bpy.data.lights[parent_name]
-        setattr(light, key, value)
+        if hasattr(light, key):
+            setattr(light, key, value)
         self.server.send_answer(connection, 'FINISHED')
         
     def get_light_property(self, key=None,
                                   parent_name=None,
                                   connection=None, **kwargs):
         light=bpy.data.lights[parent_name]
-        res=getattr(light, key)
+        if hasattr(light, key):
+            res=getattr(light, key)
+        else:
+            res=None
         self.server.send_answer(connection,
                                     res)
     
@@ -242,15 +254,18 @@ class Interprete:
             for k,v in value.items():
                 setattr(obj.location, k, v)
         else:
-            print(key)
-            setattr(obj, key, value)
+            if hasattr(obj, key):
+                setattr(obj, key, value)
         self.server.send_answer(connection, 'FINISHED')
         
     def get_object_property(self, key=None,
                                   parent_name_obj=None,
                                   connection=None, **kwargs):
         obj=bpy.data.objects[parent_name_obj]
-        res=getattr(obj, key)
+        if hasattr(obj, key):
+            res=getattr(obj, key)
+        else:
+            res=None
         self.server.send_answer(connection,
                                     res)
     
@@ -453,13 +468,19 @@ class Interprete:
                                      shader_socket_type=None,
                                      frame='current',
                                      **kwargs):
+        print(frame)
+        if frame=='current':
+            frame=bpy.context.scene.frame_current
         mat=bpy.data.materials[material_name]
+        time.sleep(0.5)
         node=mat.node_tree.nodes[parent_name]
+        time.sleep(0.5)
         if shader_socket_type=='input':
             socket=node.inputs[key]
         elif shader_socket_type=='output':
             socket=node.outputs[key]
-        socket.keyframe_insert(key_to_keyframe, frame=frame)
+        time.sleep(0.5)
+        print(socket.keyframe_insert(key_to_keyframe, frame=frame))
         self.server.send_answer(connection, 'FINISHED')
             
     def make_oscillations(self, **kwargs):

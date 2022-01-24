@@ -983,8 +983,11 @@ class Plane(Object):
         
 class Light(Object):
     
+    _light_keys=['energy', 'shadow_soft_size']
+    
     def __init__(self, name='light', location=[0.,0.,0.],
-                 power=2, radius=0.25, light_type='POINT'):
+                 power=2, radius=0.25, light_type='POINT',
+                 filepath=None):
         self.add_light(name, light_type=light_type)
         super().__init__()
         self._light_properties=PropertyDict(self.name,
@@ -993,6 +996,9 @@ class Light(Object):
         self.light_properties['energy']=power
         self.light_properties['shadow_soft_size']=radius
         self.location=location
+        if filepath is not None:
+            self.load(filepath)
+            self.load_light(filepath)
         
     def add_light(self, name, light_type='POINT'):
         res=dict()
@@ -1002,6 +1008,12 @@ class Light(Object):
         res['command']='create_light'
         res['kwargs']=kwargs
         self.name, self.name_obj=ask(json.dumps(res))
+    
+    def load_light(self, filepath):
+        with open(filepath, 'r') as f:
+            data=json.load(f)
+        for k, v in data.items():
+            self.light_properties[k]=v
     
     @property
     def light_properties(self):

@@ -24,11 +24,20 @@ class Saving(bpy.types.Operator,ImportHelper):
         # The original script
         for obj in context.selected_objects:
             data=dict()
-            for key in ['location', 'scale', 'rotation_euler']:
-                val=getattr(obj, key)
+            keys=[(obj, 'location'),
+                  (obj, 'scale'),
+                  (obj, 'rotation_euler')]
+            if obj.type=='LIGHT':
+                son=bpy.data.lights[obj.name]
+                keys+=[(son, 'energy'),
+                       (son, 'shadow_soft_size')]
+            for source, key in keys:
+                val=getattr(source, key)
                 if isinstance(val, Vector) or isinstance(val, Euler):
                     val=[val.x, val.y, val.z]
                 data[key]=val
+            
+                
             with open(self.filepath, 'w') as f:
                 json.dump(data, f)
         return {'FINISHED'}            # Lets Blender know the operator finished successfully.
