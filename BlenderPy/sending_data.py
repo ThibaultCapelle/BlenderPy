@@ -276,10 +276,9 @@ class ShaderSocket:
         self.key=key
         self.value=value
         self.shader_socket_type=shader_socket_type
-        self._properties=PropertyDict('','', func='shadersocket_property',
-                                      material_name=self.material_parent,
-                                      node_name=self.parent,
-                                      socket_key=self.key)
+        self._properties=PropertyDict(self.parent.name,
+                                      '', func='shadersocket_property',
+                                      **self.to_dict(socket_key=self.key))
     
     def to_dict(self, **kwargs):
         params=dict({'material_name':self.material_parent,
@@ -522,11 +521,12 @@ class Material:
             for node_name in self.shadernodes_dimensions.keys():
                 if 'Math' in node_name:
                     node=self.get_shader(
-                            parent=self.material_object, 
                             name=node_name)
-                    if node._properties['operation']==find_math_operation:
+                    if (node._properties['operation']==
+                        self.operations[find_math_operation]):
                         return node
-        return ShaderNode(parent=self.material_object, name=name)
+        else:
+            return ShaderNode(parent=self.material_object, name=name)
     
     def coordinate_expression(self, exp, input_shader=None, special_keys=None):
         e=Expression(content=exp, tokens=[])
@@ -738,7 +738,7 @@ class ZColorRampMaterial(Material):
 class GaussianLaserMaterial(EmissionMaterial):
     
     def __init__(self, alpha=0.001, waist=0.1, strength=3, **kwargs):
-        expression='{:}e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))'.format(strength, alpha, waist**2)
+        expression='{:}*e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))'.format(strength, alpha, waist**2)
         super().__init__(expression=expression, **kwargs) 
 
 class Collection:
