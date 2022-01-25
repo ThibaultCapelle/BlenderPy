@@ -460,6 +460,13 @@ class Interprete:
         ob.keyframe_insert(key, frame=frame)
         self.server.send_answer(connection, 'FINISHED')
     
+    def insert_keyframe_constraint(self, name_obj=None, name=None,
+                               connection=None, frame='current',
+                               key=None, **kwargs):
+        const=Constraint(parent_name=name_obj, name=name)
+        const.insert_keyframe(key, frame=frame)
+        self.server.send_answer(connection, 'FINISHED')
+    
     def insert_keyframe_shadersocket(self, connection=None,
                                      material_name=None,
                                      parent_name=None,
@@ -703,6 +710,17 @@ class Interprete:
 
 def Material(message):
     assert message['class']=='Material'
+    
+class KeyframePossibleObject:
+    
+    def __init__(self, ob, **kwargs):
+        self.ob=ob
+    
+    def insert_keyframe(self, key, frame='current'):
+        if frame=='current':
+            frame=bpy.context.scene.frame_current
+        if hasattr(self.ob, key) and hasattr(self.ob, 'keyframe_insert'):
+            self.ob.keyframe_insert(key, frame=frame)
 
 class ShaderNode:
     
@@ -712,13 +730,19 @@ class ShaderNode:
         self.node=self.parent.node_tree.nodes.new(self.type)
         self.name=self.node.name
 
-class Constraint:
+class Constraint(KeyframePossibleObject):
     
-    def __init__(self, parent_name, constraint_type, **kwargs):
+    def __init__(self, parent_name=None, constraint_type=None,
+                 name=None, **kwargs):
         self.parent=bpy.data.objects[parent_name]
-        self.type=constraint_type
-        self.const=self.parent.constraints.new(self.type)
-        self.name=self.const.name
+        if name is None:
+            self.type=constraint_type
+            self.const=self.parent.constraints.new(self.type)
+            self.name=self.const.name
+        else:
+            self.name=name
+            ob=bpy.data.objects[parent_name].constraints[name]
+            super().__init__(ob)
 
 class Modifier:
     

@@ -373,6 +373,10 @@ class Constraint:
         self._properties=PropertyDict(self.name, self.parent_name,
                                       func='constraint_property')
     
+    def insert_keyframe(self, key, frame='current'):
+        ask(parse('insert_keyframe_constraint()', key=key, frame=frame,
+                   name_obj=self.parent_name, name=self.name))
+    
     @property
     def properties(self):
         return self._properties
@@ -567,13 +571,19 @@ class Material:
         return return_shader
         
         
-    def z_dependant_color(self, positions, colors, z_offset=0, **kwargs):
-        params=dict({'colors':[self.convert_color(color) for color in colors],
-                     'name':self.material_object,
-                     'positions':positions,
-                     'z_offset':z_offset})
-        params.update(kwargs)
-        send(parse('z_dependant_color()', kwargs=params))
+            
+        
+    def z_dependant_color(self, colors=None, positions=None,
+                          coordinate='Generated'):
+        coord=self.add_shader('Texture_coordinates')
+        sep=self.add_shader('Separate_XYZ')
+        sep.inputs['Vector']=coord.outputs[coordinate]
+        color_ramp=self.add_shader('Color_Ramp')
+        color_ramp.inputs['Fac']=sep.outputs['Z']
+        color_ramp.properties['color_ramp']=dict({'positions':positions,
+                             'colors':[self.convert_color(color) for color in colors]})
+        principled=self.get_shader('Principled BSDF')
+        principled.inputs['Base Color']=color_ramp.outputs['Color']
     
     def surface_noise(self, scale=3, detail=2, roughness=0.5,
                       orientation='Z', origin='Generated'):
@@ -670,7 +680,7 @@ class Material:
 
 class MetallicMaterial(Material):
 
-    def __init__(self, name, color, randomness=1, detail=10,
+    def __init__(self, name='metal', color='#DCC811', randomness=1, detail=10,
                  roughness=0.5, orientation='Z', origin='Generated',
                  **kwargs):
         super().__init__(name, color, **kwargs) 
@@ -792,6 +802,7 @@ class Object:
         constraint.properties['use_curve_follow']=use_curve_follow
         constraint.properties['forward_axis']=forward_axis
         self.constraints.append(constraint)
+        return constraint
     
     def insert_keyframe(self, key, frame='current'):
         ask(parse('insert_keyframe_object()', key=key, frame=frame,
@@ -1033,7 +1044,7 @@ class Mesh(Object, GeometricEntity):
         self.name_obj, self.name_msh = self.send_mesh(self.mesh, 
                                                       thickness=self.thickness,
                                                       name=name)
-        super().__init__()
+        super().__init__(**kwargs)
         if material is not None:
             self.assign_material(material)
         
