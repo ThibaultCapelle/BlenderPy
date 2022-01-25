@@ -14,71 +14,112 @@ import numpy as np
 HOST = '127.0.0.1'
 PORT = 20000
 
-def send(message):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
-        s.sendall(('{:010x}'.format(len(message))+message).encode())
+class Communication:
+    '''A static class for communicating with the server'''
 
-def receive_all(sock, n):
-    # Helper function to recv n bytes or return None if EOF is hit
-    data = bytearray()
-    i=1
-    while len(data) < n:
-        packet = sock.recv(n - len(data))
-        if not packet:
-            return None
-        data.extend(packet)
-        i+=1
-    return data  
+    @staticmethod
+    def send(message, **kwargs):
+        '''Send a message to the Blender Server
+        
+        Take a message, format it, encode it with its length at the
+        beginning, and send it to the Blender server.
+        
+        Parameters:
+            message: string to send
+        
+        Return:
+            None
+        '''
+        message=Communication.parse(message, **kwargs)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((HOST, PORT))
+            s.sendall(('{:010x}'.format(len(message))+message).encode())
     
-def ask(message):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
-        s.sendall(('{:010x}'.format(len(message))+message).encode())
-        raw_msglen = s.recv(10)
-        msglen = int(raw_msglen.decode(),16)
-        data=receive_all(s, msglen)
-        return json.loads(data)['content']
-
-def parse(message, kwargs=None, **keyargs):
-    b=message.find('(')
-    res=dict()
-    if b==-1:
-        res['type']='command'
+    @staticmethod
+    def receive_all(sock, n):
+        '''Receive a message of a given length from the server.
+        
+        After having found its length, receive packets until
+        the amount of data is equal to this length
+        
+        Parameters:
+            sock: socket to read from
+            n: expected length of the data
+        
+        Return:
+            data: the raw data
+        '''
+        data = bytearray()
+        i=1
+        while len(data) < n:
+            packet = sock.recv(n - len(data))
+            if not packet:
+                return None
+            data.extend(packet)
+            i+=1
+        return data  
+    
+    @staticmethod
+    def ask(message, **kwargs):
+        '''Ask a question to the Blender Server.
+        
+        Open a socket,encode properly the data to send like the 
+        send method with the length of the data at the beginning,
+        then send the data, receive the beginning of the answer
+        which contains the length of the answer, and then call
+        receive_all to receive the data.
+        Then, return the json extracted dictionnary that contain
+        the data.
+        
+        Parameters:
+            message: the question to ask
+        
+        Return:
+            the data
+        '''
+        message=Communication.parse(message, **kwargs)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((HOST, PORT))
+            s.sendall(('{:010x}'.format(len(message))+message).encode())
+            raw_msglen = s.recv(10)
+            msglen = int(raw_msglen.decode(),16)
+            data=Communication.receive_all(s, msglen)
+            return json.loads(data)['content']
+    
+    @staticmethod
+    def parse(message, **kwargs):
+        '''Format a message to be sent to the Blender Server.
+        
+        Parameters:
+            message: the question to ask
+        
+        Return:
+            the data
+        '''
+        res=dict()
         res['command']=message
         res['kwargs']=kwargs
-        res['args']=[]
-    else:
-        res['type']='command'
-        first_part=message[:b]
-        res['command']=first_part
-        last_part=message[b:]
-        assert last_part.endswith(')') and last_part.startswith('(')
-        last_part=last_part[1:-1]
-        assert last_part.find('(')==-1 and last_part.find(')')==-1
-        data=last_part.split(',')
-        args=[]
-        if kwargs is None:
-            kwargs=dict()
-            for i in range(len(data)):
-                data[i]=data[i].lstrip('"').rstrip('"')
-                if data[i].find('=')!=-1:
-                    k,v=data[i].split('=')
-                    kwargs[k]=v
-                else:
-                    args.append(data[i])
-        kwargs.update(keyargs)
-        res['args']=args
-        res['kwargs']=kwargs
-    msg=json.dumps(res)
-    return msg
+        msg=json.dumps(res)
+        return msg
 
 def delete_all():
-    assert ask(parse('delete_all()'))=="DONE"
+    '''Delete all objects, meshes, cameras, ...'''
+    assert Communication.ask('delete_all')=="DONE"
     
 class GeometricEntity:
+    '''a class encompassing the geometric absolute positioning
+    of vertices of meshes'''
     
     def set_origin(self, position):
+        '''set the origin of a mesh to a position. The vertices
+        position will have this point as a new origin
+        
+        Parameters:
+            position: the position you want to set to
+        
+        Returns:
+            None
+        '''
         verts=self.vertices_absolute
         x,y,z=self.x, self.y, self.z
         verts[:,0]-=position[0]-x
@@ -89,6 +130,15 @@ class GeometricEntity:
     
     @property
     def vertices_absolute(self):
+        '''get the position of the vertices in
+        absolute coordinates
+        
+        Parameters:
+            None
+        
+        Returns:
+            a numpy array representing the absolute coordinates
+        '''
         mat=self.matrix_world
         verts=self.vertices
         verts_4D=np.transpose(np.hstack([verts, np.ones((len(verts),1))]))
@@ -96,6 +146,15 @@ class GeometricEntity:
     
     @vertices_absolute.setter
     def vertices_absolute(self, val):
+        '''set the position of the vertices in
+        absolute coordinates
+        
+        Parameters:
+            val: a numpy array or a list representing the desired positions
+        
+        Returns:
+            None
+        '''
         mat=np.linalg.inv(self.matrix_world)
         if np.array(val).shape[1]!=4:
             val=np.hstack([np.array(val), np.ones((len(val),1))])
@@ -103,26 +162,33 @@ class GeometricEntity:
         
     @property
     def xmin(self):
+        '''minimum x position'''
+        
         return np.min(self.vertices_absolute[:,0])
     
     @property
     def xmax(self):
+        '''maximum x position'''
         return np.max(self.vertices_absolute[:,0])
     
     @property
     def ymin(self):
+        '''minimum y position'''
         return np.min(self.vertices_absolute[:,1])
     
     @property
     def ymax(self):
+        '''maximum y position'''
         return np.max(self.vertices_absolute[:,1])
     
     @property
     def zmin(self):
+        '''minimum z position'''
         return np.min(self.vertices_absolute[:,2])
     
     @property
     def zmax(self):
+        '''maximum z position'''
         return np.max(self.vertices_absolute[:,2])
     
     @xmin.setter
@@ -243,20 +309,20 @@ class ShaderDict(dict):
             kwargs.update(value.to_dict(material_name=self.material_name,
                                         from_name=self.name,
                                        from_key=key))
-            ask(parse('set_'+self.func, kwargs=kwargs))
+            Communication.ask('set_'+self.func, **kwargs)
         else:
             kwargs.update(dict({'material_name':self.material_name,
                                 'from_name':self.name,
                                 'from_key':key,
                                 'value':value}))
-            ask(parse('set_'+self.func, kwargs=kwargs))
+            Communication.ask('set_'+self.func, **kwargs)
     
     def __getitem__(self, key):
         kwargs=self.params.copy()
         kwargs.update(dict({'material_name':self.material_name,
                      'name':self.name,
                      'key':key}))
-        res=ask(parse('get_'+self.func, kwargs=kwargs))
+        res=Communication.ask('get_'+self.func, **kwargs)
         if isinstance(res, dict):
             node=ShaderNode(**res)
             return ShaderSocket(material_parent=node.parent_name,
@@ -290,9 +356,9 @@ class ShaderSocket:
         return params
     
     def insert_keyframe(self, key, frame='current'):
-        ask(parse('insert_keyframe_shadersocket()',
+        Communication.ask('insert_keyframe_shadersocket',
                    **self.to_dict(key_to_keyframe=key, 
-                                  frame=frame)))
+                                  frame=frame))
     
     @property
     def properties(self):
@@ -329,7 +395,7 @@ class ShaderNode:
             kwargs['shader_type']=self._format_type(shader_type)
             kwargs['parent_name']=parent
             self.parent_name=parent
-            self.name=ask(parse('create_shadernode()', kwargs=kwargs))
+            self.name=Communication.ask('create_shadernode', **kwargs)
         else:
             self.parent_name=parent
             self.name=name
@@ -348,7 +414,7 @@ class ShaderNode:
         return self._shadertype_dict[key]
     
     def remove(self):
-        send(parse('remove_shader()', kwargs=self.to_dict()))
+        Communication.send('remove_shader', **self.to_dict())
     
     @property
     def inputs(self):
@@ -369,13 +435,13 @@ class Constraint:
         kwargs['constraint_type']=constraint_type
         kwargs['parent_name']=parent
         self.parent_name=parent
-        self.name=ask(parse('create_constraint()', kwargs=kwargs))
+        self.name=Communication.ask('create_constraint', **kwargs)
         self._properties=PropertyDict(self.name, self.parent_name,
                                       func='constraint_property')
     
     def insert_keyframe(self, key, frame='current'):
-        ask(parse('insert_keyframe_constraint()', key=key, frame=frame,
-                   name_obj=self.parent_name, name=self.name))
+        Communication.ask('insert_keyframe_constraint', key=key, frame=frame,
+                          name_obj=self.parent_name, name=self.name)
     
     @property
     def properties(self):
@@ -398,15 +464,15 @@ class PropertyDict(dict):
         if hasattr(value, 'to_dict'):
             value=value.to_dict()
         kwargs['value']=value
-        ask(parse('set_'+self.func,
-                   kwargs=kwargs))
+        Communication.ask('set_'+self.func,
+                          **kwargs)
     
     def __getitem__(self, key):
         kwargs=self.params.copy()
         kwargs.update(dict({'key':key,
                      'parent_name':self.name,
                      'parent_name_obj':self.name_obj}))
-        res=ask(parse('get_'+self.func, kwargs=kwargs))
+        res=Communication.ask('get_'+self.func, **kwargs)
         if isinstance(res, dict):
             return Object(**res)
         else:
@@ -418,7 +484,7 @@ class Modifier:
         kwargs['modifier_type']=modifier_type
         kwargs['parent_name']=parent
         self.parent_name=parent
-        self.name=ask(parse('create_modifier()', kwargs=kwargs))
+        self.name=Communication.ask('create_modifier', **kwargs)
         self._properties=PropertyDict(self.name, self.parent_name,
                                       func='modifier_property')
     
@@ -431,7 +497,7 @@ class Modifier:
             kwargs=dict({'name':self.name,
                          'name_obj':self.parent_name})
             time.sleep(0.1)
-            ask(parse('apply_modifier', kwargs=kwargs))
+            Communication.ask('apply_modifier', **kwargs)
         
     
 class Material:
@@ -460,7 +526,7 @@ class Material:
                      'blend_method_shadow':blend_method_shadow,
                      'metallic':metallic})
         params.update(kwargs)
-        send(parse('update_material()', kwargs=params))
+        Communication.send('update_material', **params)
         self.operations=dict({'*':'MULTIPLY',
                          '/':'DIVIDE',
                          '+':'ADD',
@@ -621,25 +687,16 @@ class Material:
         add_shader.inputs[0]=output.inputs['Surface']
         output.inputs['Surface']=add_shader.outputs['Shader']
         add_shader.inputs[1]=emission.outputs['Emission']
-    
-    def metallic_texture(self, **kwargs):
-        send(parse('metallic_texture()', kwargs=kwargs))
-    
-    def gaussian_laser(self, ZR, W0, I):
-        params=dict({'name':self.material_object,
-                     'ZR':ZR,
-                     'W0':W0,
-                     'I':I})
-        send(parse('gaussian_laser()', kwargs=params))
+
         
     def get_material(self, name):
-        return ask(parse('get_material({:})'.format(name)))
+        return Communication.ask('get_material', name=name)
     
     def create_material(self, name):
-        return ask(parse('create_material({:})'.format(name)))
+        return Communication.ask('create_material', name=name)
     
     def get_material_names(self):
-        return ask(parse('get_material_names()'))
+        return Communication.ask('get_material_names')
     
     def convert_color(self, color, alpha=1):
         if len(color)==3:
@@ -655,29 +712,7 @@ class Material:
             else:
                 alpha=int(color[7:9], 16)/256.
             return [int(color[i:i+2], 16)/256. for i in [1,3,5]] +[alpha]
-    
-    def load_image_shader_dir(self, directory):
-        BSDF=self.get_shader('Principled BSDF')
-        output=self.get_shader('Material Output')
-        root='-'.join(os.path.split(directory)[1].split('-')[:-1])
-        colornode=self.add_shader('Image')
-        colornode.properties['image']=Image(os.path.join(directory, root+'_Color.jpg'))
-        BSDF.inputs['Base Color']=colornode.outputs['Color']
-        
-        if root+'_Metalness.jpg' in os.listdir(directory):
-            metalnode=self.add_shader('Image')
-            metalnode.properties['image']=Image(os.path.join(directory, root+'_Metalness.jpg'))
-            BSDF.inputs['Metallic']=metalnode.outputs['Color']
-        roughnessnode=self.add_shader('Image')
-        roughnessnode.properties['image']=Image(os.path.join(directory, root+'_Roughness.jpg'))
-        BSDF.inputs['Roughness']=roughnessnode.outputs['Color']
-        normalnode=self.add_shader('Image')
-        normalnode.properties['image']=Image(os.path.join(directory, root+'_NormalGL.jpg'))
-        BSDF.inputs['Normal']=normalnode.outputs['Color']
-        displacementnode=self.add_shader('Image')
-        displacementnode.properties['image']=Image(os.path.join(directory, root+'_Displacement.jpg'))
-        output.inputs['Displacement']=displacementnode.outputs['Color']
-
+ 
 class MetallicMaterial(Material):
 
     def __init__(self, name='metal', color='#DCC811', randomness=1, detail=10,
@@ -754,13 +789,13 @@ class GaussianLaserMaterial(EmissionMaterial):
 class Collection:
     
     def __init__(self, name=None, **kwargs):
-        self.name_col=ask(parse('create_collection()', name=name))
+        self.name_col=Communication.ask('create_collection', name=name)
         self._properties=PropertyDict('', self.name_col, func='collection_property')
     
     def link(self, obj):
         assert isinstance(obj, Object)
-        ask(parse('link_object', name_col=self.name_col,
-                  name_obj=obj.name_obj))
+        Communication.ask('link_object', name_col=self.name_col,
+                          name_obj=obj.name_obj)
     
     @property
     def properties(self):
@@ -784,7 +819,7 @@ class Object:
         else:
             kwargs = dict({'name_obj':self.name_obj,
                            'name_mat':material.material_object})
-        send(parse('assign_material()', kwargs=kwargs))
+        Communication.send('assign_material', **kwargs)
     
     def load(self, filepath):
         with open(filepath, 'r') as f:
@@ -793,7 +828,8 @@ class Object:
             self.properties[k]=v
     
     def duplicate(self):
-        return Object(name_obj=ask(parse('duplicate()', name_obj=self.name_obj)))
+        return Object(name_obj=Communication.ask('duplicate',
+                                                 name_obj=self.name_obj))
     
     def follow_path(self, target=None, use_curve_follow=True,
                     forward_axis='FORWARD_X'):
@@ -805,8 +841,9 @@ class Object:
         return constraint
     
     def insert_keyframe(self, key, frame='current'):
-        ask(parse('insert_keyframe_object()', key=key, frame=frame,
-                   name_obj=self.name_obj))
+        Communication.ask('insert_keyframe_object',
+                          key=key, frame=frame,
+                          name_obj=self.name_obj)
         
     def assign_constraint(self, constraint_type='FOLLOW_PATH', **kwargs):
         return Constraint(parent=self.name_obj,
@@ -838,7 +875,7 @@ class Object:
         return kwargs
     
     def remove(self):
-        send(parse('remove_object', kwargs=self.to_dict()))
+        Communication.send('remove_object', **self.to_dict())
         
     @property
     def properties(self):
@@ -906,16 +943,10 @@ class Camera(Object):
                                           func='camera_property')
     
     def add_camera(self, name, location, rotation):
-        res=dict()
-        kwargs = dict()
-        kwargs['location']=location
-        kwargs['rotation']=rotation
-        kwargs['name']=name
-        res['type']='camera'
-        res['args']=[]
-        res['command']='create_camera'
-        res['kwargs']=kwargs
-        self.name, self.name_obj=ask(json.dumps(res))
+        self.name, self.name_obj=Communication.ask('create_camera',
+                                                   name=name,
+                                                   location=location,
+                                                   rotation=rotation)
     
     @property
     def cam_properties(self):
@@ -937,13 +968,18 @@ class Cube(Object):
         res['args']=[]
         res['command']='create_cube'
         res['kwargs']=kwargs
-        self.name, self.name_obj=ask(json.dumps(res))
+        self.name, self.name_obj=Communication.ask('create_cube',
+                                                   location=location,
+                                                   size=size,
+                                                   name=name)
 
 class Lattice(Object):
     
     def __init__(self, **kwargs):
-        self.name, self.name_obj=ask(parse('create_lattice()', kwargs=kwargs)) 
-        self._lattice_properties=PropertyDict(name=self.name, function='lattice_property')
+        self.name, self.name_obj=Communication.ask('create_lattice',
+                                                   **kwargs)
+        self._lattice_properties=PropertyDict(name=self.name,
+                                              function='lattice_property')
         super().__init__()
     
     @property
@@ -952,28 +988,31 @@ class Lattice(Object):
     
     @property
     def points(self):
-        kwargs=dict({'name':self.name})
-        return np.array(ask(parse('get_lattice_points()', kwargs=kwargs)))
+        return np.array(Communication.ask('get_lattice_points',
+                                          name=self.name))
         
 
 class Curve(Object):
     
     def __init__(self, points, **kwargs):
         kwargs['points']=points
-        self.name, self.name_obj=ask(parse('create_curve()', kwargs=kwargs)) 
+        self.name, self.name_obj=Communication.ask('create_curve',
+                                                   **kwargs) 
         super().__init__()
     
     @property
     def points(self):
-        kwargs=dict({'name':self.name, 'name_obj':self.name_obj})
-        return np.array(ask(parse('get_curve_points()', kwargs=kwargs)))
+        return np.array(Communication.ask('get_curve_points',
+                                          name=self.name,
+                                          name_obj=self.name_obj))
     
     @points.setter
     def points(self, val):
         if hasattr(val, 'tolist'):
             val=val.tolist()
-        kwargs=dict({'name':self.name, 'points':val})
-        send(parse('set_curve_points()', kwargs=kwargs))
+        Communication.send('set_curve_points',
+                           name=self.name,
+                           points=val)
         
 class Plane(Object):
     
@@ -981,16 +1020,10 @@ class Plane(Object):
         self.add_plane(name, location, size)
         
     def add_plane(self, name, location, size):
-        res=dict()
-        kwargs = dict()
-        kwargs['location']=location
-        kwargs['size']=size
-        kwargs['name']=name
-        res['type']='plane'
-        res['args']=[]
-        res['command']='create_plane'
-        res['kwargs']=kwargs
-        self.name, self.name_obj=ask(json.dumps(res))
+        self.name, self.name_obj=Communication.ask('create_plane',
+                                                   location=location,
+                                                   size=size,
+                                                   name=name)
         
 class Light(Object):
     
@@ -1018,7 +1051,8 @@ class Light(Object):
         res['args']=[]
         res['command']='create_light'
         res['kwargs']=kwargs
-        self.name, self.name_obj=ask(json.dumps(res))
+        self.name, self.name_obj=Communication.ask('create_light',
+                                                   light_type=light_type)
     
     def load_light(self, filepath):
         with open(filepath, 'r') as f:
@@ -1050,65 +1084,38 @@ class Mesh(Object, GeometricEntity):
         
     def send_mesh(self, mesh, thickness=None, name='mesh'):
         if self.mesh is not None:
-            points, cells = self.mesh.points, self.mesh.cells
-            res=dict()
-            kwargs = dict()
-            kwargs['points']=[[float(coord) for coord in p] for p in points]
-            kwargs['cells']=[]
-            for celltype in cells:
+            points=[[float(coord) for coord in p] for p in self.points]
+            cells=[]
+            for celltype in self.cells:
                 if celltype.type=='triangle':
-                    kwargs['cells']+=[[int(ind) for ind in cell] for cell in celltype.data]
+                    cells+=[[int(ind) for ind in cell] for cell in celltype.data]
             
         else:
-            points, cells = self.points, self.cells
-            kwargs = dict()
-            res=dict()
-            kwargs['points']=[[coord for coord in p] for p in points]
-            kwargs['cells']=[]
-            for celltype in cells:
+            cells=[]
+            points=[[coord for coord in p] for p in self.points]
+            for celltype in self.cells:
                 if not isinstance(celltype[0], str):
-                    kwargs['cells']+=[[int(ind) for ind in celltype]]
+                    cells+=[[int(ind) for ind in celltype]]
                 elif celltype[0]=='triangle':
-                    kwargs['cells']+=[[int(ind) for ind in cell] for cell in celltype[1]]
-         
-        kwargs['name']=name
-        kwargs['thickness']=thickness
-        kwargs['subdivide']=self.subdivide
-        res['type']='mesh'
-        res['args']=[]
-        res['command']='create_mesh'
-        res['kwargs']=kwargs
-        return ask(json.dumps(res)) 
-    
-    def make_oscillations(self, target_scale=[1,1,1],
-                          target_rotation =[0,0,0], target_motion=[0,0,0],
-                          center_scale=[1,1,1], center_rotation=[0,0,0],
-                          center_motion=[0,0,0], Q=0,
-                          N_frames=40, N_oscillations=10):
-        kwargs = dict({'name_obj':self.name_obj,
-                       'target_scale':target_scale,
-                       'target_rotation':target_rotation,
-                       'target_motion':target_motion,
-                       'N_frames':N_frames,
-                       'N_oscillations':N_oscillations,
-                       'Q':Q,
-                       'center_motion':center_motion,
-                       'center_scale':center_scale,
-                       'center_rotation':center_rotation})
-        assert ask(parse('make_oscillations()', kwargs=kwargs))=="DONE"
+                    cells+=[[int(ind) for ind in cell] for cell in celltype[1]]
+        return Communication.ask('create_mesh',
+                                 name=name,
+                                 thickness=thickness,
+                                 subdivide=self.subdivide,
+                                 points=points,
+                                 cells=cells) 
     
     def insert_mesh_keyframe(self, frame='current',
                              waiting_time_between_points=0.01):
-         kwargs = dict({'name_msh':self.name_msh,
-                        'frame':frame,
-                        'waiting_time_between_points':waiting_time_between_points})
-         ask(parse('insert_keyframe_mesh()', kwargs=kwargs))
+         Communication.ask('insert_keyframe_mesh',
+                           name_msh=self.name_msh,
+                           frame=frame,
+                           waiting_time_between_points=waiting_time_between_points)
         
     def cut_mesh(self, plane_points, plane_normals):
-        kwargs = dict({'name_msh':self.name_msh,
-                       'planes_co':plane_points,
-                       'planes_no':plane_normals})
-        send(parse('cut_mesh()', kwargs=kwargs))
+        Communication.send('cut_mesh', name_msh=self.name_msh,
+                           planes_co=plane_points,
+                           planes_no=plane_normals)
     
     def divide(self, Nx=None, Ny=None, Nz=None):
         if Nx is not None:
@@ -1130,16 +1137,16 @@ class Mesh(Object, GeometricEntity):
 
     @property
     def vertices(self):
-        kwargs = dict({'name_msh':self.name_msh})
-        return np.array(ask(parse('get_vertices()', kwargs=kwargs)))
+        return np.array(Communication.ask('get_vertices',
+                                          name_msh=self.name_msh))
     
     @vertices.setter
     def vertices(self, val):
         if hasattr(val, 'tolist'):
             val=val.tolist()
-        kwargs = dict({'name_msh':self.name_msh,
-                       'val':val})
-        send(parse('set_vertices()', kwargs=kwargs))
+        Communication.send('set_vertices',
+                           name_msh=self.name_msh,
+                           val=val)
     
     @property
     def cursor_location(self):
@@ -1149,7 +1156,8 @@ class Mesh(Object, GeometricEntity):
         res['args']=[]
         res['command']='get_cursor_location'
         res['kwargs']=kwargs
-        return ask(json.dumps(res)) 
+        return Communication.ask('get_cursor_location',
+                                 name=self.name_obj) 
     
     @cursor_location.setter
     def cursor_location(self, val):
@@ -1160,25 +1168,13 @@ class Mesh(Object, GeometricEntity):
         res['args']=[]
         res['command']='set_cursor_location'
         res['kwargs']=kwargs
-        send(json.dumps(res))
+        Communication.send('set_cursor_location',
+                           name=self.name_obj,
+                           location=val)
         
 
 if __name__=='__main__':
-    import pygmsh
-    delete_all()
-    material=Material('hello', '#F5D15B', alpha=0.5, blend_method='BLEND')
-    geom=pygmsh.opencascade.geometry.Geometry(characteristic_length_max=0.25)
-
-    mirror_1=geom.add_cylinder([0,0,0],
-                               [0,0,1], 1)
-    mesh = pygmsh.generate_mesh(geom)
-    mirror_1_mesh=Mesh(mesh, name='mirror_1')
-    '''mirror_1_mesh.assign_material(material)
-    material.z_dependant_color([0.,0.5,1.],
-                               ['#3213CDFF',
-                                '#FFFFFF10',
-                                '#F60818FF'])'''
-    mirror_1_mesh.make_oscillations(target_scale=[1,1,2])
+    pass
     
                           
                       
