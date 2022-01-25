@@ -1,0 +1,10 @@
+shapely
+pya
+numpy
+struct
+tempfile
+os
+time
+subprocess
+abc
+socket
