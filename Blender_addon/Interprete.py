@@ -11,12 +11,7 @@ class Interprete:
         self.server=server
     
     def call(self, cmd):
-        if len(cmd['args'])==0 or\
-        (len(cmd['args'])==1 and len(cmd['args'][0])==0)or\
-        'args' not in cmd.keys():
-            getattr(self, cmd['command'])(**cmd['kwargs'])
-        else:
-            getattr(self, cmd['command'])(*cmd['args'], **cmd['kwargs'])
+        getattr(self, cmd['command'])(**cmd['kwargs'])
     
     def delete_all(self, connection=None):
         for block in bpy.data.objects:
@@ -269,11 +264,6 @@ class Interprete:
         self.server.send_answer(connection,
                                     res)
     
-    def create_collection(self, connection=None,
-                          name=None):
-        col=bpy.data.collections.new(name)
-        self.server.send_answer(connection, col.name)
-    
     def set_shadernode_output(self, material_name=None, 
                              from_name=None,
                              from_key=None,
@@ -356,31 +346,6 @@ class Interprete:
             bpy.context.scene.eevee.use_ssr_refraction = True
         print(kwargs)
         material.use_backface_culling=kwargs['use_backface_culling']
-    
-    def get_cursor_location(self, **kwargs):
-        self.server.send_answer(kwargs['connection'], 
-                                [bpy.context.scene.cursor.location.x,
-                                 bpy.context.scene.cursor.location.y,
-                                 bpy.context.scene.cursor.location.z])
-    
-    def set_cursor_location(self, **kwargs):
-        bpy.context.scene.cursor.location.x=kwargs['location'][0]
-        bpy.context.scene.cursor.location.y=kwargs['location'][1]
-        bpy.context.scene.cursor.location.z=kwargs['location'][2]
-        bpy.data.objects[kwargs['name']].select_set(True)
-        bpy.ops.object.origin_set(type='ORIGIN_CURSOR')
-    
-    def create_lattice(self, connection=None, name="lattice",
-                       **kwargs):
-        new_lattice=bpy.data.lattices.new(name)
-        new_obj=bpy.data.objects.new(name, new_lattice)
-        bpy.data.collections[0].objects.link(new_obj)
-        self.server.send_answer(connection, [new_lattice.name, new_obj.name])
-    
-    def get_lattice_points(self, connection=None, name=None,
-                              **kwargs):
-        lat=bpy.data.lattices[name]
-        return [[p.co.x, p.co.y, p.co.z] for p in lat.points]
     
     def create_curve(self, location=[0,0,0], name="curve",
                      points=[(0,0,0), (1,0,0)], **kwargs):
@@ -610,19 +575,9 @@ class Interprete:
                [1,2,6,5]]
         self.create_mesh(points=points, cells=cells, name=name, connection=connection)
         
-    def create_camera(self, **kwargs):
-        location, rotation, name=kwargs['location'], kwargs['rotation'], kwargs['name']
-        
+    def create_camera(self, name=None, **kwargs):
         new_cam=bpy.data.cameras.new(name)
         new_obj=bpy.data.objects.new(name, new_cam)
-        new_obj.location.x=location[0]
-        new_obj.location.y=location[1]
-        new_obj.location.z=location[2]
-        
-        new_obj.rotation_euler.x=rotation[0]
-        new_obj.rotation_euler.y=rotation[1]
-        new_obj.rotation_euler.z=rotation[2]
-        
         bpy.data.collections[0].objects.link(new_obj)
         bpy.context.scene.camera=new_obj
         self.server.send_answer(kwargs['connection'], [new_cam.name, new_obj.name])
@@ -666,10 +621,10 @@ class Interprete:
         obj.scale.y=kwargs['scale'][1]
         obj.scale.z=kwargs['scale'][2]
         
-    def get_material(self, name, connection=None):
+    def get_material(self, name=None, connection=None):
         self.server.send_answer(connection, bpy.data.materials.get(name).name)
     
-    def create_material(self, name, connection=None):
+    def create_material(self, name=None, connection=None):
         self.server.send_answer(connection, self.new_material(name).name)
     
     def new_material(self, name):
@@ -679,8 +634,6 @@ class Interprete:
         return mat
     
     def assign_material(self, name_obj=None, name_mat=None, **kwargs):
-        #bpy.data.objects[kwargs['name_obj']].select_set(True)
-        #bpy.context.view_layer.objects.active = bpy.data.objects[kwargs['name_obj']]
         ob = bpy.data.objects[name_obj]
         ob.data.materials.clear()
         if isinstance(name_mat, list):

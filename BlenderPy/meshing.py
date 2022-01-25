@@ -5,13 +5,10 @@ Created on Wed Oct 20 10:50:42 2021
 @author: Thibault
 """
 
-from shapely import geometry, affinity
+from shapely import geometry
 import triangle
-import pygmsh
 import numpy as np
-from BlenderPy.sending_data import (Material, Mesh, delete_all,
-                          Light, Camera, Curve, Object,
-                          ShaderNode, Plane, GeometricEntity)
+from BlenderPy.sending_data import (Mesh, GeometricEntity)
 from abc import abstractmethod
 import time
 import os
@@ -223,10 +220,6 @@ class Polygon():
     def subtract(self, other):
         if isinstance(other, Polygon) or isinstance(other, MultiPolygon):
             diff=self.to_shapely().difference(other.to_shapely())
-        '''elif isinstance(other, MultiPolygon):
-            diff=self.to_shapely()
-            for poly in other.polygons:
-                diff=diff.difference(poly.to_shapely())'''
         if isinstance(diff, geometry.multipolygon.MultiPolygon):
             res=MultiPolygon()
             polys=list(diff)
@@ -477,21 +470,11 @@ class Triangle:
     
 class PlaneGeom(Mesh, GeometricEntity):
     
-    def __init__(self, polygon=None, name='', thickness=1,
-                 characteristic_length_max=0.03,
-                 material=Material('nitrure', '#F5D15B', alpha=0.3, blend_method='BLEND',
-                 use_backface_culling=True, blend_method_shadow='NONE'),
-                 rounding_decimals=12, subdivide=1, refine=None):
-        time.sleep(0.1)
-        time.sleep(0.1)
+    def __init__(self, polygon=None, name='', 
+                 refine=None, **kwargs):
         self.refine=refine
-        self.subdivide=subdivide
         self.name=name
-        self.thickness=thickness
-        self.geom=pygmsh.opencascade.geometry.Geometry(characteristic_length_max=characteristic_length_max)
-        self.material=material
-        self.rounding_decimals=rounding_decimals
-        time.sleep(0.1)
+        self.kwargs=kwargs
         if polygon is not None:
             if isinstance(polygon, Polygon):
                 if len(polygon.holes)==0:
@@ -499,10 +482,8 @@ class PlaneGeom(Mesh, GeometricEntity):
                     self.cells=[[i for i, p in enumerate(polygon.points)]]
                     self.send_to_blender(from_external_loading=True)
                 else:
-                    time.sleep(0.1)
                     self.cell_points, self.cells = Triangle.triangulate(polygon.points,
                                                                  polygon.holes)
-                    time.sleep(0.1)
                     self.send_to_blender(from_external_loading=True)
             elif isinstance(polygon, MultiPolygon):
                 self.cell_points, self.cells=[], []
@@ -515,10 +496,6 @@ class PlaneGeom(Mesh, GeometricEntity):
                         self.cells.append([offset+i for
                                            i,p in enumerate(poly.points)])
                     else:
-                        '''res = self.generate_triangulation_from_point_list(
-                                                             [poly.points,
-                                                              poly.holes],
-                                                              overwrite=False)'''
                         res=Triangle.triangulate(poly.points, poly.holes)
                         points, cells=res
                         self.cell_points+=points
@@ -530,107 +507,19 @@ class PlaneGeom(Mesh, GeometricEntity):
                         
                             
     def send_to_blender(self, use_triangle=False, from_external_loading=False):
-        if not use_triangle and not from_external_loading:
-            self._pymesh=pygmsh.generate_mesh(self.geom)
-            super().__init__(mesh=self._pymesh, name=self.name,
-                                    thickness=self.thickness,
-                                    subdivide=self.subdivide,
-                                    material=self.material)
-        elif use_triangle and not from_external_loading:
+        if use_triangle:
             self.generate_triangulation_from_shapely_linestring(self.line)
-            super().__init__(cells=self.cells, points=self.cell_points, name=self.name,
-                                    thickness=self.thickness,
-                                    subdivide=self.subdivide,
-                                    material=self.material)
-        else:
-            super().__init__(cells=self.cells, points=self.cell_points,
-                                    name=self.name,
-                                    thickness=self.thickness,
-                                    subdivide=self.subdivide,
-                                    material=self.material)
-    
-    def format_line(self, line, gmsh=True):
-        if not gmsh:
-            x_s, y_s=line.xy
-            res = [(x,y,0) for x,y in zip(x_s, y_s)]
-            if res[-1]==res[0]:
-                res=res[:-1]
-            return res
-        else:
-            x_s, y_s=line.xy
-            xy=[(np.around(x, decimals=self.rounding_decimals),
-                      np.around(y, decimals=self.rounding_decimals),0) for x,y in zip(np.array(x_s), np.array(y_s))][:-1]
-            i=0
-            while (i+1)<len(xy):
-                if xy[i+1]==xy[i]:
-                    xy.remove(xy[i+1])                
-                else:
-                    i=i+1
-            if xy[0]==xy[-1]:
-                xy.remove(xy[-1])
-            return xy
-    
-    def generate_polygon_from_shapely_linestring(self, poly):
-        if hasattr(poly, 'exterior'):
-            self.xy=self.format_line(poly.exterior)
-        else:
-            self.xy=self.format_line(poly)
-        self.holes=[]
-        if len(poly.interiors)==0:
-            return self.geom.add_polygon([[p[0], p[1], 0] for p in self.xy])
-        else:
-            for interior in poly.interiors:
-                xy=self.format_line(interior)
-                x_s, y_s=interior.xy
-                self.holes.append(self.geom.add_polygon(xy))
-            self.poly=self.geom.add_polygon(self.xy)
-            for hole in self.holes:
-                self.poly=self.geom.boolean_difference([self.poly.surface], [hole.surface])
-                
-            return self.poly
-    
-    def generate_shapely_polygon_from_points(self, points):
-        return geometry.Polygon(points[0], holes=points[1])
+        super().__init__(cells=self.cells, points=self.cell_points,
+                                 name=self.name,
+                                **self.kwargs)
         
-    def generate_triangulation_from_point_list(self, points, overwrite=True):
-        xy=points[0]
-        self._to_triangle_vertices=xy
-        self._to_triangle_segments=[(len(xy)-1,0)]+\
-                        [(i,i+1) for i in range(len(xy)-1)]
-        if len(points[1])==0:
-            t=triangle.triangulate({'vertices': self._to_triangle_vertices,
-                        'segments': self._to_triangle_segments},
-                       opts="p")
-            if self.refine is not None:
-                t=triangle.triangulate(t, opts="pra{:}".format(self.refine))
-            if overwrite:
-                self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
-                                                 [("triangle", t['triangles'].tolist())])
-            else:
-                return ([p+[0.] for p in t['vertices'].tolist()],
-                         [("triangle", t['triangles'].tolist())])
-        else:
-            time.sleep(0.5)
-            holes=[]
-            for hole in points[1]:
-                holes.append([np.mean([p[0] for p in hole]),
-                              np.mean([p[1] for p in hole])])
-                N=len(self._to_triangle_vertices)
-                self._to_triangle_segments+=[(N+len(hole)+-1,N)]+\
-                        [(N+i,N+i+1) for i in range(len(hole)-1)]
-                self._to_triangle_vertices+=hole
-            time.sleep(0.5)
-            t=triangle.triangulate({'vertices': self._to_triangle_vertices,
-                            'segments': self._to_triangle_segments,
-                            'holes':holes},
-                           opts="p")
-            if overwrite:
-                self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
-                                       [("triangle", t['triangles'].tolist())])
-            else:
-                return ([p+[0.] for p in t['vertices'].tolist()],
-                         [("triangle", t['triangles'].tolist())])
-            
+    def format_line(self, line):
+        x_s, y_s=line.xy
+        res = [(x,y,0) for x,y in zip(x_s, y_s)]
+        if res[-1]==res[0]:
+            res=res[:-1]
+        return res
+
     def generate_triangulation_from_shapely_linestring(self, poly):
         if hasattr(poly, 'exterior'):
             self.xy=self.format_line(poly.exterior, gmsh=False)
@@ -666,9 +555,7 @@ class PlaneGeom(Mesh, GeometricEntity):
             self.cell_points, self.cells = ([p+[0.] for p in t['vertices'].tolist()],
                                        [("triangle", t['triangles'].tolist())])
     
-    
-            
-    
+
 class Path(PlaneGeom):
 
     def __init__(self, points, width, cap_style='flat',
@@ -705,7 +592,6 @@ class Arrow(PlaneGeom):
         self.head_length=head_length
         self.length=length
         self.width=width
-        #self.generate()
         self.cell_points=[[-width/2, -length, 0.],
                           [width/2, -length, 0.],
                           [width/2, 0., 0.],
@@ -716,20 +602,11 @@ class Arrow(PlaneGeom):
         self.cells=[[i for i,p in enumerate(self.cell_points)]]
         super().__init__(**kwargs)
         self.send_to_blender(from_external_loading=True)
-    
-    def generate(self):
-        self.line=geometry.LineString([(0,0,0), (self.length,0,0)]).buffer(self.width/2.)
-        self.poly=self.generate_polygon_from_shapely_linestring(self.line)
-        self.head=self.geom.add_polygon([(self.length,-self.head_width/2,0),
-                                         (self.length+self.head_length,0,0),
-                                         (self.length,self.head_width/2,0)])
-        self.arrow=self.geom.boolean_union([self.poly, self.head])
 
 class Cylinder(PlaneGeom):
     
     def __init__(self, name='Cylinder', radius=1, height=1,
                  N_points=32, **kwargs):
-        #self.line=geometry.Point(0,0).buffer(radius).exterior
         self.cell_points=[[radius*np.cos(theta), radius*np.sin(theta), -height/2] 
                         for theta in np.linspace(0, 2*np.pi, N_points)]
         self.cells=[[i for i in range(N_points)]]
@@ -739,7 +616,6 @@ class Cylinder(PlaneGeom):
 class Box(PlaneGeom):
     
     def __init__(self, name='Box', Lx=1, Ly=1, Lz=1, **kwargs):
-        #self.line=geometry.box(-Lx/2,-Ly/2,Lx/2, Ly/2).exterior
         self.cell_points=[[-Lx/2, -Ly/2, -Lz/2],
                           [-Lx/2, Ly/2, -Lz/2],
                           [Lx/2, Ly/2, -Lz/2],
@@ -747,7 +623,13 @@ class Box(PlaneGeom):
         self.cells=[[0, 1, 2, 3]]
         super().__init__(name=name, thickness=Lz, **kwargs)
         self.send_to_blender(from_external_loading=True)
-
+        
+class Plane(Box):
+    
+    def __init__(self, name='plane', size=10, **kwargs):
+        super().__init__(Lx=size, Ly=size, Lz=0.,
+                         name=name, **kwargs)
+        
 class Isocahedron(Mesh):
     
     def __init__(self, radius=1, refine=0, **kwargs):
@@ -854,5 +736,4 @@ class Isocahedron(Mesh):
 
         
 if __name__=='__main__':
-        
     pass

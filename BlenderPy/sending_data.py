@@ -785,25 +785,13 @@ class GaussianLaserMaterial(EmissionMaterial):
     def __init__(self, alpha=0.001, waist=0.1, strength=3, **kwargs):
         expression='{:}*e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))'.format(strength, alpha, waist**2)
         super().__init__(expression=expression, **kwargs) 
-
-class Collection:
-    
-    def __init__(self, name=None, **kwargs):
-        self.name_col=Communication.ask('create_collection', name=name)
-        self._properties=PropertyDict('', self.name_col, func='collection_property')
-    
-    def link(self, obj):
-        assert isinstance(obj, Object)
-        Communication.ask('link_object', name_col=self.name_col,
-                          name_obj=obj.name_obj)
-    
-    @property
-    def properties(self):
-        return self._properties
     
 class Object:
     
-    def __init__(self, name_obj=None, filepath=None, **kwargs):
+    def __init__(self, name_obj=None, filepath=None,
+                 location=None, scale=None,
+                 material=None, rotation=None,
+                 **kwargs):
         if name_obj is not None:
             self.name_obj=name_obj
         self._properties=PropertyDict('', self.name_obj, func='object_property')
@@ -811,6 +799,14 @@ class Object:
         self.modifiers=[]
         if filepath is not None:
             self.load(filepath)
+        if location is not None:
+            self.location=location
+        if scale is not None:
+            self.scale=scale
+        if rotation is not None:
+            self.rotation=rotation
+        if material is not None:
+            self.assign_material(material)
     
     def assign_material(self, material):
         if isinstance(material, list):
@@ -935,70 +931,28 @@ class Object:
 
 class Camera(Object):
     
-    def __init__(self, name='camera', location=[5,5,5], rotation=[0,0,0],
+    def __init__(self, name='camera',
                  **kwargs):
-        self.add_camera(name, location, rotation)
+        self.add_camera(name)
         super().__init__(**kwargs)
         self._cam_properties=PropertyDict(self.name, '',
                                           func='camera_property')
     
     def add_camera(self, name, location, rotation):
         self.name, self.name_obj=Communication.ask('create_camera',
-                                                   name=name,
-                                                   location=location,
-                                                   rotation=rotation)
+                                                   name=name)
     
     @property
     def cam_properties(self):
         return self._cam_properties
-        
-class Cube(Object):
-    
-    def __init__(self, name, location, size):
-        self.add_cube(name, location, size)
-        super().__init__()
-        
-    def add_cube(self, name, location, size):
-        res=dict()
-        kwargs = dict()
-        kwargs['location']=location
-        kwargs['size']=size
-        kwargs['name']=name
-        res['type']='cube'
-        res['args']=[]
-        res['command']='create_cube'
-        res['kwargs']=kwargs
-        self.name, self.name_obj=Communication.ask('create_cube',
-                                                   location=location,
-                                                   size=size,
-                                                   name=name)
-
-class Lattice(Object):
-    
-    def __init__(self, **kwargs):
-        self.name, self.name_obj=Communication.ask('create_lattice',
-                                                   **kwargs)
-        self._lattice_properties=PropertyDict(name=self.name,
-                                              function='lattice_property')
-        super().__init__()
-    
-    @property
-    def lattice_properties(self):
-        return self._lattice_properties
-    
-    @property
-    def points(self):
-        return np.array(Communication.ask('get_lattice_points',
-                                          name=self.name))
-        
 
 class Curve(Object):
     
     def __init__(self, points, **kwargs):
-        kwargs['points']=points
         self.name, self.name_obj=Communication.ask('create_curve',
+                                                   points=points,
                                                    **kwargs) 
-        super().__init__()
+        super().__init__(**kwargs)
     
     @property
     def points(self):
@@ -1014,32 +968,18 @@ class Curve(Object):
                            name=self.name,
                            points=val)
         
-class Plane(Object):
-    
-    def __init__(self, name='plane', location=[0.,0.,0.], size=10, **kwargs):
-        self.add_plane(name, location, size)
-        
-    def add_plane(self, name, location, size):
-        self.name, self.name_obj=Communication.ask('create_plane',
-                                                   location=location,
-                                                   size=size,
-                                                   name=name)
-        
 class Light(Object):
     
-    _light_keys=['energy', 'shadow_soft_size']
-    
-    def __init__(self, name='light', location=[0.,0.,0.],
+    def __init__(self, name='light',
                  power=2, radius=0.25, light_type='POINT',
-                 filepath=None):
+                 filepath=None, **kwargs):
         self.add_light(name, light_type=light_type)
-        super().__init__()
+        super().__init__(**kwargs)
         self._light_properties=PropertyDict(self.name,
                                            self.name_obj,
                                            func='light_property')
         self.light_properties['energy']=power
         self.light_properties['shadow_soft_size']=radius
-        self.location=location
         if filepath is not None:
             self.load(filepath)
             self.load_light(filepath)
@@ -1147,30 +1087,6 @@ class Mesh(Object, GeometricEntity):
         Communication.send('set_vertices',
                            name_msh=self.name_msh,
                            val=val)
-    
-    @property
-    def cursor_location(self):
-        res=dict()
-        kwargs = dict()
-        kwargs['name']=self.name_obj
-        res['args']=[]
-        res['command']='get_cursor_location'
-        res['kwargs']=kwargs
-        return Communication.ask('get_cursor_location',
-                                 name=self.name_obj) 
-    
-    @cursor_location.setter
-    def cursor_location(self, val):
-        res=dict()
-        kwargs = dict()
-        kwargs['name']=self.name_obj
-        kwargs['location']=val
-        res['args']=[]
-        res['command']='set_cursor_location'
-        res['kwargs']=kwargs
-        Communication.send('set_cursor_location',
-                           name=self.name_obj,
-                           location=val)
         
 
 if __name__=='__main__':
