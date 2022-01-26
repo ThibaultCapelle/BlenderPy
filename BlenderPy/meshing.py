@@ -395,12 +395,15 @@ class Rectangle(Polygon):
 class Triangle:
     
     @staticmethod
-    def generate_poly_file(points, holes):
-        f=tempfile.mkstemp(suffix = '.poly')
+    def triangulate(points, holes):
         _to_triangle_vertices=points
         _to_triangle_segments=[(len(points)-1,0)]+\
                         [(i,i+1) for i in range(len(points)-1)]
-        if len(holes)!=0:
+        if len(holes)==0:
+            tri=triangle.triangulate(dict({'vertices':_to_triangle_vertices,
+                                           'segments':_to_triangle_segments}),
+                                            'pqPz')
+        else:
             holes_point=[]
             for hole in holes:
                 holes_point.append([np.mean([p[0] for p in hole]),
@@ -409,64 +412,12 @@ class Triangle:
                 _to_triangle_segments+=[(N+len(hole)+-1,N)]+\
                         [(N+i,N+i+1) for i in range(len(hole)-1)]
                 _to_triangle_vertices+=hole
-        with open(f[1], 'w') as f:
-            f.write('{:} 2 0 0\n'.format(len(_to_triangle_vertices)))
-            for i, p in enumerate(_to_triangle_vertices):
-                f.write('{:} {:} {:}\n'.format(i, p[0], p[1]))
-            f.write('{:} 0\n'.format(len(_to_triangle_segments)))
-            for i, p in enumerate(_to_triangle_segments):
-                f.write('{:} {:} {:}\n'.format(i, p[0], p[1]))
-            f.write('{:}\n'.format(len(holes)))
-            for i, p in enumerate(holes_point):
-                f.write('{:} {:} {:}\n'.format(i, p[0], p[1]))
-        return f.name
-    
-    @staticmethod
-    def use_external_program(file_input):
-        program=os.path.join(os.path.dirname(__file__), 'triangle.exe')
-        return subprocess.Popen([program, '-pqPz', file_input], shell=True)
-    
-    @staticmethod
-    def triangulate(points, holes):
-        filename=Triangle.generate_poly_file(points, holes)
-        program=Triangle.use_external_program(filename)
-        dirname=os.path.dirname(filename)
-        basename=os.path.basename(filename)
-        rootname=basename.split('.')[0]
-        program.wait()
-        program.terminate()
-        for file_ele in os.listdir(dirname):
-            if file_ele.startswith(rootname) and file_ele.endswith('.ele'):
-                file_ele=os.path.join(dirname, file_ele)
-                break
-        cells=[]
-        with open(file_ele, 'r') as f:
-            lines=f.readlines()
-        for i, line in enumerate(lines):
-            if not line.startswith('#') and i!=0:
-                cell = [int(k) for k in line.split(' ') if k!='']
-                cells.append([cell[1], cell[2], cell[3]])
-        for file_node in os.listdir(dirname):
-            if file_node.startswith(rootname) and file_node.endswith('.node'):
-                file_node=os.path.join(dirname, file_node)
-                break
-        points=[]
-        with open(file_node, 'r') as f:
-            lines=f.readlines()
-        for i, line in enumerate(lines):
-            if not line.startswith('#') and i!=0:
-                point = [float(k) for k in line.split(' ') if k!='']
-                points.append([point[1], point[2], 0.])
-        
-        for file in os.listdir(dirname):
-            if file.startswith(rootname):
-                filename=os.path.join(dirname, file)
-                try:
-                    os.remove(filename)
-                except PermissionError:
-                    pass
-        return points, cells
-        
+            tri=triangle.triangulate(dict({'vertices':_to_triangle_vertices,
+                                           'segments':_to_triangle_segments,
+                                           'holes':holes_point}),
+                                            'pqPz')
+        return ([p+[0.] for p in tri['vertices'].tolist()],
+                tri['triangles'].tolist())
     
 class PlaneGeom(Mesh, GeometricEntity):
     
@@ -482,7 +433,7 @@ class PlaneGeom(Mesh, GeometricEntity):
                     self.cells=[[i for i, p in enumerate(polygon.points)]]
                     self.send_to_blender(from_external_loading=True)
                 else:
-                    self.cell_points, self.cells = Triangle.triangulate(polygon.points,
+                    self.cell_points, self.cells = Triangle.triangulat(polygon.points,
                                                                  polygon.holes)
                     self.send_to_blender(from_external_loading=True)
             elif isinstance(polygon, MultiPolygon):
@@ -531,7 +482,7 @@ class PlaneGeom(Mesh, GeometricEntity):
         self._to_triangle_segments=[(len(xy)-1,0)]+\
                         [(i,i+1) for i in range(len(xy)-1)]
         if not hasattr(poly, 'interiors') or  hasattr(poly, 'interiors') and len(poly.interiors)==0:
-            t=triangle.triangulate({'vertices': self._to_triangle_vertices,
+            t=triangle.triangulate_using_triangle({'vertices': self._to_triangle_vertices,
                         'segments': self._to_triangle_segments},
                        opts="p")
             if self.refine is not None:

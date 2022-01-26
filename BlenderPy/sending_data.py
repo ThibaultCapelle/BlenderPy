@@ -14,6 +14,10 @@ import numpy as np
 HOST = '127.0.0.1'
 PORT = 20000
 
+def delete_all():
+    '''Delete all objects, meshes, cameras, ...'''
+    assert Communication.ask('delete_all')=="DONE"
+    
 class Communication:
     '''A static class for communicating with the server'''
 
@@ -101,10 +105,6 @@ class Communication:
         res['kwargs']=kwargs
         msg=json.dumps(res)
         return msg
-
-def delete_all():
-    '''Delete all objects, meshes, cameras, ...'''
-    assert Communication.ask('delete_all')=="DONE"
     
 class GeometricEntity:
     '''a class encompassing the geometric absolute positioning
@@ -938,7 +938,7 @@ class Camera(Object):
         self._cam_properties=PropertyDict(self.name, '',
                                           func='camera_property')
     
-    def add_camera(self, name, location, rotation):
+    def add_camera(self, name):
         self.name, self.name_obj=Communication.ask('create_camera',
                                                    name=name)
     

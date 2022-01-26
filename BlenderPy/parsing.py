@@ -223,7 +223,7 @@ class Expression:
         
 
 if __name__=='__main__':
-    expression=Expression(content='cos(|x-0.5|*3.14/0.1)', tokens=[])
+    expression=Expression(content='{:}*e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))'.format(10, 3, 0.2**2), tokens=[])
     res=expression.get_tree()
     
             
