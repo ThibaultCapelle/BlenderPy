@@ -71,10 +71,14 @@ s.assign_material(glow_material)
 
 #### Making a simple plane oscillating
 
-![test](pictures/oscillation.avi)
+<img src="pictures/oscillation.jpg" alt="drawing" width="350"/>
+
+To see the animated result, you can click ![here](https://video.antopie.org/videos/embed/a417b12b-c46e-451b-9375-9557e7ac82d0?warningTitle=0)
+
+<iframe title="oscillation" src="https://video.antopie.org/videos/embed/a417b12b-c46e-451b-9375-9557e7ac82d0?warningTitle=0" allowfullscreen="" sandbox="allow-same-origin allow-scripts allow-popups" width="560" height="315" frameborder="0"></iframe>
 
 ```
-from BlenderPy.sending_data import (delete_all, ZColorRampMaterial,
+from BlenderPy.sending_data import (delete_all, PositionDependantMaterial,
                                     Scene, Camera, Light)
 from BlenderPy.meshing import Box
 import numpy as np
@@ -85,7 +89,8 @@ b.divide(Nx=20, Ny=20)
 verts=b.vertices
 verts[:,2]=0.25*np.sin(2*np.pi*verts[:,0])*np.sin(2*np.pi*verts[:,1])
 b.vertices=verts
-material=ZColorRampMaterial(positions=[0.,0.125,0.25],
+material=PositionDependantMaterial('z+0.125',
+                            positions=[0.,0.125,0.25],
                             colors=['#5DF604', 
                                        '#DF1111',
                                        '#273B9E'],
@@ -103,4 +108,95 @@ b.insert_mesh_keyframe(frame=100, waiting_time_between_points=0.025)
 b.smooth()
 b.use_auto_smooth=True
 b.auto_smooth_angle=np.pi/180*80
+```
+
+#### Extract the characteristics of one object in a Json file to reuse it in a script
+
+Sometimes, the GUI is more convenient to test positions, rotations and object properties quite finely, but
+we want to include a hand-chosen property in a script without going through the trouble of manually copy paste it.
+To do so, the BlenderPy addon activates a new hotkey: while having selected the desired object you want to get the properties selected,
+press Alt+S, which opens a file selection popup. Choose a place and enter a .json filename, then press 'Saving'.
+After that you can include those properties in your script as follows:
+
+```
+from BlenderPy.sending_data import Camera
+cam=Camera(filepath=my_filepath)
+```
+
+#### Load an external GDS/STL/VTU files
+
++ The syntax is:
+```
+from BlenderPy.external_loading import GDSLoader
+loader=GDSLoader(filename=path_to_GDS_file,
+                 layer=layer_to_consider,
+				 xmin=xmin_of_the_bbox_to_select,
+				 xmax=xmax_of_the_bbox_to_select,
+                 ymin=ymin_of_the_bbox_to_select,
+				 ymax=ymax_of_the_bbox_to_select,
+                 cell_name=name_of_the_cell_to_consider,
+				 thickness=Desired_thickness_of_the_extruded_shape,
+				 **kwargs)
+mesh=loader.load()
+```
+for a GDS file. `cell_name` default to 'TOP', and the `thickness` default to None which means that no extrusion is needed. A lot of parameters can be added
+via `kwargs`, for example `location=[0,5,0]` will place the mesh at this position after the load, `rotation=[0,3.14/2,0]` will rotate the mesh, `scale=[2,2,2]`
+will scale uniformly the mesh by a factor 2, `material=my_material` will add the corresponding material, or `filepath=filepath` can be used to
+load all the properties from a json file.
+
++ The syntax is:
+```
+from BlenderPy.external_loading import VTULoader
+loader=VTULoader(filename, **kwargs)
+mesh=loader.load()
+```
+for a VTU file, where `kwargs` can use the same parameters as above.
+
++ The syntax is:
+```
+from BlenderPy.external_loading import STLLoader
+loader=STLLoader(filename, **kwargs)
+mesh=loader.load()
+```
+for a STL file, where `kwargs` can use the same parameters as above.
+
+#### Create a complicated mathematical formula for an Emission Material
+
++ First example: 
+
+<img src="pictures/emission_material.png" alt="drawing" width="350"/>
+
+```
+from BlenderPy.sending_data import (delete_all, EmissionMaterial)
+from BlenderPy.meshing import Cylinder
+
+delete_all()
+glow=EmissionMaterial(expression='20*cos(|x-0.5|*3.14/0.1)*sin(|y-0.5|*3.14/0.1)*(((x-0.5)^2+(y-0.5)^2)<0.1)')
+cyl=Cylinder(name='cyl', radius=1, height=5, material=glow)
+```
+
++ Other example:
+
+<img src="pictures/emission_material_3.jpg" alt="drawing" width="100"/>
+
+```
+from BlenderPy.sending_data import (delete_all, EmissionMaterial)
+from BlenderPy.meshing import Cylinder
+
+delete_all()
+glow=EmissionMaterial(expression='10*(((x-0.5)^2+(y-0.5)^2)<(0.08*(z^2)))')
+cyl=Cylinder(name='cyl', radius=1, height=5, material=glow)
+```
+
++ Probably more useful: a gaussian laser beam
+
+<img src="pictures/gaussian_laser.jpg" alt="drawing" width="100"/>
+
+```
+from BlenderPy.sending_data import (delete_all, GaussianLaserMaterial)
+from BlenderPy.meshing import Cylinder
+
+delete_all()
+glow=GaussianLaserMaterial(alpha=0.001, waist=0.1, strength=30)
+cyl=Cylinder(name='cyl', radius=1, height=5, material=glow)
 ```
