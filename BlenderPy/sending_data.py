@@ -193,30 +193,31 @@ class GeometricEntity:
     
     @xmin.setter
     def xmin(self, val):
-        self.x=val-self.xmin
+        self.x+=val-self.xmin
     
     @ymin.setter
     def ymin(self, val):
-        self.y=val-self.ymin
+        self.y+=val-self.ymin
         
     @zmin.setter
     def zmin(self, val):
-        self.z=val-self.zmin
+        self.z+=val-self.zmin
         
     @xmax.setter
     def xmax(self, val):
-        self.x=val-self.xmax
+        self.x+=val-self.xmax
         
     @ymax.setter
     def ymax(self, val):
-        self.y=val-self.ymax
+        self.y+=val-self.ymax
         
     @zmax.setter
     def zmax(self, val):
-        self.z=val-self.zmax
+        self.z+=val-self.zmax
     
     @property
     def center(self):
+        '''absolute center'''
         return np.array([0.5*(self.xmin+self.xmax),
                          0.5*(self.ymin+self.ymax),
                          0.5*(self.zmin+self.zmax)])
@@ -230,19 +231,24 @@ class GeometricEntity:
     
     @property
     def dx(self):
+        '''Absolute x extension'''
         return self.xmax-self.xmin
     
     @property
     def dy(self):
+        '''Absolute y extension'''
         return self.ymax-self.ymin
     
     @property
     def dz(self):
+        '''Absolute z extension'''
         return self.zmax-self.zmin
     
     
     
 class Scene:
+    '''Class representing a scene. Used for changing the frame numbers,
+    and render properties'''
     
     def __init__(self, use_bloom=True, volumetric_tile_size=2,
                  frame_current=1, frame_start=1,
@@ -256,6 +262,10 @@ class Scene:
     
     @property
     def volumetric_tile_size(self):
+        '''for the eevee render, change the tile size.
+        It should be a power of two, and the lowest is 2, 
+        which corresponds to the finest representation of
+        an emission volume'''
         return int(self._properties[['eevee', 'volumetric_tile_size']])
     
     @volumetric_tile_size.setter
@@ -264,6 +274,8 @@ class Scene:
     
     @property
     def use_bloom(self):
+        '''for the eevee render, activate or not the bloom,
+        which creates a "halo" around emission materials'''
         return self._properties[['eevee', 'use_bloom']]
     
     @use_bloom.setter
@@ -272,6 +284,7 @@ class Scene:
     
     @property
     def frame_current(self):
+        '''current frame'''
         return self._properties['frame_current']
     
     @frame_current.setter
@@ -280,6 +293,7 @@ class Scene:
         
     @property
     def frame_start(self):
+        '''first frame number'''
         return self._properties['frame_start']
     
     @frame_start.setter
@@ -288,6 +302,7 @@ class Scene:
         
     @property
     def frame_end(self):
+        '''last frame number'''
         return self._properties['frame_end']
     
     @frame_end.setter
@@ -295,6 +310,10 @@ class Scene:
         self._properties['frame_end']=val
 
 class ShaderDict(dict):
+    '''Class representing the Shadernodes inputs, outputs
+    and properties. It rewrites the setter and getter
+    of the dict class to use the properties as a dictionary 
+    with the server'''
     
     def __init__(self, name, material_name, func, **kwargs):
         super().__init__()
@@ -333,6 +352,7 @@ class ShaderDict(dict):
             return res
 
 class ShaderSocket:
+    '''Class representing the ShaderSocket of a ShaderNode'''
     
     def __init__(self, material_parent=None, shader_socket_type='input',
                  parent=None, key=None, value=None, **kwargs):
@@ -347,6 +367,8 @@ class ShaderSocket:
                                       **self.to_dict(socket_key=self.key))
     
     def to_dict(self, **kwargs):
+        '''returns a dictionnary representing the ShaderSocket
+        and extra parameters with kwargs'''
         params=dict({'material_name':self.material_parent,
                      'parent_name':self.parent.name,
                      'shader_socket_type':self.shader_socket_type,
@@ -768,11 +790,12 @@ class EmissionMaterial(Material):
 
 class ZColorRampMaterial(Material):
     
-    def __init__(self, colors=None, positions=None, **kwargs):
+    def __init__(self, colors=None, positions=None,
+                          coordinate='Generated', **kwargs):
         super().__init__(**kwargs)
         coord=self.add_shader('Texture_coordinates')
         sep=self.add_shader('Separate_XYZ')
-        sep.inputs['Vector']=coord.outputs['Generated']
+        sep.inputs['Vector']=coord.outputs[coordinate]
         color_ramp=self.add_shader('Color_Ramp')
         color_ramp.inputs['Fac']=sep.outputs['Z']
         color_ramp.properties['color_ramp']=dict({'positions':positions,
@@ -1057,6 +1080,9 @@ class Mesh(Object, GeometricEntity):
                            planes_co=plane_points,
                            planes_no=plane_normals)
     
+    def smooth(self):
+        Communication.ask('smooth', name_msh=self.name_msh)
+    
     def divide(self, Nx=None, Ny=None, Nz=None):
         if Nx is not None:
             xs=np.linspace(self.xmin, self.xmax, Nx)
@@ -1070,6 +1096,22 @@ class Mesh(Object, GeometricEntity):
             zs=np.linspace(self.zmin, self.zmax, Nz)
             self.cut_mesh([[0,0,z] for z in zs],
                           [[0,0,1] for z in zs])
+    
+    @property
+    def use_auto_smooth(self):
+        return self._properties[['data', 'use_auto_smooth']]
+    
+    @use_auto_smooth.setter
+    def use_auto_smooth(self, val):
+        self._properties[['data', 'use_auto_smooth']]=val
+    
+    @property
+    def auto_smooth_angle(self):
+        return self._properties[['data', 'auto_smooth_angle']]
+    
+    @auto_smooth_angle.setter
+    def auto_smooth_angle(self, val):
+        self._properties[['data', 'auto_smooth_angle']]=val
 
     @property
     def parent(self):

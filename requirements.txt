@@ -1,4 +1,4 @@
 shapely
-pya
+klayout
 numpy
 triangle

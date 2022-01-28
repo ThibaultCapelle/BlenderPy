@@ -10,10 +10,6 @@ import triangle
 import numpy as np
 from BlenderPy.sending_data import (Mesh, GeometricEntity)
 from abc import abstractmethod
-import time
-import os
-import tempfile
-import subprocess
 
 class Vector:
     
@@ -272,32 +268,6 @@ class Polygon():
         mir=Mirror(point, ax)
         self.points=[[p.x, p.y] for p in mir.update(self.points)]
         return self
-    
-    def generate_poly_file(self,
-                           filename=os.path.join(os.getcwd(), 
-                                                 'polygon.poly')):
-        self._to_triangle_vertices=self.points
-        self._to_triangle_segments=[(len(self.points)-1,0)]+\
-                        [(i,i+1) for i in range(len(self.points)-1)]
-        if len(self.holes)!=0:
-            holes=[]
-            for hole in self.holes:
-                holes.append([np.mean([p[0] for p in hole]),
-                              np.mean([p[1] for p in hole])])
-                N=len(self._to_triangle_vertices)
-                self._to_triangle_segments+=[(N+len(hole)+-1,N)]+\
-                        [(N+i,N+i+1) for i in range(len(hole)-1)]
-                self._to_triangle_vertices+=hole
-        with open(filename, 'w') as f:
-            f.write('{:} 2 0 0\n'.format(len(self._to_triangle_vertices)))
-            for i, p in enumerate(self._to_triangle_vertices):
-                f.write('{:} {:} {:}\n'.format(i, p[0], p[1]))
-            f.write('{:} 0\n'.format(len(self._to_triangle_segments)))
-            for i, p in enumerate(self._to_triangle_segments):
-                f.write('{:} {:} {:}\n'.format(i, p[0], p[1]))
-            f.write('{:}\n'.format(len(holes)))
-            for i, p in enumerate(holes):
-                f.write('{:} {:} {:}\n'.format(i, p[0], p[1]))
             
     @property
     def left(self):
@@ -482,7 +452,7 @@ class PlaneGeom(Mesh, GeometricEntity):
         self._to_triangle_segments=[(len(xy)-1,0)]+\
                         [(i,i+1) for i in range(len(xy)-1)]
         if not hasattr(poly, 'interiors') or  hasattr(poly, 'interiors') and len(poly.interiors)==0:
-            t=triangle.triangulate_using_triangle({'vertices': self._to_triangle_vertices,
+            t=triangle.triangulate({'vertices': self._to_triangle_vertices,
                         'segments': self._to_triangle_segments},
                        opts="p")
             if self.refine is not None:
@@ -581,7 +551,7 @@ class Plane(Box):
         super().__init__(Lx=size, Ly=size, Lz=0.,
                          name=name, **kwargs)
         
-class Isocahedron(Mesh):
+class Sphere(Mesh):
     
     def __init__(self, radius=1, refine=0, **kwargs):
         self.radius=radius
