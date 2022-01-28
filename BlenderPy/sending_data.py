@@ -788,20 +788,40 @@ class EmissionMaterial(Material):
          elif strength is not None:
              emission.inputs['Strength']=strength
 
-class ZColorRampMaterial(Material):
+class PositionDependantMaterial(Material):
     
-    def __init__(self, colors=None, positions=None,
-                          coordinate='Generated', **kwargs):
+    def __init__(self, expression, 
+                 colors=None,
+                 positions=None,
+                 coordinate='Generated',
+                 **kwargs):
         super().__init__(**kwargs)
         coord=self.add_shader('Texture_coordinates')
-        sep=self.add_shader('Separate_XYZ')
-        sep.inputs['Vector']=coord.outputs[coordinate]
+        sepxyz=self.add_shader('Separate_XYZ')
+        sepxyz.inputs['Vector']=coord.outputs[coordinate]
         color_ramp=self.add_shader('Color_Ramp')
-        color_ramp.inputs['Fac']=sep.outputs['Z']
+        if len(expression)==1:
+            color_ramp.inputs['Fac']=sepxyz.outputs[expression]
+        else:
+            shader=self.coordinate_expression(expression, 
+                                           special_keys=dict({'x':sepxyz.outputs['X'],
+                                                         'y':sepxyz.outputs['Y'],
+                                                         'z':sepxyz.outputs['Z']}))
+            color_ramp.inputs['Fac']=shader.outputs['Value']
         color_ramp.properties['color_ramp']=dict({'positions':positions,
                              'colors':[self.convert_color(color) for color in colors]})
         principled=self.get_shader('Principled BSDF')
         principled.inputs['Base Color']=color_ramp.outputs['Color']
+        
+class ZColorRampMaterial(PositionDependantMaterial):
+    
+    def __init__(self, colors=None, positions=None,
+                          coordinate='Generated', **kwargs):
+        super().__init__('Z', colors=colors,
+                         positions=positions,
+                         coordinate=coordinate,
+                         **kwargs)
+
             
 class GaussianLaserMaterial(EmissionMaterial):
     
