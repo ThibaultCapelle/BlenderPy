@@ -130,6 +130,13 @@ class Interprete:
         node=ShaderNode(**kwargs)
         self.server.send_answer(connection, 
                                 node.name)
+        
+    def smooth(self, connection=None,
+               name_msh=None, **kwargs):
+        mesh=bpy.data.meshes[name_msh]
+        for f in mesh.polygons:
+            f.use_smooth = True
+        self.server.send_answer(connection, 'FINISHED')
     
     def set_shadernode_input(self, material_name=None, 
                              from_name=None,
@@ -245,6 +252,11 @@ class Interprete:
                              parent_name_obj=None,
                              connection=None, **kwargs):
         obj=bpy.data.objects[parent_name_obj]
+        if isinstance(key, list):
+            while len(key)>1:
+                assert hasattr(obj, key[0])
+                obj=getattr(obj, key.pop(0))
+            key=key[0]
         if key=='location' and isinstance(value, dict):
             for k,v in value.items():
                 setattr(obj.location, k, v)
@@ -257,6 +269,11 @@ class Interprete:
                                   parent_name_obj=None,
                                   connection=None, **kwargs):
         obj=bpy.data.objects[parent_name_obj]
+        if isinstance(key, list):
+            while len(key)>1:
+                assert hasattr(obj, key[0])
+                obj=getattr(obj, key.pop(0))
+            key=key[0]
         if hasattr(obj, key):
             res=getattr(obj, key)
         else:
