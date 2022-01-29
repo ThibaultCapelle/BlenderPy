@@ -1,0 +1,2665 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>BlenderPy.meshing API documentation</title>
+<meta name="description" content="Created on Wed Oct 20 10:50:42 2021 …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>BlenderPy.meshing</code></h1>
+</header>
+<section id="section-intro">
+<p>Created on Wed Oct 20 10:50:42 2021</p>
+<p>@author: Thibault</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+Created on Wed Oct 20 10:50:42 2021
+
+@author: Thibault
+&#34;&#34;&#34;
+
+from shapely import geometry
+import triangle
+import numpy as np
+from BlenderPy.sending_data import (Mesh, GeometricEntity)
+from abc import abstractmethod
+
+class Vector:
+    
+    def __init__(self, *args):
+        if len(args)==2:
+            self.z=0.
+            if isinstance(args[0], tuple) and isinstance(args[1], tuple):
+                self.x=args[1][0]-args[0][0]
+                self.y=args[1][1]-args[0][1]
+            else:
+                self.x=args[0]
+                self.y=args[1]
+        elif len(args)==1:
+            self.z=0.
+            if isinstance(args[0], tuple):
+                self.x=args[0][0]
+                self.y=args[0][1]
+            elif isinstance(args[0], list) or isinstance(args[0], np.ndarray):
+                self.x=args[0][0]
+                self.y=args[0][1]
+                if(len(args[0])==2):
+                    self.z=0
+                else:
+                    self.z=args[0][2]
+            elif np.isscalar(args[0]):
+                self.x=np.real(args[0])
+                self.y=np.imag(args[0])
+            else:
+                raise TypeError
+        elif len(args)==3:
+                self.x=args[0]
+                self.y=args[1]
+                self.z=args[2]
+    
+    def norm(self):
+        return np.sqrt(self.x**2+self.y**2+self.z**2)
+    
+    def normalize(self):
+        return self/self.norm()
+    
+    def compl(self):
+        return self.x+1j*self.y
+    
+    def cross3(self, other):
+        assert isinstance(other, Vector)
+        return Vector(self.y*other.z-self.z*other.y,
+                      self.z*other.x-self.x*other.z,
+                      self.x*other.y-self.y*other.x)
+    
+    def cross(self, other):
+        assert isinstance(other, Vector)
+        return self.x*other.y-self.y*other.x
+    
+    def __add__(self,other):
+        if not other.__class__ is Vector:
+            print(&#34;Erreur: l&#39;argument n&#39;est pas un Vector&#34;)
+            return NotImplemented
+        else:
+            return Vector(self.x+other.x, self.y+other.y, self.z+other.z)
+        
+    def __sub__(self, other):
+        return Vector(self.x-other.x, self.y-other.y, self.z-other.z)
+    
+    def __mul__(self,other):
+        if not other.__class__ is Vector:
+            return Vector(self.x*other, self.y*other, self.z*other)
+        else:
+            return self.x*other.x+self.y*other.y
+    
+    def __rmul__(self, other):
+        if not other.__class__ is Vector:
+            return Vector(self.x*other, self.y*other, self.z*other)
+        else:
+            return self.x*other.x+self.y*other.y
+    
+    def __truediv__(self,other):
+        return Vector(self.x/other, self.y/other, self.z/other)
+    
+    def __str__(self):
+        return &#39;x:{:}, y:{:}, z:{:}&#39;.format(self.x, self.y, self.z)
+
+class Transformation:
+    
+    def __init__(self):
+        pass
+    
+    @abstractmethod
+    def update(self, points):
+        pass
+
+class Mirror(Transformation):
+    
+    def __init__(self, point, ax):
+        assert isinstance(ax, list)
+        self.point=Vector(point)
+        self.ax=Vector(ax)
+        self.up=Vector(0,0,1)
+        self.norm=self.up.cross3(self.ax)
+    
+    def update(self, points):
+        for i, point in enumerate(points):
+            p=Vector(point)
+            p0=self.point
+            res=p0+((p-p0)*self.ax)*self.ax-((p-p0)*self.norm)*self.norm
+            points[i]=res
+        return points
+    
+class MultiPolygon():
+    
+    def __init__(self, polygons=[]):
+        self.polygons=polygons
+    
+    def translate(self, val):
+        for p in self.polygons:
+            p.translate(val)
+    
+    def append(self, val):
+        if isinstance(val, Polygon):
+            self.polygons.append(val)
+        elif isinstance(val, MultiPolygon):
+            for p in val.polygons:
+                self.polygons.append(p)
+    
+    def to_shapely(self):
+        return geometry.MultiPolygon(polygons=[p.to_shapely()
+                                               for p in self.polygons])
+    
+    def from_shapely(self, poly):
+        self.polygons=[]
+        for p in poly.geoms:
+            polygon=Polygon()
+            polygon.from_shapely(p)
+            self.polygon.append(polygon)
+    
+    @property
+    def left(self):
+        return np.min([p.left for p in self.polygons])
+    
+    @left.setter
+    def left(self, val):
+        self.translate([val-self.left,
+                        0.])
+    
+    @property
+    def right(self):
+        return np.max([p.right for p in self.polygons])
+    
+    @right.setter
+    def right(self, val):
+        self.translate([val-self.right,
+                        0.])
+    
+    @property
+    def bottom(self):
+        return np.min([p.bottom for p in self.polygons])
+    
+    @bottom.setter
+    def bottom(self, val):
+        self.translate([0.,
+                        val-self.bottom])
+    
+    @property
+    def top(self):
+        return np.max([p.top for p in self.polygons])
+    
+    @top.setter
+    def top(self, val):
+        self.translate([0.,
+                        val-self.top])
+    
+    @property
+    def center(self):
+        return [0.5*(self.left+self.right),
+                0.5*(self.bottom+self.top)]
+        
+    @center.setter
+    def center(self, val):
+        previous_center=self.center
+        self.translate([val[0]-previous_center[0],
+                        val[1]-previous_center[1]])
+    
+    @property
+    def width(self):
+        return self.right-self.left
+    
+    @property
+    def height(self):
+        return self.top-self.bottom
+
+
+
+class Polygon():
+    
+    def __init__(self, points=[], holes=[]):
+        self.points=points
+        self.holes=holes
+    
+    def to_shapely(self):
+        return geometry.Polygon(self.points, holes=self.holes)
+    
+    def from_shapely(self, poly):
+        self.points, self.holes=self.polygon_to_points(poly)
+    
+    def subtract(self, other):
+        if isinstance(other, Polygon) or isinstance(other, MultiPolygon):
+            diff=self.to_shapely().difference(other.to_shapely())
+        if isinstance(diff, geometry.multipolygon.MultiPolygon):
+            res=MultiPolygon()
+            polys=list(diff)
+            for poly in polys:
+                p=Polygon()
+                p.from_shapely(poly)
+                res.polygons.append(p)
+            return res
+        elif isinstance(diff, geometry.polygon.Polygon):
+            self.from_shapely(diff)
+            return self
+    
+    def intersect(self, other):
+        if isinstance(other, Polygon):
+            inter=self.to_shapely().intersection(other.to_shapely())
+            self.from_shapely(inter)
+        elif isinstance(other, MultiPolygon):
+            inter=self.to_shapely()
+            for poly in other.polygons:
+                inter=inter.difference(poly.to_shapely())
+            self.from_shapely(inter)
+    
+    def duplicate(self):
+        return Polygon(points=self.points.copy(),
+                       holes=self.holes.copy())
+        
+    def xy_to_points(self, line):
+        xs, ys=(np.array(line.xy[0]),
+                np.array(line.xy[1]))
+        return [[x,y] for x,y in zip(xs, ys)]
+    
+    def polygon_to_points(self, polygon):
+        points_ext=self.xy_to_points(polygon.exterior)
+        points_int=[]
+        for i, interior in enumerate(polygon.interiors):
+            points_int.append(self.xy_to_points(interior))
+        return points_ext, points_int
+
+    
+    def translate(self, vect):
+        for i, p in enumerate(self.points):
+            self.points[i]=[p[0]+vect[0],
+                            p[1]+vect[1]]
+        for i, hole in enumerate(self.holes):
+            for j, p in enumerate(hole):
+                self.holes[i][j]=[p[0]+vect[0],
+                                  p[1]+vect[1]]
+    
+    def mirror(self, point, ax):
+        mir=Mirror(point, ax)
+        self.points=[[p.x, p.y] for p in mir.update(self.points)]
+        return self
+            
+    @property
+    def left(self):
+        return np.min([p[0] for p in self.points])
+    
+    @left.setter
+    def left(self, val):
+        self.translate([val-self.left,
+                        0.])
+    
+    @property
+    def right(self):
+        return np.max([p[0] for p in self.points])
+    
+    @right.setter
+    def right(self, val):
+        self.translate([val-self.right,
+                        0.])
+    
+    @property
+    def bottom(self):
+        return np.min([p[1] for p in self.points])
+    
+    @bottom.setter
+    def bottom(self, val):
+        self.translate([0.,
+                        val-self.bottom])
+    
+    @property
+    def top(self):
+        return np.max([p[1] for p in self.points])
+    
+    @top.setter
+    def top(self, val):
+        self.translate([0.,
+                        val-self.top])
+    
+    @property
+    def center(self):
+        return [0.5*(self.left+self.right),
+                0.5*(self.bottom+self.top)]
+        
+    @center.setter
+    def center(self, val):
+        previous_center=self.center
+        self.translate([val[0]-previous_center[0],
+                        val[1]-previous_center[1]])
+    
+    @property
+    def width(self):
+        return self.right-self.left
+    
+    @property
+    def height(self):
+        return self.top-self.bottom
+    
+class Circle(Polygon):
+    
+    def __init__(self, x0=0, y0=0, radius=1., N=32):
+        points=[[x0+radius*np.cos(theta),
+                 y0+radius*np.sin(theta)] 
+                 for theta in np.linspace(0, 2*np.pi, N)]
+        super().__init__(points=points)
+
+class AngularSector(Polygon):
+    
+    def __init__(self, x0=0, y0=0, radius=1., N=32,
+                 theta_1=0, theta_2=np.pi/2):
+        points=[[x0+radius*np.cos(theta),
+                 y0+radius*np.sin(theta)] 
+                 for theta in np.linspace(theta_1, theta_2, N)]+[[0.,0.]]
+        super().__init__(points=points)
+
+class RoundCorner(Polygon):
+    
+    def __init__(self, x0=0, y0=0, radius=1., N=32,
+                 theta_1=0, theta_2=np.pi/2, width=0.1):
+        points=[[x0+(radius+width/2)*np.cos(theta),
+                 y0+(radius+width/2)*np.sin(theta)] 
+                 for theta in np.linspace(theta_1, theta_2, N)]
+        points+=[[x0+(radius-width/2)*np.cos(theta),
+                 y0+(radius-width/2)*np.sin(theta)] 
+                 for theta in np.linspace(theta_2, theta_1, N)]
+        super().__init__(points=points)
+        
+class Rectangle(Polygon):
+    
+    def __init__(self, x0=0, y0=0, Lx=1, Ly=1):
+        points=[[x0-Lx/2, x0-Ly/2],
+                [x0-Lx/2, x0+Ly/2],
+                [x0+Lx/2, x0+Ly/2],
+                [x0+Lx/2, x0-Ly/2]]
+        super().__init__(points=points)
+
+class Triangle:
+    
+    @staticmethod
+    def triangulate(points, holes):
+        _to_triangle_vertices=points
+        _to_triangle_segments=[(len(points)-1,0)]+\
+                        [(i,i+1) for i in range(len(points)-1)]
+        if len(holes)==0:
+            tri=triangle.triangulate(dict({&#39;vertices&#39;:_to_triangle_vertices,
+                                           &#39;segments&#39;:_to_triangle_segments}),
+                                            &#39;pqPz&#39;)
+        else:
+            holes_point=[]
+            for hole in holes:
+                holes_point.append([np.mean([p[0] for p in hole]),
+                              np.mean([p[1] for p in hole])])
+                N=len(_to_triangle_vertices)
+                _to_triangle_segments+=[(N+len(hole)+-1,N)]+\
+                        [(N+i,N+i+1) for i in range(len(hole)-1)]
+                _to_triangle_vertices+=hole
+            tri=triangle.triangulate(dict({&#39;vertices&#39;:_to_triangle_vertices,
+                                           &#39;segments&#39;:_to_triangle_segments,
+                                           &#39;holes&#39;:holes_point}),
+                                            &#39;pqPz&#39;)
+        return ([p+[0.] for p in tri[&#39;vertices&#39;].tolist()],
+                tri[&#39;triangles&#39;].tolist())
+    
+class PlaneGeom(Mesh, GeometricEntity):
+    
+    def __init__(self, polygon=None, name=&#39;&#39;, 
+                 refine=None, **kwargs):
+        self.refine=refine
+        self.name=name
+        self.kwargs=kwargs
+        if polygon is not None:
+            if isinstance(polygon, Polygon):
+                if len(polygon.holes)==0:
+                    self.cell_points=[[p[0], p[1], 0.] for p in polygon.points]
+                    self.cells=[[i for i, p in enumerate(polygon.points)]]
+                    self.send_to_blender(from_external_loading=True)
+                else:
+                    self.cell_points, self.cells = Triangle.triangulat(polygon.points,
+                                                                 polygon.holes)
+                    self.send_to_blender(from_external_loading=True)
+            elif isinstance(polygon, MultiPolygon):
+                self.cell_points, self.cells=[], []
+                offset=0
+                for poly in polygon.polygons:
+                    if len(poly.holes)==0:
+                        self.cell_points+=[[p[0],
+                                            p[1],
+                                            0.] for p in poly.points]
+                        self.cells.append([offset+i for
+                                           i,p in enumerate(poly.points)])
+                    else:
+                        res=Triangle.triangulate(poly.points, poly.holes)
+                        points, cells=res
+                        self.cell_points+=points
+                        for cell in cells:
+                            self.cells.append([offset+p for
+                                               p in cell])
+                    offset=len(self.cell_points)
+                self.send_to_blender(from_external_loading=True)
+                        
+                            
+    def send_to_blender(self, use_triangle=False, from_external_loading=False):
+        if use_triangle:
+            self.generate_triangulation_from_shapely_linestring(self.line)
+        super().__init__(cells=self.cells, points=self.cell_points,
+                                 name=self.name,
+                                **self.kwargs)
+        
+    def format_line(self, line):
+        x_s, y_s=line.xy
+        res = [(x,y,0) for x,y in zip(x_s, y_s)]
+        if res[-1]==res[0]:
+            res=res[:-1]
+        return res
+
+    def generate_triangulation_from_shapely_linestring(self, poly):
+        if hasattr(poly, &#39;exterior&#39;):
+            self.xy=self.format_line(poly.exterior, gmsh=False)
+        else:
+            self.xy=self.format_line(poly, gmsh=False)
+        self.holes=[]
+        xy=[[p[0], p[1]] for p in self.xy]
+        self._to_triangle_vertices=xy
+        self._to_triangle_segments=[(len(xy)-1,0)]+\
+                        [(i,i+1) for i in range(len(xy)-1)]
+        if not hasattr(poly, &#39;interiors&#39;) or  hasattr(poly, &#39;interiors&#39;) and len(poly.interiors)==0:
+            t=triangle.triangulate({&#39;vertices&#39;: self._to_triangle_vertices,
+                        &#39;segments&#39;: self._to_triangle_segments},
+                       opts=&#34;p&#34;)
+            if self.refine is not None:
+                t=triangle.triangulate(t, opts=&#34;pra{:}&#34;.format(self.refine))
+            self.cell_points, self.cells = ([p+[0.] for p in t[&#39;vertices&#39;].tolist()],
+                                       [(&#34;triangle&#34;, t[&#39;triangles&#39;].tolist())])
+        else:
+            holes=[]
+            for interior in poly.interiors:
+                xy=self.format_line(interior, gmsh=False)
+                xy=[[p[0], p[1]] for p in xy]
+                N=len(self._to_triangle_vertices)
+                self._to_triangle_segments+=[(N+len(xy)+-1,N)]+\
+                        [(N+i,N+i+1) for i in range(len(xy)-1)]
+                self._to_triangle_vertices+=xy
+                holes.append([p[0] for p in interior.centroid.xy])
+            t=triangle.triangulate({&#39;vertices&#39;: self._to_triangle_vertices,
+                            &#39;segments&#39;: self._to_triangle_segments,
+                            &#39;holes&#39;:holes},
+                           opts=&#34;p&#34;)
+            self.cell_points, self.cells = ([p+[0.] for p in t[&#39;vertices&#39;].tolist()],
+                                       [(&#34;triangle&#34;, t[&#39;triangles&#39;].tolist())])
+    
+
+class Path(PlaneGeom):
+
+    def __init__(self, points, width, cap_style=&#39;flat&#39;,
+                 join_style=&#39;round&#39;, resolution=16,
+                 **kwargs):
+        super().__init__(**kwargs)
+        self.resolution=resolution
+        self.width=width
+        self.points=points
+        self.cap_style_dict=dict({&#39;flat&#39;:2,
+                                  &#39;round&#39;:1,
+                                  &#39;square&#39;:3})
+        self.join_style_dict=dict({&#39;mitre&#39;:2,
+                                  &#39;round&#39;:1,
+                                  &#39;bevel&#39;:3})
+        self.cap_style=self.cap_style_dict[cap_style]
+        self.join_style=self.join_style_dict[join_style]
+        self.generate()
+        self.send_to_blender(use_triangle=True)
+    
+    def generate(self):
+        self.line=geometry.LineString(self.points).buffer(self.width/2.,
+                                cap_style=self.cap_style,
+                                join_style=self.join_style,
+                                resolution=self.resolution)
+        self.generate_polygon_from_shapely_linestring(self.line)
+        
+class Arrow(PlaneGeom):
+    
+    def __init__(self, head_width=0.1, head_length=0.2,
+                 length=1, width=0.05, **kwargs):
+        super().__init__(**kwargs)
+        self.head_width=head_width
+        self.head_length=head_length
+        self.length=length
+        self.width=width
+        self.cell_points=[[-width/2, -length, 0.],
+                          [width/2, -length, 0.],
+                          [width/2, 0., 0.],
+                          [head_width/2, 0., 0.],
+                          [0., head_length, 0.],
+                          [-head_width/2, 0., 0.],
+                          [-width/2, 0., 0.]]
+        self.cells=[[i for i,p in enumerate(self.cell_points)]]
+        super().__init__(**kwargs)
+        self.send_to_blender(from_external_loading=True)
+
+class Cylinder(PlaneGeom):
+    
+    def __init__(self, name=&#39;Cylinder&#39;, radius=1, height=1,
+                 N_points=32, **kwargs):
+        self.cell_points=[[radius*np.cos(theta), radius*np.sin(theta), -height/2] 
+                        for theta in np.linspace(0, 2*np.pi, N_points)]
+        self.cells=[[i for i in range(N_points)]]
+        super().__init__(name=name, thickness=height, **kwargs)
+        self.send_to_blender(from_external_loading=True)
+
+class Box(PlaneGeom):
+    
+    def __init__(self, name=&#39;Box&#39;, Lx=1, Ly=1, Lz=1, **kwargs):
+        self.cell_points=[[-Lx/2, -Ly/2, -Lz/2],
+                          [-Lx/2, Ly/2, -Lz/2],
+                          [Lx/2, Ly/2, -Lz/2],
+                          [Lx/2, -Ly/2, -Lz/2]]
+        self.cells=[[0, 1, 2, 3]]
+        super().__init__(name=name, thickness=Lz, **kwargs)
+        self.send_to_blender(from_external_loading=True)
+        
+class Plane(Box):
+    
+    def __init__(self, name=&#39;plane&#39;, size=10, **kwargs):
+        super().__init__(Lx=size, Ly=size, Lz=0.,
+                         name=name, **kwargs)
+        
+class Sphere(Mesh):
+    
+    def __init__(self, radius=1, refine=0, **kwargs):
+        self.radius=radius
+        self.initialize(self.radius)
+        for i in range(refine):
+            self.refine()
+        super().__init__(cells=self.cells, 
+                         points=self.points,
+                         **kwargs)
+        
+    def initialize(self, radius):
+        C0 = (1 + np.sqrt(5)) / 4
+        norm = np.sqrt(0.5**2+C0**2)
+        self.points=list(radius/norm*np.array([[0.5,  0.0,   C0],
+                                        [0.5,  0.0,  -C0],
+                                        [-0.5,  0.0,   C0],
+                                        [-0.5,  0.0,  -C0],
+                                        [C0,  0.5,  0.0],
+                                        [C0, -0.5,  0.0],
+                                        [-C0,  0.5,  0.0],
+                                        [-C0, -0.5,  0.0],
+                                        [0.0,   C0,  0.5],
+                                        [0.0,   C0, -0.5],
+                                        [0.0,  -C0,  0.5],
+                                        [0.0,  -C0, -0.5]]))
+
+        self.cells=[[  0,  2, 10 ],
+                    [  0, 10,  5 ],
+                    [  0,  5,  4 ],
+                    [  0,  4,  8 ],
+                    [  0,  8,  2 ],
+                    [  3,  1, 11 ],
+                    [  3, 11,  7 ],
+                    [  3,  7,  6 ],
+                    [  3,  6,  9 ],
+                    [  3,  9,  1 ],
+                    [  2,  6,  7 ],
+                    [  2,  7, 10 ],
+                    [ 10,  7, 11 ],
+                    [ 10, 11,  5 ],
+                    [  5, 11,  1 ],
+                    [  5,  1,  4 ],
+                    [  4,  1,  9 ],
+                    [  4,  9,  8 ],
+                    [  8,  9,  6 ],
+                    [  8,  6,  2 ]]
+    
+    def refine(self):
+        edges=dict()
+        for i, f in enumerate(self.cells):
+            for pair in [[0,1], [1,2], [0,2]]:
+                ordered=(np.min([f[pair[0]], f[pair[1]]]),
+                         np.max([f[pair[0]], f[pair[1]]]))
+                if not ordered in edges.keys():
+                    edges[ordered]=[i]
+                else:
+                    edges[ordered].append(i)
+
+        faces_to_edges=dict()
+        for i, f in enumerate(self.cells):
+            for pair in [[0,1], [1,2], [0,2]]:
+                ordered=(np.min([f[pair[0]], f[pair[1]]]),
+                         np.max([f[pair[0]], f[pair[1]]]))
+                if not i in faces_to_edges.keys():
+                    faces_to_edges[i]=[ordered]
+                else:
+                    faces_to_edges[i].append(ordered)   
+        
+        middle_points=dict()
+        i=len(self.points)
+        for v in edges.keys():
+            self.points.append(self.get_middle_point(self.points[v[0]],
+                                                     self.points[v[1]]))
+            middle_points[v]=i
+            i+=1
+            
+        new_faces=[]
+        for f, edges in faces_to_edges.items():
+            if edges[0][0] in edges[1]:
+                new_faces.append([edges[0][0], middle_points[edges[0]],
+                                  middle_points[edges[1]]])
+                new_faces.append([edges[0][1], middle_points[edges[0]],
+                                  middle_points[edges[2]]])
+            else:
+                new_faces.append([edges[0][0], middle_points[edges[0]],
+                                  middle_points[edges[2]]])
+                new_faces.append([edges[0][1], middle_points[edges[0]],
+                                  middle_points[edges[1]]])
+            for point in self.cells[f]:
+                if point not in edges[0]:
+                    break
+            new_faces.append([point, middle_points[edges[1]],
+                              middle_points[edges[2]]])
+            new_faces.append([middle_points[edges[0]],
+                              middle_points[edges[1]],
+                              middle_points[edges[2]]])
+        self.cells=new_faces
+
+    def get_middle_point(self, p1, p2):
+        middle=0.5*(Vector(p1)+Vector(p2))
+        middle=middle.normalize()*self.radius
+        return [middle.x, middle.y, middle.z]
+
+        
+if __name__==&#39;__main__&#39;:
+    pass</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="BlenderPy.meshing.AngularSector"><code class="flex name class">
+<span>class <span class="ident">AngularSector</span></span>
+<span>(</span><span>x0=0, y0=0, radius=1.0, N=32, theta_1=0, theta_2=1.5707963267948966)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class AngularSector(Polygon):
+    
+    def __init__(self, x0=0, y0=0, radius=1., N=32,
+                 theta_1=0, theta_2=np.pi/2):
+        points=[[x0+radius*np.cos(theta),
+                 y0+radius*np.sin(theta)] 
+                 for theta in np.linspace(theta_1, theta_2, N)]+[[0.,0.]]
+        super().__init__(points=points)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></li>
+</ul>
+</dd>
+<dt id="BlenderPy.meshing.Arrow"><code class="flex name class">
+<span>class <span class="ident">Arrow</span></span>
+<span>(</span><span>head_width=0.1, head_length=0.2, length=1, width=0.05, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>a class encompassing the geometric absolute positioning
+of vertices of meshes</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Arrow(PlaneGeom):
+    
+    def __init__(self, head_width=0.1, head_length=0.2,
+                 length=1, width=0.05, **kwargs):
+        super().__init__(**kwargs)
+        self.head_width=head_width
+        self.head_length=head_length
+        self.length=length
+        self.width=width
+        self.cell_points=[[-width/2, -length, 0.],
+                          [width/2, -length, 0.],
+                          [width/2, 0., 0.],
+                          [head_width/2, 0., 0.],
+                          [0., head_length, 0.],
+                          [-head_width/2, 0., 0.],
+                          [-width/2, 0., 0.]]
+        self.cells=[[i for i,p in enumerate(self.cell_points)]]
+        super().__init__(**kwargs)
+        self.send_to_blender(from_external_loading=True)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.PlaneGeom" href="#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></li>
+<li><a title="BlenderPy.sending_data.Mesh" href="sending_data.html#BlenderPy.sending_data.Mesh">Mesh</a></li>
+<li><a title="BlenderPy.sending_data.Object" href="sending_data.html#BlenderPy.sending_data.Object">Object</a></li>
+<li><a title="BlenderPy.sending_data.GeometricEntity" href="sending_data.html#BlenderPy.sending_data.GeometricEntity">GeometricEntity</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.meshing.PlaneGeom" href="#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.meshing.PlaneGeom.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="BlenderPy.meshing.Box"><code class="flex name class">
+<span>class <span class="ident">Box</span></span>
+<span>(</span><span>name='Box', Lx=1, Ly=1, Lz=1, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>a class encompassing the geometric absolute positioning
+of vertices of meshes</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Box(PlaneGeom):
+    
+    def __init__(self, name=&#39;Box&#39;, Lx=1, Ly=1, Lz=1, **kwargs):
+        self.cell_points=[[-Lx/2, -Ly/2, -Lz/2],
+                          [-Lx/2, Ly/2, -Lz/2],
+                          [Lx/2, Ly/2, -Lz/2],
+                          [Lx/2, -Ly/2, -Lz/2]]
+        self.cells=[[0, 1, 2, 3]]
+        super().__init__(name=name, thickness=Lz, **kwargs)
+        self.send_to_blender(from_external_loading=True)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.PlaneGeom" href="#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></li>
+<li><a title="BlenderPy.sending_data.Mesh" href="sending_data.html#BlenderPy.sending_data.Mesh">Mesh</a></li>
+<li><a title="BlenderPy.sending_data.Object" href="sending_data.html#BlenderPy.sending_data.Object">Object</a></li>
+<li><a title="BlenderPy.sending_data.GeometricEntity" href="sending_data.html#BlenderPy.sending_data.GeometricEntity">GeometricEntity</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.Plane" href="#BlenderPy.meshing.Plane">Plane</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.meshing.PlaneGeom" href="#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.meshing.PlaneGeom.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="BlenderPy.meshing.Circle"><code class="flex name class">
+<span>class <span class="ident">Circle</span></span>
+<span>(</span><span>x0=0, y0=0, radius=1.0, N=32)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Circle(Polygon):
+    
+    def __init__(self, x0=0, y0=0, radius=1., N=32):
+        points=[[x0+radius*np.cos(theta),
+                 y0+radius*np.sin(theta)] 
+                 for theta in np.linspace(0, 2*np.pi, N)]
+        super().__init__(points=points)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></li>
+</ul>
+</dd>
+<dt id="BlenderPy.meshing.Cylinder"><code class="flex name class">
+<span>class <span class="ident">Cylinder</span></span>
+<span>(</span><span>name='Cylinder', radius=1, height=1, N_points=32, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>a class encompassing the geometric absolute positioning
+of vertices of meshes</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Cylinder(PlaneGeom):
+    
+    def __init__(self, name=&#39;Cylinder&#39;, radius=1, height=1,
+                 N_points=32, **kwargs):
+        self.cell_points=[[radius*np.cos(theta), radius*np.sin(theta), -height/2] 
+                        for theta in np.linspace(0, 2*np.pi, N_points)]
+        self.cells=[[i for i in range(N_points)]]
+        super().__init__(name=name, thickness=height, **kwargs)
+        self.send_to_blender(from_external_loading=True)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.PlaneGeom" href="#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></li>
+<li><a title="BlenderPy.sending_data.Mesh" href="sending_data.html#BlenderPy.sending_data.Mesh">Mesh</a></li>
+<li><a title="BlenderPy.sending_data.Object" href="sending_data.html#BlenderPy.sending_data.Object">Object</a></li>
+<li><a title="BlenderPy.sending_data.GeometricEntity" href="sending_data.html#BlenderPy.sending_data.GeometricEntity">GeometricEntity</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.meshing.PlaneGeom" href="#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.meshing.PlaneGeom.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="BlenderPy.meshing.Mirror"><code class="flex name class">
+<span>class <span class="ident">Mirror</span></span>
+<span>(</span><span>point, ax)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Mirror(Transformation):
+    
+    def __init__(self, point, ax):
+        assert isinstance(ax, list)
+        self.point=Vector(point)
+        self.ax=Vector(ax)
+        self.up=Vector(0,0,1)
+        self.norm=self.up.cross3(self.ax)
+    
+    def update(self, points):
+        for i, point in enumerate(points):
+            p=Vector(point)
+            p0=self.point
+            res=p0+((p-p0)*self.ax)*self.ax-((p-p0)*self.norm)*self.norm
+            points[i]=res
+        return points</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.Transformation" href="#BlenderPy.meshing.Transformation">Transformation</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.meshing.Mirror.update"><code class="name flex">
+<span>def <span class="ident">update</span></span>(<span>self, points)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def update(self, points):
+    for i, point in enumerate(points):
+        p=Vector(point)
+        p0=self.point
+        res=p0+((p-p0)*self.ax)*self.ax-((p-p0)*self.norm)*self.norm
+        points[i]=res
+    return points</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.meshing.MultiPolygon"><code class="flex name class">
+<span>class <span class="ident">MultiPolygon</span></span>
+<span>(</span><span>polygons=[])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MultiPolygon():
+    
+    def __init__(self, polygons=[]):
+        self.polygons=polygons
+    
+    def translate(self, val):
+        for p in self.polygons:
+            p.translate(val)
+    
+    def append(self, val):
+        if isinstance(val, Polygon):
+            self.polygons.append(val)
+        elif isinstance(val, MultiPolygon):
+            for p in val.polygons:
+                self.polygons.append(p)
+    
+    def to_shapely(self):
+        return geometry.MultiPolygon(polygons=[p.to_shapely()
+                                               for p in self.polygons])
+    
+    def from_shapely(self, poly):
+        self.polygons=[]
+        for p in poly.geoms:
+            polygon=Polygon()
+            polygon.from_shapely(p)
+            self.polygon.append(polygon)
+    
+    @property
+    def left(self):
+        return np.min([p.left for p in self.polygons])
+    
+    @left.setter
+    def left(self, val):
+        self.translate([val-self.left,
+                        0.])
+    
+    @property
+    def right(self):
+        return np.max([p.right for p in self.polygons])
+    
+    @right.setter
+    def right(self, val):
+        self.translate([val-self.right,
+                        0.])
+    
+    @property
+    def bottom(self):
+        return np.min([p.bottom for p in self.polygons])
+    
+    @bottom.setter
+    def bottom(self, val):
+        self.translate([0.,
+                        val-self.bottom])
+    
+    @property
+    def top(self):
+        return np.max([p.top for p in self.polygons])
+    
+    @top.setter
+    def top(self, val):
+        self.translate([0.,
+                        val-self.top])
+    
+    @property
+    def center(self):
+        return [0.5*(self.left+self.right),
+                0.5*(self.bottom+self.top)]
+        
+    @center.setter
+    def center(self, val):
+        previous_center=self.center
+        self.translate([val[0]-previous_center[0],
+                        val[1]-previous_center[1]])
+    
+    @property
+    def width(self):
+        return self.right-self.left
+    
+    @property
+    def height(self):
+        return self.top-self.bottom</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.meshing.MultiPolygon.bottom"><code class="name">var <span class="ident">bottom</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def bottom(self):
+    return np.min([p.bottom for p in self.polygons])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.MultiPolygon.center"><code class="name">var <span class="ident">center</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def center(self):
+    return [0.5*(self.left+self.right),
+            0.5*(self.bottom+self.top)]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.MultiPolygon.height"><code class="name">var <span class="ident">height</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def height(self):
+    return self.top-self.bottom</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.MultiPolygon.left"><code class="name">var <span class="ident">left</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def left(self):
+    return np.min([p.left for p in self.polygons])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.MultiPolygon.right"><code class="name">var <span class="ident">right</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def right(self):
+    return np.max([p.right for p in self.polygons])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.MultiPolygon.top"><code class="name">var <span class="ident">top</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def top(self):
+    return np.max([p.top for p in self.polygons])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.MultiPolygon.width"><code class="name">var <span class="ident">width</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def width(self):
+    return self.right-self.left</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.meshing.MultiPolygon.append"><code class="name flex">
+<span>def <span class="ident">append</span></span>(<span>self, val)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def append(self, val):
+    if isinstance(val, Polygon):
+        self.polygons.append(val)
+    elif isinstance(val, MultiPolygon):
+        for p in val.polygons:
+            self.polygons.append(p)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.MultiPolygon.from_shapely"><code class="name flex">
+<span>def <span class="ident">from_shapely</span></span>(<span>self, poly)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def from_shapely(self, poly):
+    self.polygons=[]
+    for p in poly.geoms:
+        polygon=Polygon()
+        polygon.from_shapely(p)
+        self.polygon.append(polygon)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.MultiPolygon.to_shapely"><code class="name flex">
+<span>def <span class="ident">to_shapely</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_shapely(self):
+    return geometry.MultiPolygon(polygons=[p.to_shapely()
+                                           for p in self.polygons])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.MultiPolygon.translate"><code class="name flex">
+<span>def <span class="ident">translate</span></span>(<span>self, val)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def translate(self, val):
+    for p in self.polygons:
+        p.translate(val)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.meshing.Path"><code class="flex name class">
+<span>class <span class="ident">Path</span></span>
+<span>(</span><span>points, width, cap_style='flat', join_style='round', resolution=16, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>a class encompassing the geometric absolute positioning
+of vertices of meshes</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Path(PlaneGeom):
+
+    def __init__(self, points, width, cap_style=&#39;flat&#39;,
+                 join_style=&#39;round&#39;, resolution=16,
+                 **kwargs):
+        super().__init__(**kwargs)
+        self.resolution=resolution
+        self.width=width
+        self.points=points
+        self.cap_style_dict=dict({&#39;flat&#39;:2,
+                                  &#39;round&#39;:1,
+                                  &#39;square&#39;:3})
+        self.join_style_dict=dict({&#39;mitre&#39;:2,
+                                  &#39;round&#39;:1,
+                                  &#39;bevel&#39;:3})
+        self.cap_style=self.cap_style_dict[cap_style]
+        self.join_style=self.join_style_dict[join_style]
+        self.generate()
+        self.send_to_blender(use_triangle=True)
+    
+    def generate(self):
+        self.line=geometry.LineString(self.points).buffer(self.width/2.,
+                                cap_style=self.cap_style,
+                                join_style=self.join_style,
+                                resolution=self.resolution)
+        self.generate_polygon_from_shapely_linestring(self.line)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.PlaneGeom" href="#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></li>
+<li><a title="BlenderPy.sending_data.Mesh" href="sending_data.html#BlenderPy.sending_data.Mesh">Mesh</a></li>
+<li><a title="BlenderPy.sending_data.Object" href="sending_data.html#BlenderPy.sending_data.Object">Object</a></li>
+<li><a title="BlenderPy.sending_data.GeometricEntity" href="sending_data.html#BlenderPy.sending_data.GeometricEntity">GeometricEntity</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.meshing.Path.generate"><code class="name flex">
+<span>def <span class="ident">generate</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate(self):
+    self.line=geometry.LineString(self.points).buffer(self.width/2.,
+                            cap_style=self.cap_style,
+                            join_style=self.join_style,
+                            resolution=self.resolution)
+    self.generate_polygon_from_shapely_linestring(self.line)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.meshing.PlaneGeom" href="#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.meshing.PlaneGeom.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="BlenderPy.meshing.Plane"><code class="flex name class">
+<span>class <span class="ident">Plane</span></span>
+<span>(</span><span>name='plane', size=10, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>a class encompassing the geometric absolute positioning
+of vertices of meshes</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Plane(Box):
+    
+    def __init__(self, name=&#39;plane&#39;, size=10, **kwargs):
+        super().__init__(Lx=size, Ly=size, Lz=0.,
+                         name=name, **kwargs)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.Box" href="#BlenderPy.meshing.Box">Box</a></li>
+<li><a title="BlenderPy.meshing.PlaneGeom" href="#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></li>
+<li><a title="BlenderPy.sending_data.Mesh" href="sending_data.html#BlenderPy.sending_data.Mesh">Mesh</a></li>
+<li><a title="BlenderPy.sending_data.Object" href="sending_data.html#BlenderPy.sending_data.Object">Object</a></li>
+<li><a title="BlenderPy.sending_data.GeometricEntity" href="sending_data.html#BlenderPy.sending_data.GeometricEntity">GeometricEntity</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.meshing.Box" href="#BlenderPy.meshing.Box">Box</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.meshing.Box.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="BlenderPy.meshing.PlaneGeom"><code class="flex name class">
+<span>class <span class="ident">PlaneGeom</span></span>
+<span>(</span><span>polygon=None, name='', refine=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>a class encompassing the geometric absolute positioning
+of vertices of meshes</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PlaneGeom(Mesh, GeometricEntity):
+    
+    def __init__(self, polygon=None, name=&#39;&#39;, 
+                 refine=None, **kwargs):
+        self.refine=refine
+        self.name=name
+        self.kwargs=kwargs
+        if polygon is not None:
+            if isinstance(polygon, Polygon):
+                if len(polygon.holes)==0:
+                    self.cell_points=[[p[0], p[1], 0.] for p in polygon.points]
+                    self.cells=[[i for i, p in enumerate(polygon.points)]]
+                    self.send_to_blender(from_external_loading=True)
+                else:
+                    self.cell_points, self.cells = Triangle.triangulat(polygon.points,
+                                                                 polygon.holes)
+                    self.send_to_blender(from_external_loading=True)
+            elif isinstance(polygon, MultiPolygon):
+                self.cell_points, self.cells=[], []
+                offset=0
+                for poly in polygon.polygons:
+                    if len(poly.holes)==0:
+                        self.cell_points+=[[p[0],
+                                            p[1],
+                                            0.] for p in poly.points]
+                        self.cells.append([offset+i for
+                                           i,p in enumerate(poly.points)])
+                    else:
+                        res=Triangle.triangulate(poly.points, poly.holes)
+                        points, cells=res
+                        self.cell_points+=points
+                        for cell in cells:
+                            self.cells.append([offset+p for
+                                               p in cell])
+                    offset=len(self.cell_points)
+                self.send_to_blender(from_external_loading=True)
+                        
+                            
+    def send_to_blender(self, use_triangle=False, from_external_loading=False):
+        if use_triangle:
+            self.generate_triangulation_from_shapely_linestring(self.line)
+        super().__init__(cells=self.cells, points=self.cell_points,
+                                 name=self.name,
+                                **self.kwargs)
+        
+    def format_line(self, line):
+        x_s, y_s=line.xy
+        res = [(x,y,0) for x,y in zip(x_s, y_s)]
+        if res[-1]==res[0]:
+            res=res[:-1]
+        return res
+
+    def generate_triangulation_from_shapely_linestring(self, poly):
+        if hasattr(poly, &#39;exterior&#39;):
+            self.xy=self.format_line(poly.exterior, gmsh=False)
+        else:
+            self.xy=self.format_line(poly, gmsh=False)
+        self.holes=[]
+        xy=[[p[0], p[1]] for p in self.xy]
+        self._to_triangle_vertices=xy
+        self._to_triangle_segments=[(len(xy)-1,0)]+\
+                        [(i,i+1) for i in range(len(xy)-1)]
+        if not hasattr(poly, &#39;interiors&#39;) or  hasattr(poly, &#39;interiors&#39;) and len(poly.interiors)==0:
+            t=triangle.triangulate({&#39;vertices&#39;: self._to_triangle_vertices,
+                        &#39;segments&#39;: self._to_triangle_segments},
+                       opts=&#34;p&#34;)
+            if self.refine is not None:
+                t=triangle.triangulate(t, opts=&#34;pra{:}&#34;.format(self.refine))
+            self.cell_points, self.cells = ([p+[0.] for p in t[&#39;vertices&#39;].tolist()],
+                                       [(&#34;triangle&#34;, t[&#39;triangles&#39;].tolist())])
+        else:
+            holes=[]
+            for interior in poly.interiors:
+                xy=self.format_line(interior, gmsh=False)
+                xy=[[p[0], p[1]] for p in xy]
+                N=len(self._to_triangle_vertices)
+                self._to_triangle_segments+=[(N+len(xy)+-1,N)]+\
+                        [(N+i,N+i+1) for i in range(len(xy)-1)]
+                self._to_triangle_vertices+=xy
+                holes.append([p[0] for p in interior.centroid.xy])
+            t=triangle.triangulate({&#39;vertices&#39;: self._to_triangle_vertices,
+                            &#39;segments&#39;: self._to_triangle_segments,
+                            &#39;holes&#39;:holes},
+                           opts=&#34;p&#34;)
+            self.cell_points, self.cells = ([p+[0.] for p in t[&#39;vertices&#39;].tolist()],
+                                       [(&#34;triangle&#34;, t[&#39;triangles&#39;].tolist())])</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.Mesh" href="sending_data.html#BlenderPy.sending_data.Mesh">Mesh</a></li>
+<li><a title="BlenderPy.sending_data.Object" href="sending_data.html#BlenderPy.sending_data.Object">Object</a></li>
+<li><a title="BlenderPy.sending_data.GeometricEntity" href="sending_data.html#BlenderPy.sending_data.GeometricEntity">GeometricEntity</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.Arrow" href="#BlenderPy.meshing.Arrow">Arrow</a></li>
+<li><a title="BlenderPy.meshing.Box" href="#BlenderPy.meshing.Box">Box</a></li>
+<li><a title="BlenderPy.meshing.Cylinder" href="#BlenderPy.meshing.Cylinder">Cylinder</a></li>
+<li><a title="BlenderPy.meshing.Path" href="#BlenderPy.meshing.Path">Path</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.meshing.PlaneGeom.format_line"><code class="name flex">
+<span>def <span class="ident">format_line</span></span>(<span>self, line)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def format_line(self, line):
+    x_s, y_s=line.xy
+    res = [(x,y,0) for x,y in zip(x_s, y_s)]
+    if res[-1]==res[0]:
+        res=res[:-1]
+    return res</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.PlaneGeom.generate_triangulation_from_shapely_linestring"><code class="name flex">
+<span>def <span class="ident">generate_triangulation_from_shapely_linestring</span></span>(<span>self, poly)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generate_triangulation_from_shapely_linestring(self, poly):
+    if hasattr(poly, &#39;exterior&#39;):
+        self.xy=self.format_line(poly.exterior, gmsh=False)
+    else:
+        self.xy=self.format_line(poly, gmsh=False)
+    self.holes=[]
+    xy=[[p[0], p[1]] for p in self.xy]
+    self._to_triangle_vertices=xy
+    self._to_triangle_segments=[(len(xy)-1,0)]+\
+                    [(i,i+1) for i in range(len(xy)-1)]
+    if not hasattr(poly, &#39;interiors&#39;) or  hasattr(poly, &#39;interiors&#39;) and len(poly.interiors)==0:
+        t=triangle.triangulate({&#39;vertices&#39;: self._to_triangle_vertices,
+                    &#39;segments&#39;: self._to_triangle_segments},
+                   opts=&#34;p&#34;)
+        if self.refine is not None:
+            t=triangle.triangulate(t, opts=&#34;pra{:}&#34;.format(self.refine))
+        self.cell_points, self.cells = ([p+[0.] for p in t[&#39;vertices&#39;].tolist()],
+                                   [(&#34;triangle&#34;, t[&#39;triangles&#39;].tolist())])
+    else:
+        holes=[]
+        for interior in poly.interiors:
+            xy=self.format_line(interior, gmsh=False)
+            xy=[[p[0], p[1]] for p in xy]
+            N=len(self._to_triangle_vertices)
+            self._to_triangle_segments+=[(N+len(xy)+-1,N)]+\
+                    [(N+i,N+i+1) for i in range(len(xy)-1)]
+            self._to_triangle_vertices+=xy
+            holes.append([p[0] for p in interior.centroid.xy])
+        t=triangle.triangulate({&#39;vertices&#39;: self._to_triangle_vertices,
+                        &#39;segments&#39;: self._to_triangle_segments,
+                        &#39;holes&#39;:holes},
+                       opts=&#34;p&#34;)
+        self.cell_points, self.cells = ([p+[0.] for p in t[&#39;vertices&#39;].tolist()],
+                                   [(&#34;triangle&#34;, t[&#39;triangles&#39;].tolist())])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.PlaneGeom.send_to_blender"><code class="name flex">
+<span>def <span class="ident">send_to_blender</span></span>(<span>self, use_triangle=False, from_external_loading=False)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def send_to_blender(self, use_triangle=False, from_external_loading=False):
+    if use_triangle:
+        self.generate_triangulation_from_shapely_linestring(self.line)
+    super().__init__(cells=self.cells, points=self.cell_points,
+                             name=self.name,
+                            **self.kwargs)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.sending_data.Mesh" href="sending_data.html#BlenderPy.sending_data.Mesh">Mesh</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.sending_data.Mesh.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="BlenderPy.meshing.Polygon"><code class="flex name class">
+<span>class <span class="ident">Polygon</span></span>
+<span>(</span><span>points=[], holes=[])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Polygon():
+    
+    def __init__(self, points=[], holes=[]):
+        self.points=points
+        self.holes=holes
+    
+    def to_shapely(self):
+        return geometry.Polygon(self.points, holes=self.holes)
+    
+    def from_shapely(self, poly):
+        self.points, self.holes=self.polygon_to_points(poly)
+    
+    def subtract(self, other):
+        if isinstance(other, Polygon) or isinstance(other, MultiPolygon):
+            diff=self.to_shapely().difference(other.to_shapely())
+        if isinstance(diff, geometry.multipolygon.MultiPolygon):
+            res=MultiPolygon()
+            polys=list(diff)
+            for poly in polys:
+                p=Polygon()
+                p.from_shapely(poly)
+                res.polygons.append(p)
+            return res
+        elif isinstance(diff, geometry.polygon.Polygon):
+            self.from_shapely(diff)
+            return self
+    
+    def intersect(self, other):
+        if isinstance(other, Polygon):
+            inter=self.to_shapely().intersection(other.to_shapely())
+            self.from_shapely(inter)
+        elif isinstance(other, MultiPolygon):
+            inter=self.to_shapely()
+            for poly in other.polygons:
+                inter=inter.difference(poly.to_shapely())
+            self.from_shapely(inter)
+    
+    def duplicate(self):
+        return Polygon(points=self.points.copy(),
+                       holes=self.holes.copy())
+        
+    def xy_to_points(self, line):
+        xs, ys=(np.array(line.xy[0]),
+                np.array(line.xy[1]))
+        return [[x,y] for x,y in zip(xs, ys)]
+    
+    def polygon_to_points(self, polygon):
+        points_ext=self.xy_to_points(polygon.exterior)
+        points_int=[]
+        for i, interior in enumerate(polygon.interiors):
+            points_int.append(self.xy_to_points(interior))
+        return points_ext, points_int
+
+    
+    def translate(self, vect):
+        for i, p in enumerate(self.points):
+            self.points[i]=[p[0]+vect[0],
+                            p[1]+vect[1]]
+        for i, hole in enumerate(self.holes):
+            for j, p in enumerate(hole):
+                self.holes[i][j]=[p[0]+vect[0],
+                                  p[1]+vect[1]]
+    
+    def mirror(self, point, ax):
+        mir=Mirror(point, ax)
+        self.points=[[p.x, p.y] for p in mir.update(self.points)]
+        return self
+            
+    @property
+    def left(self):
+        return np.min([p[0] for p in self.points])
+    
+    @left.setter
+    def left(self, val):
+        self.translate([val-self.left,
+                        0.])
+    
+    @property
+    def right(self):
+        return np.max([p[0] for p in self.points])
+    
+    @right.setter
+    def right(self, val):
+        self.translate([val-self.right,
+                        0.])
+    
+    @property
+    def bottom(self):
+        return np.min([p[1] for p in self.points])
+    
+    @bottom.setter
+    def bottom(self, val):
+        self.translate([0.,
+                        val-self.bottom])
+    
+    @property
+    def top(self):
+        return np.max([p[1] for p in self.points])
+    
+    @top.setter
+    def top(self, val):
+        self.translate([0.,
+                        val-self.top])
+    
+    @property
+    def center(self):
+        return [0.5*(self.left+self.right),
+                0.5*(self.bottom+self.top)]
+        
+    @center.setter
+    def center(self, val):
+        previous_center=self.center
+        self.translate([val[0]-previous_center[0],
+                        val[1]-previous_center[1]])
+    
+    @property
+    def width(self):
+        return self.right-self.left
+    
+    @property
+    def height(self):
+        return self.top-self.bottom</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.AngularSector" href="#BlenderPy.meshing.AngularSector">AngularSector</a></li>
+<li><a title="BlenderPy.meshing.Circle" href="#BlenderPy.meshing.Circle">Circle</a></li>
+<li><a title="BlenderPy.meshing.Rectangle" href="#BlenderPy.meshing.Rectangle">Rectangle</a></li>
+<li><a title="BlenderPy.meshing.RoundCorner" href="#BlenderPy.meshing.RoundCorner">RoundCorner</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.meshing.Polygon.bottom"><code class="name">var <span class="ident">bottom</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def bottom(self):
+    return np.min([p[1] for p in self.points])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.center"><code class="name">var <span class="ident">center</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def center(self):
+    return [0.5*(self.left+self.right),
+            0.5*(self.bottom+self.top)]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.height"><code class="name">var <span class="ident">height</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def height(self):
+    return self.top-self.bottom</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.left"><code class="name">var <span class="ident">left</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def left(self):
+    return np.min([p[0] for p in self.points])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.right"><code class="name">var <span class="ident">right</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def right(self):
+    return np.max([p[0] for p in self.points])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.top"><code class="name">var <span class="ident">top</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def top(self):
+    return np.max([p[1] for p in self.points])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.width"><code class="name">var <span class="ident">width</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def width(self):
+    return self.right-self.left</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.meshing.Polygon.duplicate"><code class="name flex">
+<span>def <span class="ident">duplicate</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def duplicate(self):
+    return Polygon(points=self.points.copy(),
+                   holes=self.holes.copy())</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.from_shapely"><code class="name flex">
+<span>def <span class="ident">from_shapely</span></span>(<span>self, poly)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def from_shapely(self, poly):
+    self.points, self.holes=self.polygon_to_points(poly)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.intersect"><code class="name flex">
+<span>def <span class="ident">intersect</span></span>(<span>self, other)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def intersect(self, other):
+    if isinstance(other, Polygon):
+        inter=self.to_shapely().intersection(other.to_shapely())
+        self.from_shapely(inter)
+    elif isinstance(other, MultiPolygon):
+        inter=self.to_shapely()
+        for poly in other.polygons:
+            inter=inter.difference(poly.to_shapely())
+        self.from_shapely(inter)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.mirror"><code class="name flex">
+<span>def <span class="ident">mirror</span></span>(<span>self, point, ax)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def mirror(self, point, ax):
+    mir=Mirror(point, ax)
+    self.points=[[p.x, p.y] for p in mir.update(self.points)]
+    return self</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.polygon_to_points"><code class="name flex">
+<span>def <span class="ident">polygon_to_points</span></span>(<span>self, polygon)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def polygon_to_points(self, polygon):
+    points_ext=self.xy_to_points(polygon.exterior)
+    points_int=[]
+    for i, interior in enumerate(polygon.interiors):
+        points_int.append(self.xy_to_points(interior))
+    return points_ext, points_int</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.subtract"><code class="name flex">
+<span>def <span class="ident">subtract</span></span>(<span>self, other)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def subtract(self, other):
+    if isinstance(other, Polygon) or isinstance(other, MultiPolygon):
+        diff=self.to_shapely().difference(other.to_shapely())
+    if isinstance(diff, geometry.multipolygon.MultiPolygon):
+        res=MultiPolygon()
+        polys=list(diff)
+        for poly in polys:
+            p=Polygon()
+            p.from_shapely(poly)
+            res.polygons.append(p)
+        return res
+    elif isinstance(diff, geometry.polygon.Polygon):
+        self.from_shapely(diff)
+        return self</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.to_shapely"><code class="name flex">
+<span>def <span class="ident">to_shapely</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_shapely(self):
+    return geometry.Polygon(self.points, holes=self.holes)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.translate"><code class="name flex">
+<span>def <span class="ident">translate</span></span>(<span>self, vect)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def translate(self, vect):
+    for i, p in enumerate(self.points):
+        self.points[i]=[p[0]+vect[0],
+                        p[1]+vect[1]]
+    for i, hole in enumerate(self.holes):
+        for j, p in enumerate(hole):
+            self.holes[i][j]=[p[0]+vect[0],
+                              p[1]+vect[1]]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Polygon.xy_to_points"><code class="name flex">
+<span>def <span class="ident">xy_to_points</span></span>(<span>self, line)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def xy_to_points(self, line):
+    xs, ys=(np.array(line.xy[0]),
+            np.array(line.xy[1]))
+    return [[x,y] for x,y in zip(xs, ys)]</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.meshing.Rectangle"><code class="flex name class">
+<span>class <span class="ident">Rectangle</span></span>
+<span>(</span><span>x0=0, y0=0, Lx=1, Ly=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Rectangle(Polygon):
+    
+    def __init__(self, x0=0, y0=0, Lx=1, Ly=1):
+        points=[[x0-Lx/2, x0-Ly/2],
+                [x0-Lx/2, x0+Ly/2],
+                [x0+Lx/2, x0+Ly/2],
+                [x0+Lx/2, x0-Ly/2]]
+        super().__init__(points=points)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></li>
+</ul>
+</dd>
+<dt id="BlenderPy.meshing.RoundCorner"><code class="flex name class">
+<span>class <span class="ident">RoundCorner</span></span>
+<span>(</span><span>x0=0, y0=0, radius=1.0, N=32, theta_1=0, theta_2=1.5707963267948966, width=0.1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class RoundCorner(Polygon):
+    
+    def __init__(self, x0=0, y0=0, radius=1., N=32,
+                 theta_1=0, theta_2=np.pi/2, width=0.1):
+        points=[[x0+(radius+width/2)*np.cos(theta),
+                 y0+(radius+width/2)*np.sin(theta)] 
+                 for theta in np.linspace(theta_1, theta_2, N)]
+        points+=[[x0+(radius-width/2)*np.cos(theta),
+                 y0+(radius-width/2)*np.sin(theta)] 
+                 for theta in np.linspace(theta_2, theta_1, N)]
+        super().__init__(points=points)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></li>
+</ul>
+</dd>
+<dt id="BlenderPy.meshing.Sphere"><code class="flex name class">
+<span>class <span class="ident">Sphere</span></span>
+<span>(</span><span>radius=1, refine=0, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>a class encompassing the geometric absolute positioning
+of vertices of meshes</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Sphere(Mesh):
+    
+    def __init__(self, radius=1, refine=0, **kwargs):
+        self.radius=radius
+        self.initialize(self.radius)
+        for i in range(refine):
+            self.refine()
+        super().__init__(cells=self.cells, 
+                         points=self.points,
+                         **kwargs)
+        
+    def initialize(self, radius):
+        C0 = (1 + np.sqrt(5)) / 4
+        norm = np.sqrt(0.5**2+C0**2)
+        self.points=list(radius/norm*np.array([[0.5,  0.0,   C0],
+                                        [0.5,  0.0,  -C0],
+                                        [-0.5,  0.0,   C0],
+                                        [-0.5,  0.0,  -C0],
+                                        [C0,  0.5,  0.0],
+                                        [C0, -0.5,  0.0],
+                                        [-C0,  0.5,  0.0],
+                                        [-C0, -0.5,  0.0],
+                                        [0.0,   C0,  0.5],
+                                        [0.0,   C0, -0.5],
+                                        [0.0,  -C0,  0.5],
+                                        [0.0,  -C0, -0.5]]))
+
+        self.cells=[[  0,  2, 10 ],
+                    [  0, 10,  5 ],
+                    [  0,  5,  4 ],
+                    [  0,  4,  8 ],
+                    [  0,  8,  2 ],
+                    [  3,  1, 11 ],
+                    [  3, 11,  7 ],
+                    [  3,  7,  6 ],
+                    [  3,  6,  9 ],
+                    [  3,  9,  1 ],
+                    [  2,  6,  7 ],
+                    [  2,  7, 10 ],
+                    [ 10,  7, 11 ],
+                    [ 10, 11,  5 ],
+                    [  5, 11,  1 ],
+                    [  5,  1,  4 ],
+                    [  4,  1,  9 ],
+                    [  4,  9,  8 ],
+                    [  8,  9,  6 ],
+                    [  8,  6,  2 ]]
+    
+    def refine(self):
+        edges=dict()
+        for i, f in enumerate(self.cells):
+            for pair in [[0,1], [1,2], [0,2]]:
+                ordered=(np.min([f[pair[0]], f[pair[1]]]),
+                         np.max([f[pair[0]], f[pair[1]]]))
+                if not ordered in edges.keys():
+                    edges[ordered]=[i]
+                else:
+                    edges[ordered].append(i)
+
+        faces_to_edges=dict()
+        for i, f in enumerate(self.cells):
+            for pair in [[0,1], [1,2], [0,2]]:
+                ordered=(np.min([f[pair[0]], f[pair[1]]]),
+                         np.max([f[pair[0]], f[pair[1]]]))
+                if not i in faces_to_edges.keys():
+                    faces_to_edges[i]=[ordered]
+                else:
+                    faces_to_edges[i].append(ordered)   
+        
+        middle_points=dict()
+        i=len(self.points)
+        for v in edges.keys():
+            self.points.append(self.get_middle_point(self.points[v[0]],
+                                                     self.points[v[1]]))
+            middle_points[v]=i
+            i+=1
+            
+        new_faces=[]
+        for f, edges in faces_to_edges.items():
+            if edges[0][0] in edges[1]:
+                new_faces.append([edges[0][0], middle_points[edges[0]],
+                                  middle_points[edges[1]]])
+                new_faces.append([edges[0][1], middle_points[edges[0]],
+                                  middle_points[edges[2]]])
+            else:
+                new_faces.append([edges[0][0], middle_points[edges[0]],
+                                  middle_points[edges[2]]])
+                new_faces.append([edges[0][1], middle_points[edges[0]],
+                                  middle_points[edges[1]]])
+            for point in self.cells[f]:
+                if point not in edges[0]:
+                    break
+            new_faces.append([point, middle_points[edges[1]],
+                              middle_points[edges[2]]])
+            new_faces.append([middle_points[edges[0]],
+                              middle_points[edges[1]],
+                              middle_points[edges[2]]])
+        self.cells=new_faces
+
+    def get_middle_point(self, p1, p2):
+        middle=0.5*(Vector(p1)+Vector(p2))
+        middle=middle.normalize()*self.radius
+        return [middle.x, middle.y, middle.z]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.Mesh" href="sending_data.html#BlenderPy.sending_data.Mesh">Mesh</a></li>
+<li><a title="BlenderPy.sending_data.Object" href="sending_data.html#BlenderPy.sending_data.Object">Object</a></li>
+<li><a title="BlenderPy.sending_data.GeometricEntity" href="sending_data.html#BlenderPy.sending_data.GeometricEntity">GeometricEntity</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.meshing.Sphere.get_middle_point"><code class="name flex">
+<span>def <span class="ident">get_middle_point</span></span>(<span>self, p1, p2)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_middle_point(self, p1, p2):
+    middle=0.5*(Vector(p1)+Vector(p2))
+    middle=middle.normalize()*self.radius
+    return [middle.x, middle.y, middle.z]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Sphere.initialize"><code class="name flex">
+<span>def <span class="ident">initialize</span></span>(<span>self, radius)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def initialize(self, radius):
+    C0 = (1 + np.sqrt(5)) / 4
+    norm = np.sqrt(0.5**2+C0**2)
+    self.points=list(radius/norm*np.array([[0.5,  0.0,   C0],
+                                    [0.5,  0.0,  -C0],
+                                    [-0.5,  0.0,   C0],
+                                    [-0.5,  0.0,  -C0],
+                                    [C0,  0.5,  0.0],
+                                    [C0, -0.5,  0.0],
+                                    [-C0,  0.5,  0.0],
+                                    [-C0, -0.5,  0.0],
+                                    [0.0,   C0,  0.5],
+                                    [0.0,   C0, -0.5],
+                                    [0.0,  -C0,  0.5],
+                                    [0.0,  -C0, -0.5]]))
+
+    self.cells=[[  0,  2, 10 ],
+                [  0, 10,  5 ],
+                [  0,  5,  4 ],
+                [  0,  4,  8 ],
+                [  0,  8,  2 ],
+                [  3,  1, 11 ],
+                [  3, 11,  7 ],
+                [  3,  7,  6 ],
+                [  3,  6,  9 ],
+                [  3,  9,  1 ],
+                [  2,  6,  7 ],
+                [  2,  7, 10 ],
+                [ 10,  7, 11 ],
+                [ 10, 11,  5 ],
+                [  5, 11,  1 ],
+                [  5,  1,  4 ],
+                [  4,  1,  9 ],
+                [  4,  9,  8 ],
+                [  8,  9,  6 ],
+                [  8,  6,  2 ]]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Sphere.refine"><code class="name flex">
+<span>def <span class="ident">refine</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def refine(self):
+    edges=dict()
+    for i, f in enumerate(self.cells):
+        for pair in [[0,1], [1,2], [0,2]]:
+            ordered=(np.min([f[pair[0]], f[pair[1]]]),
+                     np.max([f[pair[0]], f[pair[1]]]))
+            if not ordered in edges.keys():
+                edges[ordered]=[i]
+            else:
+                edges[ordered].append(i)
+
+    faces_to_edges=dict()
+    for i, f in enumerate(self.cells):
+        for pair in [[0,1], [1,2], [0,2]]:
+            ordered=(np.min([f[pair[0]], f[pair[1]]]),
+                     np.max([f[pair[0]], f[pair[1]]]))
+            if not i in faces_to_edges.keys():
+                faces_to_edges[i]=[ordered]
+            else:
+                faces_to_edges[i].append(ordered)   
+    
+    middle_points=dict()
+    i=len(self.points)
+    for v in edges.keys():
+        self.points.append(self.get_middle_point(self.points[v[0]],
+                                                 self.points[v[1]]))
+        middle_points[v]=i
+        i+=1
+        
+    new_faces=[]
+    for f, edges in faces_to_edges.items():
+        if edges[0][0] in edges[1]:
+            new_faces.append([edges[0][0], middle_points[edges[0]],
+                              middle_points[edges[1]]])
+            new_faces.append([edges[0][1], middle_points[edges[0]],
+                              middle_points[edges[2]]])
+        else:
+            new_faces.append([edges[0][0], middle_points[edges[0]],
+                              middle_points[edges[2]]])
+            new_faces.append([edges[0][1], middle_points[edges[0]],
+                              middle_points[edges[1]]])
+        for point in self.cells[f]:
+            if point not in edges[0]:
+                break
+        new_faces.append([point, middle_points[edges[1]],
+                          middle_points[edges[2]]])
+        new_faces.append([middle_points[edges[0]],
+                          middle_points[edges[1]],
+                          middle_points[edges[2]]])
+    self.cells=new_faces</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.sending_data.Mesh" href="sending_data.html#BlenderPy.sending_data.Mesh">Mesh</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.sending_data.Mesh.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="BlenderPy.meshing.Transformation"><code class="flex name class">
+<span>class <span class="ident">Transformation</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Transformation:
+    
+    def __init__(self):
+        pass
+    
+    @abstractmethod
+    def update(self, points):
+        pass</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.Mirror" href="#BlenderPy.meshing.Mirror">Mirror</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.meshing.Transformation.update"><code class="name flex">
+<span>def <span class="ident">update</span></span>(<span>self, points)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abstractmethod
+def update(self, points):
+    pass</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.meshing.Triangle"><code class="flex name class">
+<span>class <span class="ident">Triangle</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Triangle:
+    
+    @staticmethod
+    def triangulate(points, holes):
+        _to_triangle_vertices=points
+        _to_triangle_segments=[(len(points)-1,0)]+\
+                        [(i,i+1) for i in range(len(points)-1)]
+        if len(holes)==0:
+            tri=triangle.triangulate(dict({&#39;vertices&#39;:_to_triangle_vertices,
+                                           &#39;segments&#39;:_to_triangle_segments}),
+                                            &#39;pqPz&#39;)
+        else:
+            holes_point=[]
+            for hole in holes:
+                holes_point.append([np.mean([p[0] for p in hole]),
+                              np.mean([p[1] for p in hole])])
+                N=len(_to_triangle_vertices)
+                _to_triangle_segments+=[(N+len(hole)+-1,N)]+\
+                        [(N+i,N+i+1) for i in range(len(hole)-1)]
+                _to_triangle_vertices+=hole
+            tri=triangle.triangulate(dict({&#39;vertices&#39;:_to_triangle_vertices,
+                                           &#39;segments&#39;:_to_triangle_segments,
+                                           &#39;holes&#39;:holes_point}),
+                                            &#39;pqPz&#39;)
+        return ([p+[0.] for p in tri[&#39;vertices&#39;].tolist()],
+                tri[&#39;triangles&#39;].tolist())</code></pre>
+</details>
+<h3>Static methods</h3>
+<dl>
+<dt id="BlenderPy.meshing.Triangle.triangulate"><code class="name flex">
+<span>def <span class="ident">triangulate</span></span>(<span>points, holes)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def triangulate(points, holes):
+    _to_triangle_vertices=points
+    _to_triangle_segments=[(len(points)-1,0)]+\
+                    [(i,i+1) for i in range(len(points)-1)]
+    if len(holes)==0:
+        tri=triangle.triangulate(dict({&#39;vertices&#39;:_to_triangle_vertices,
+                                       &#39;segments&#39;:_to_triangle_segments}),
+                                        &#39;pqPz&#39;)
+    else:
+        holes_point=[]
+        for hole in holes:
+            holes_point.append([np.mean([p[0] for p in hole]),
+                          np.mean([p[1] for p in hole])])
+            N=len(_to_triangle_vertices)
+            _to_triangle_segments+=[(N+len(hole)+-1,N)]+\
+                    [(N+i,N+i+1) for i in range(len(hole)-1)]
+            _to_triangle_vertices+=hole
+        tri=triangle.triangulate(dict({&#39;vertices&#39;:_to_triangle_vertices,
+                                       &#39;segments&#39;:_to_triangle_segments,
+                                       &#39;holes&#39;:holes_point}),
+                                        &#39;pqPz&#39;)
+    return ([p+[0.] for p in tri[&#39;vertices&#39;].tolist()],
+            tri[&#39;triangles&#39;].tolist())</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.meshing.Vector"><code class="flex name class">
+<span>class <span class="ident">Vector</span></span>
+<span>(</span><span>*args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Vector:
+    
+    def __init__(self, *args):
+        if len(args)==2:
+            self.z=0.
+            if isinstance(args[0], tuple) and isinstance(args[1], tuple):
+                self.x=args[1][0]-args[0][0]
+                self.y=args[1][1]-args[0][1]
+            else:
+                self.x=args[0]
+                self.y=args[1]
+        elif len(args)==1:
+            self.z=0.
+            if isinstance(args[0], tuple):
+                self.x=args[0][0]
+                self.y=args[0][1]
+            elif isinstance(args[0], list) or isinstance(args[0], np.ndarray):
+                self.x=args[0][0]
+                self.y=args[0][1]
+                if(len(args[0])==2):
+                    self.z=0
+                else:
+                    self.z=args[0][2]
+            elif np.isscalar(args[0]):
+                self.x=np.real(args[0])
+                self.y=np.imag(args[0])
+            else:
+                raise TypeError
+        elif len(args)==3:
+                self.x=args[0]
+                self.y=args[1]
+                self.z=args[2]
+    
+    def norm(self):
+        return np.sqrt(self.x**2+self.y**2+self.z**2)
+    
+    def normalize(self):
+        return self/self.norm()
+    
+    def compl(self):
+        return self.x+1j*self.y
+    
+    def cross3(self, other):
+        assert isinstance(other, Vector)
+        return Vector(self.y*other.z-self.z*other.y,
+                      self.z*other.x-self.x*other.z,
+                      self.x*other.y-self.y*other.x)
+    
+    def cross(self, other):
+        assert isinstance(other, Vector)
+        return self.x*other.y-self.y*other.x
+    
+    def __add__(self,other):
+        if not other.__class__ is Vector:
+            print(&#34;Erreur: l&#39;argument n&#39;est pas un Vector&#34;)
+            return NotImplemented
+        else:
+            return Vector(self.x+other.x, self.y+other.y, self.z+other.z)
+        
+    def __sub__(self, other):
+        return Vector(self.x-other.x, self.y-other.y, self.z-other.z)
+    
+    def __mul__(self,other):
+        if not other.__class__ is Vector:
+            return Vector(self.x*other, self.y*other, self.z*other)
+        else:
+            return self.x*other.x+self.y*other.y
+    
+    def __rmul__(self, other):
+        if not other.__class__ is Vector:
+            return Vector(self.x*other, self.y*other, self.z*other)
+        else:
+            return self.x*other.x+self.y*other.y
+    
+    def __truediv__(self,other):
+        return Vector(self.x/other, self.y/other, self.z/other)
+    
+    def __str__(self):
+        return &#39;x:{:}, y:{:}, z:{:}&#39;.format(self.x, self.y, self.z)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.meshing.Vector.compl"><code class="name flex">
+<span>def <span class="ident">compl</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def compl(self):
+    return self.x+1j*self.y</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Vector.cross"><code class="name flex">
+<span>def <span class="ident">cross</span></span>(<span>self, other)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cross(self, other):
+    assert isinstance(other, Vector)
+    return self.x*other.y-self.y*other.x</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Vector.cross3"><code class="name flex">
+<span>def <span class="ident">cross3</span></span>(<span>self, other)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cross3(self, other):
+    assert isinstance(other, Vector)
+    return Vector(self.y*other.z-self.z*other.y,
+                  self.z*other.x-self.x*other.z,
+                  self.x*other.y-self.y*other.x)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Vector.norm"><code class="name flex">
+<span>def <span class="ident">norm</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def norm(self):
+    return np.sqrt(self.x**2+self.y**2+self.z**2)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.meshing.Vector.normalize"><code class="name flex">
+<span>def <span class="ident">normalize</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def normalize(self):
+    return self/self.norm()</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="BlenderPy" href="index.html">BlenderPy</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="BlenderPy.meshing.AngularSector" href="#BlenderPy.meshing.AngularSector">AngularSector</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.Arrow" href="#BlenderPy.meshing.Arrow">Arrow</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.Box" href="#BlenderPy.meshing.Box">Box</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.Circle" href="#BlenderPy.meshing.Circle">Circle</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.Cylinder" href="#BlenderPy.meshing.Cylinder">Cylinder</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.Mirror" href="#BlenderPy.meshing.Mirror">Mirror</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.meshing.Mirror.update" href="#BlenderPy.meshing.Mirror.update">update</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.MultiPolygon" href="#BlenderPy.meshing.MultiPolygon">MultiPolygon</a></code></h4>
+<ul class="two-column">
+<li><code><a title="BlenderPy.meshing.MultiPolygon.append" href="#BlenderPy.meshing.MultiPolygon.append">append</a></code></li>
+<li><code><a title="BlenderPy.meshing.MultiPolygon.bottom" href="#BlenderPy.meshing.MultiPolygon.bottom">bottom</a></code></li>
+<li><code><a title="BlenderPy.meshing.MultiPolygon.center" href="#BlenderPy.meshing.MultiPolygon.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.MultiPolygon.from_shapely" href="#BlenderPy.meshing.MultiPolygon.from_shapely">from_shapely</a></code></li>
+<li><code><a title="BlenderPy.meshing.MultiPolygon.height" href="#BlenderPy.meshing.MultiPolygon.height">height</a></code></li>
+<li><code><a title="BlenderPy.meshing.MultiPolygon.left" href="#BlenderPy.meshing.MultiPolygon.left">left</a></code></li>
+<li><code><a title="BlenderPy.meshing.MultiPolygon.right" href="#BlenderPy.meshing.MultiPolygon.right">right</a></code></li>
+<li><code><a title="BlenderPy.meshing.MultiPolygon.to_shapely" href="#BlenderPy.meshing.MultiPolygon.to_shapely">to_shapely</a></code></li>
+<li><code><a title="BlenderPy.meshing.MultiPolygon.top" href="#BlenderPy.meshing.MultiPolygon.top">top</a></code></li>
+<li><code><a title="BlenderPy.meshing.MultiPolygon.translate" href="#BlenderPy.meshing.MultiPolygon.translate">translate</a></code></li>
+<li><code><a title="BlenderPy.meshing.MultiPolygon.width" href="#BlenderPy.meshing.MultiPolygon.width">width</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.Path" href="#BlenderPy.meshing.Path">Path</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.meshing.Path.generate" href="#BlenderPy.meshing.Path.generate">generate</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.Plane" href="#BlenderPy.meshing.Plane">Plane</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.PlaneGeom" href="#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.meshing.PlaneGeom.format_line" href="#BlenderPy.meshing.PlaneGeom.format_line">format_line</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.generate_triangulation_from_shapely_linestring" href="#BlenderPy.meshing.PlaneGeom.generate_triangulation_from_shapely_linestring">generate_triangulation_from_shapely_linestring</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.send_to_blender" href="#BlenderPy.meshing.PlaneGeom.send_to_blender">send_to_blender</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></code></h4>
+<ul class="two-column">
+<li><code><a title="BlenderPy.meshing.Polygon.bottom" href="#BlenderPy.meshing.Polygon.bottom">bottom</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.center" href="#BlenderPy.meshing.Polygon.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.duplicate" href="#BlenderPy.meshing.Polygon.duplicate">duplicate</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.from_shapely" href="#BlenderPy.meshing.Polygon.from_shapely">from_shapely</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.height" href="#BlenderPy.meshing.Polygon.height">height</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.intersect" href="#BlenderPy.meshing.Polygon.intersect">intersect</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.left" href="#BlenderPy.meshing.Polygon.left">left</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.mirror" href="#BlenderPy.meshing.Polygon.mirror">mirror</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.polygon_to_points" href="#BlenderPy.meshing.Polygon.polygon_to_points">polygon_to_points</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.right" href="#BlenderPy.meshing.Polygon.right">right</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.subtract" href="#BlenderPy.meshing.Polygon.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.to_shapely" href="#BlenderPy.meshing.Polygon.to_shapely">to_shapely</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.top" href="#BlenderPy.meshing.Polygon.top">top</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.translate" href="#BlenderPy.meshing.Polygon.translate">translate</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.width" href="#BlenderPy.meshing.Polygon.width">width</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.xy_to_points" href="#BlenderPy.meshing.Polygon.xy_to_points">xy_to_points</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.Rectangle" href="#BlenderPy.meshing.Rectangle">Rectangle</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.RoundCorner" href="#BlenderPy.meshing.RoundCorner">RoundCorner</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.Sphere" href="#BlenderPy.meshing.Sphere">Sphere</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.meshing.Sphere.get_middle_point" href="#BlenderPy.meshing.Sphere.get_middle_point">get_middle_point</a></code></li>
+<li><code><a title="BlenderPy.meshing.Sphere.initialize" href="#BlenderPy.meshing.Sphere.initialize">initialize</a></code></li>
+<li><code><a title="BlenderPy.meshing.Sphere.refine" href="#BlenderPy.meshing.Sphere.refine">refine</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.Transformation" href="#BlenderPy.meshing.Transformation">Transformation</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.meshing.Transformation.update" href="#BlenderPy.meshing.Transformation.update">update</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.Triangle" href="#BlenderPy.meshing.Triangle">Triangle</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.meshing.Triangle.triangulate" href="#BlenderPy.meshing.Triangle.triangulate">triangulate</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.meshing.Vector" href="#BlenderPy.meshing.Vector">Vector</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.meshing.Vector.compl" href="#BlenderPy.meshing.Vector.compl">compl</a></code></li>
+<li><code><a title="BlenderPy.meshing.Vector.cross" href="#BlenderPy.meshing.Vector.cross">cross</a></code></li>
+<li><code><a title="BlenderPy.meshing.Vector.cross3" href="#BlenderPy.meshing.Vector.cross3">cross3</a></code></li>
+<li><code><a title="BlenderPy.meshing.Vector.norm" href="#BlenderPy.meshing.Vector.norm">norm</a></code></li>
+<li><code><a title="BlenderPy.meshing.Vector.normalize" href="#BlenderPy.meshing.Vector.normalize">normalize</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

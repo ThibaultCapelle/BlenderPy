@@ -674,28 +674,32 @@ class Material:
         principled.inputs['Base Color']=color_ramp.outputs['Color']
     
     def surface_noise(self, scale=3, detail=2, roughness=0.5,
+                      dimension='2D',
                       orientation='Z', origin='Generated'):
         noise=self.add_shader('Noise')
         coord=self.add_shader('Texture_coordinates')
-        sepxyz=self.add_shader('Separate_XYZ')
-        sepxyz2=self.add_shader('Separate_XYZ')
-        combine=self.add_shader('Combine_XYZ')
-        combine.inputs['X']=sepxyz2.outputs['X']
-        combine.inputs['Y']=sepxyz2.outputs['Y']
-        sepxyz.inputs['Vector']=coord.outputs['Normal']
-        sup=self.add_shader('Math')
-        sup.properties['operation']=self.operations['>']
-        sup.inputs[0]=sepxyz.outputs[orientation]
-        sup.inputs[1]=0.5
-        mult=self.add_shader('Math')
-        mult.properties['operation']=self.operations['*']
-        mult.inputs[0]=sup.outputs['Value']
-        
         output=self.get_shader('Material Output')
-        sepxyz2.inputs['Vector']=coord.outputs[origin]
-        noise.inputs['Vector']=combine.outputs['Vector']
-        mult.inputs[1]=noise.outputs['Fac']
-        output.inputs['Displacement']=mult.outputs['Value']
+        
+        if dimension=='2D':
+            sepxyz=self.add_shader('Separate_XYZ')
+            sepxyz2=self.add_shader('Separate_XYZ')
+            combine=self.add_shader('Combine_XYZ')
+            combine.inputs['X']=sepxyz2.outputs['X']
+            combine.inputs['Y']=sepxyz2.outputs['Y']
+            sepxyz.inputs['Vector']=coord.outputs['Normal']
+            sup=self.add_shader('Math')
+            sup.properties['operation']=self.operations['>']
+            sup.inputs[0]=sepxyz.outputs[orientation]
+            sup.inputs[1]=0.5
+            mult=self.add_shader('Math')
+            mult.properties['operation']=self.operations['*']
+            mult.inputs[0]=sup.outputs['Value']
+            sepxyz2.inputs['Vector']=coord.outputs[origin]
+            noise.inputs['Vector']=combine.outputs['Vector']
+            mult.inputs[1]=noise.outputs['Fac']
+            output.inputs['Displacement']=mult.outputs['Value']
+        elif dimension=='3D':
+            output.inputs['Displacement']=noise.outputs['Fac']
         noise.inputs['Scale']=scale
         noise.inputs['Detail']=detail
         noise.inputs['Roughness']=roughness

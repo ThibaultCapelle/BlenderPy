@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>BlenderPy.parsing API documentation</title>
+<meta name="description" content="Created on Fri Oct 29 20:55:45 2021 …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>BlenderPy.parsing</code></h1>
+</header>
+<section id="section-intro">
+<p>Created on Fri Oct 29 20:55:45 2021</p>
+<p>@author: Thibault</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+Created on Fri Oct 29 20:55:45 2021
+
+@author: Thibault
+&#34;&#34;&#34;
+
+class Node:
+    
+    def __init__(self, name=&#39;X&#39;):
+        self.name
+
+class Token:
+    
+    def __init__(self, token_type=&#39;&#39;, content=&#39;&#39;):
+        self.token_type=token_type
+        self.content=content
+
+class Operator:
+    
+    def __init__(self, left=None, right=None):
+        self.left=left
+        self.right=right
+
+class Expression:
+    
+    specials=[&#39;(&#39;,&#39;)&#39;,&#39;+&#39;,&#39;-&#39;,&#39;/&#39;,&#39;*&#39;,&#39;^&#39;,&#39;e&#39;,&#39;|&#39;, &#39;&gt;&#39;, &#39;&lt;&#39;, &#39;s&#39;, &#39;c&#39;]
+    numbers=[&#39;.&#39;,&#39;0&#39;,&#39;1&#39;,&#39;2&#39;,&#39;3&#39;,&#39;4&#39;,&#39;5&#39;,&#39;6&#39;,&#39;7&#39;,&#39;8&#39;,&#39;9&#39;]
+    nodes=[&#39;x&#39;,&#39;y&#39;,&#39;z&#39;, &#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;]
+    
+    def __init__(self, content=&#39;&#39;, nodes=[], operation=None, tokens=[]):
+        self.shader=None
+        self.content=content
+        self.nodes=nodes
+        self.operation=operation
+        self.tokens=tokens
+        self.lexer()
+        self.absolute()
+        self.parenthesis()
+        self.parse()
+        self.clean_tree()
+    
+    def lexer(self):
+        i=0
+        previous_token=None
+        while i&lt;len(self.content):
+            
+            if self.content[i] in Expression.specials:
+                if self.content[i] in [&#39;e&#39;, &#39;(&#39;, &#39;|&#39;] and previous_token is None:
+                    token=Token(&#39;operator&#39;,self.content[i])
+                    self.tokens.append(token)
+                    previous_token=token
+                elif self.content[i]==&#39;-&#39; and previous_token is None:
+                    token=Token(&#39;number&#39;,&#39;-1&#39;)
+                    self.tokens.append(token)
+                    token=Token(&#39;operator&#39;,&#39;*&#39;)
+                    self.tokens.append(token)
+                    previous_token=token
+                elif self.content[i]==&#39;-&#39; and previous_token.content in [&#39;(&#39;,&#39;^&#39;,&#39;+&#39;,&#39;/&#39;,&#39;*&#39;,&#39;|&#39;,&#39;&lt;&#39;,&#39;&gt;&#39;]:
+                    token=Token(&#39;number&#39;,&#39;-1&#39;)
+                    self.tokens.append(token)
+                    token=Token(&#39;operator&#39;,&#39;*&#39;)
+                    self.tokens.append(token)
+                    previous_token=token
+                elif self.content[i] in [&#39;(&#39;,&#39;e&#39;] and \
+                previous_token.content in Expression.numbers:
+                    token=Token(&#39;operator&#39;,&#39;*&#39;)
+                    self.tokens.append(token)
+                    token=Token(&#39;operator&#39;,self.content[i])
+                    self.tokens.append(token)
+                    previous_token=token
+                elif self.content[i] ==&#39;s&#39;:
+                    if i+3&lt;len(self.content):
+                        if self.content[i:i+4]==&#39;sqrt&#39;:
+                            token=Token(&#39;operator&#39;,&#39;sqrt&#39;)
+                            self.tokens.append(token)
+                            previous_token=token
+                            i+=3
+                    if i+2&lt;len(self.content):
+                        if self.content[i:i+3]==&#39;sin&#39;:
+                            token=Token(&#39;operator&#39;,&#39;sin&#39;)
+                            self.tokens.append(token)
+                            previous_token=token
+                            i+=2
+                elif self.content[i] ==&#39;c&#39;:
+                    if i+3&lt;len(self.content):
+                        if self.content[i:i+3]==&#39;cos&#39;:
+                            token=Token(&#39;operator&#39;,&#39;cos&#39;)
+                            self.tokens.append(token)
+                            previous_token=token
+                            i+=2
+                else:
+                    token=Token(&#39;operator&#39;,self.content[i])
+                    previous_token=token
+                    self.tokens.append(token)
+                i+=1
+            elif self.content[i] in Expression.numbers:
+                if previous_token is not None and previous_token.content in Expression.numbers:
+                    token=Token(&#39;operator&#39;,&#39;*&#39;)
+                    self.tokens.append(token)
+                j=0
+                end=False
+                while not(end):
+                    if i+j&lt;len(self.content):
+                        if self.content[i+j] in Expression.numbers:
+                            j+=1
+                        else:
+                            end=True
+                    else:
+                        end=True
+                token=Token(&#39;number&#39;,self.content[i:i+j])
+                self.tokens.append(token)
+                previous_token=token
+                i=i+j
+            elif self.content[i] in Expression.nodes:
+                if previous_token is not None and previous_token.content in Expression.numbers:
+                    token=Token(&#39;operator&#39;,&#39;*&#39;)
+                    self.tokens.append(token)
+                token=Token(&#39;number&#39;,self.content[i])
+                self.tokens.append(token)
+                previous_token=token
+                i+=1
+            else:
+                print(&#34;unexpected character&#34;)
+    
+    def parenthesis(self):
+        done=False
+        while not done:
+            ind_start, ind_stop=None, None
+            for i,t in enumerate(self.tokens):
+                if t.content==&#39;(&#39;:
+                     ind_start=i
+                elif t.content==&#39;)&#39;:
+                     ind_stop=i
+                     break
+            if ind_start is not None and ind_stop is not None:
+                tokens=self.tokens[ind_start+1:ind_stop]
+                for i in range(ind_start, ind_stop+1)[::-1]:
+                    self.tokens.pop(i)
+                node=Expression(tokens=tokens)
+                self.tokens.insert(ind_start,node)
+            else:
+                done=True
+    
+    def absolute(self):
+        ind_start, ind_stop=None, None
+        for i,t in enumerate(self.tokens):
+            if t.content==&#39;|&#39;:
+                if ind_start is None:
+                    ind_start=i
+                else:
+                    ind_stop=i
+                    tokens=self.tokens[ind_start+1:ind_stop]
+                    for i in range(ind_start, ind_stop+1)[::-1]:
+                        self.tokens.pop(i)
+                    
+                    node=Expression(tokens=tokens, operation=&#39;ABS&#39;)
+                    self.tokens.insert(ind_start,node)
+                    ind_start, ind_stop=None, None 
+    
+    def parse(self):
+        operation_found=False
+        if self.operation is not None:
+            self.nodes=[Expression(tokens=self.tokens)]
+        else:
+            for i,t in enumerate(self.tokens):
+                if t.content in [&#39;+&#39;,&#39;-&#39;]:
+                    operation_found=True
+                    node_1=Expression(tokens=self.tokens[:i])
+                    node_2=Expression(tokens=self.tokens[i+1:])
+                    self.nodes=[node_1, node_2]
+                    self.operation=t.content
+            if not operation_found:
+                for i,t in enumerate(self.tokens):
+                    if t.content in [&#39;*&#39;,&#39;/&#39;, &#39;&gt;&#39;, &#39;&lt;&#39;]:
+                        operation_found=True
+                        node_1=Expression(tokens=self.tokens[:i])
+                        node_2=Expression(tokens=self.tokens[i+1:])
+                        self.nodes=[node_1, node_2]
+                        self.operation=t.content
+            if not operation_found:
+                for i,t in enumerate(self.tokens):
+                    if t.content in [&#39;^&#39;]:
+                        operation_found=True
+                        node_1=Expression(tokens=self.tokens[:i])
+                        node_2=Expression(tokens=self.tokens[i+1:])
+                        self.nodes=[node_1, node_2]
+                        self.operation=t.content
+                    elif t.content in [&#39;sqrt&#39;, &#39;sin&#39;, &#39;cos&#39;]:
+                        operation_found=True
+                        node_1=Expression(tokens=self.tokens[i+1:])
+                        self.nodes=[node_1]
+                        self.operation=t.content
+    
+    
+    def is_leaf(self):
+        return len(self.tokens)==1 and not isinstance(self.tokens[0], Expression) and self.operation is None
+                    
+    def get_leaves(self):
+        if self.is_leaf():
+            return [self.tokens[0].content]
+        leaves=[]
+        if len(self.tokens)==1 and isinstance(self.tokens[0], Expression):
+            leaves+=self.tokens[0].get_leaves()
+        else:
+            for node in self.nodes:
+                leaves+=node.get_leaves()
+        return leaves
+    
+    def clean_tree(self):
+        for i, node in enumerate(self.nodes):
+            if len(node.tokens)==1 and isinstance(node.tokens[0], Expression):
+                self.nodes[i]=node.tokens[0]
+        if len(self.tokens)==1 and len(self.nodes)==0 and self.operation is None and isinstance(self.tokens[0], Expression):
+            self.__dict__.update(self.tokens[0].__dict__)
+    
+    def get_tree(self):
+        if self.is_leaf():
+            return self.tokens[0].content
+        else:
+            return dict({self.operation:[node.get_tree() for node in self.nodes]})
+        
+        
+
+if __name__==&#39;__main__&#39;:
+    expression=Expression(content=&#39;{:}*e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))&#39;.format(10, 3, 0.2**2), tokens=[])
+    res=expression.get_tree()
+    
+            
+    </code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="BlenderPy.parsing.Expression"><code class="flex name class">
+<span>class <span class="ident">Expression</span></span>
+<span>(</span><span>content='', nodes=[], operation=None, tokens=[])</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Expression:
+    
+    specials=[&#39;(&#39;,&#39;)&#39;,&#39;+&#39;,&#39;-&#39;,&#39;/&#39;,&#39;*&#39;,&#39;^&#39;,&#39;e&#39;,&#39;|&#39;, &#39;&gt;&#39;, &#39;&lt;&#39;, &#39;s&#39;, &#39;c&#39;]
+    numbers=[&#39;.&#39;,&#39;0&#39;,&#39;1&#39;,&#39;2&#39;,&#39;3&#39;,&#39;4&#39;,&#39;5&#39;,&#39;6&#39;,&#39;7&#39;,&#39;8&#39;,&#39;9&#39;]
+    nodes=[&#39;x&#39;,&#39;y&#39;,&#39;z&#39;, &#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;]
+    
+    def __init__(self, content=&#39;&#39;, nodes=[], operation=None, tokens=[]):
+        self.shader=None
+        self.content=content
+        self.nodes=nodes
+        self.operation=operation
+        self.tokens=tokens
+        self.lexer()
+        self.absolute()
+        self.parenthesis()
+        self.parse()
+        self.clean_tree()
+    
+    def lexer(self):
+        i=0
+        previous_token=None
+        while i&lt;len(self.content):
+            
+            if self.content[i] in Expression.specials:
+                if self.content[i] in [&#39;e&#39;, &#39;(&#39;, &#39;|&#39;] and previous_token is None:
+                    token=Token(&#39;operator&#39;,self.content[i])
+                    self.tokens.append(token)
+                    previous_token=token
+                elif self.content[i]==&#39;-&#39; and previous_token is None:
+                    token=Token(&#39;number&#39;,&#39;-1&#39;)
+                    self.tokens.append(token)
+                    token=Token(&#39;operator&#39;,&#39;*&#39;)
+                    self.tokens.append(token)
+                    previous_token=token
+                elif self.content[i]==&#39;-&#39; and previous_token.content in [&#39;(&#39;,&#39;^&#39;,&#39;+&#39;,&#39;/&#39;,&#39;*&#39;,&#39;|&#39;,&#39;&lt;&#39;,&#39;&gt;&#39;]:
+                    token=Token(&#39;number&#39;,&#39;-1&#39;)
+                    self.tokens.append(token)
+                    token=Token(&#39;operator&#39;,&#39;*&#39;)
+                    self.tokens.append(token)
+                    previous_token=token
+                elif self.content[i] in [&#39;(&#39;,&#39;e&#39;] and \
+                previous_token.content in Expression.numbers:
+                    token=Token(&#39;operator&#39;,&#39;*&#39;)
+                    self.tokens.append(token)
+                    token=Token(&#39;operator&#39;,self.content[i])
+                    self.tokens.append(token)
+                    previous_token=token
+                elif self.content[i] ==&#39;s&#39;:
+                    if i+3&lt;len(self.content):
+                        if self.content[i:i+4]==&#39;sqrt&#39;:
+                            token=Token(&#39;operator&#39;,&#39;sqrt&#39;)
+                            self.tokens.append(token)
+                            previous_token=token
+                            i+=3
+                    if i+2&lt;len(self.content):
+                        if self.content[i:i+3]==&#39;sin&#39;:
+                            token=Token(&#39;operator&#39;,&#39;sin&#39;)
+                            self.tokens.append(token)
+                            previous_token=token
+                            i+=2
+                elif self.content[i] ==&#39;c&#39;:
+                    if i+3&lt;len(self.content):
+                        if self.content[i:i+3]==&#39;cos&#39;:
+                            token=Token(&#39;operator&#39;,&#39;cos&#39;)
+                            self.tokens.append(token)
+                            previous_token=token
+                            i+=2
+                else:
+                    token=Token(&#39;operator&#39;,self.content[i])
+                    previous_token=token
+                    self.tokens.append(token)
+                i+=1
+            elif self.content[i] in Expression.numbers:
+                if previous_token is not None and previous_token.content in Expression.numbers:
+                    token=Token(&#39;operator&#39;,&#39;*&#39;)
+                    self.tokens.append(token)
+                j=0
+                end=False
+                while not(end):
+                    if i+j&lt;len(self.content):
+                        if self.content[i+j] in Expression.numbers:
+                            j+=1
+                        else:
+                            end=True
+                    else:
+                        end=True
+                token=Token(&#39;number&#39;,self.content[i:i+j])
+                self.tokens.append(token)
+                previous_token=token
+                i=i+j
+            elif self.content[i] in Expression.nodes:
+                if previous_token is not None and previous_token.content in Expression.numbers:
+                    token=Token(&#39;operator&#39;,&#39;*&#39;)
+                    self.tokens.append(token)
+                token=Token(&#39;number&#39;,self.content[i])
+                self.tokens.append(token)
+                previous_token=token
+                i+=1
+            else:
+                print(&#34;unexpected character&#34;)
+    
+    def parenthesis(self):
+        done=False
+        while not done:
+            ind_start, ind_stop=None, None
+            for i,t in enumerate(self.tokens):
+                if t.content==&#39;(&#39;:
+                     ind_start=i
+                elif t.content==&#39;)&#39;:
+                     ind_stop=i
+                     break
+            if ind_start is not None and ind_stop is not None:
+                tokens=self.tokens[ind_start+1:ind_stop]
+                for i in range(ind_start, ind_stop+1)[::-1]:
+                    self.tokens.pop(i)
+                node=Expression(tokens=tokens)
+                self.tokens.insert(ind_start,node)
+            else:
+                done=True
+    
+    def absolute(self):
+        ind_start, ind_stop=None, None
+        for i,t in enumerate(self.tokens):
+            if t.content==&#39;|&#39;:
+                if ind_start is None:
+                    ind_start=i
+                else:
+                    ind_stop=i
+                    tokens=self.tokens[ind_start+1:ind_stop]
+                    for i in range(ind_start, ind_stop+1)[::-1]:
+                        self.tokens.pop(i)
+                    
+                    node=Expression(tokens=tokens, operation=&#39;ABS&#39;)
+                    self.tokens.insert(ind_start,node)
+                    ind_start, ind_stop=None, None 
+    
+    def parse(self):
+        operation_found=False
+        if self.operation is not None:
+            self.nodes=[Expression(tokens=self.tokens)]
+        else:
+            for i,t in enumerate(self.tokens):
+                if t.content in [&#39;+&#39;,&#39;-&#39;]:
+                    operation_found=True
+                    node_1=Expression(tokens=self.tokens[:i])
+                    node_2=Expression(tokens=self.tokens[i+1:])
+                    self.nodes=[node_1, node_2]
+                    self.operation=t.content
+            if not operation_found:
+                for i,t in enumerate(self.tokens):
+                    if t.content in [&#39;*&#39;,&#39;/&#39;, &#39;&gt;&#39;, &#39;&lt;&#39;]:
+                        operation_found=True
+                        node_1=Expression(tokens=self.tokens[:i])
+                        node_2=Expression(tokens=self.tokens[i+1:])
+                        self.nodes=[node_1, node_2]
+                        self.operation=t.content
+            if not operation_found:
+                for i,t in enumerate(self.tokens):
+                    if t.content in [&#39;^&#39;]:
+                        operation_found=True
+                        node_1=Expression(tokens=self.tokens[:i])
+                        node_2=Expression(tokens=self.tokens[i+1:])
+                        self.nodes=[node_1, node_2]
+                        self.operation=t.content
+                    elif t.content in [&#39;sqrt&#39;, &#39;sin&#39;, &#39;cos&#39;]:
+                        operation_found=True
+                        node_1=Expression(tokens=self.tokens[i+1:])
+                        self.nodes=[node_1]
+                        self.operation=t.content
+    
+    
+    def is_leaf(self):
+        return len(self.tokens)==1 and not isinstance(self.tokens[0], Expression) and self.operation is None
+                    
+    def get_leaves(self):
+        if self.is_leaf():
+            return [self.tokens[0].content]
+        leaves=[]
+        if len(self.tokens)==1 and isinstance(self.tokens[0], Expression):
+            leaves+=self.tokens[0].get_leaves()
+        else:
+            for node in self.nodes:
+                leaves+=node.get_leaves()
+        return leaves
+    
+    def clean_tree(self):
+        for i, node in enumerate(self.nodes):
+            if len(node.tokens)==1 and isinstance(node.tokens[0], Expression):
+                self.nodes[i]=node.tokens[0]
+        if len(self.tokens)==1 and len(self.nodes)==0 and self.operation is None and isinstance(self.tokens[0], Expression):
+            self.__dict__.update(self.tokens[0].__dict__)
+    
+    def get_tree(self):
+        if self.is_leaf():
+            return self.tokens[0].content
+        else:
+            return dict({self.operation:[node.get_tree() for node in self.nodes]})</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="BlenderPy.parsing.Expression.nodes"><code class="name">var <span class="ident">nodes</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="BlenderPy.parsing.Expression.numbers"><code class="name">var <span class="ident">numbers</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="BlenderPy.parsing.Expression.specials"><code class="name">var <span class="ident">specials</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.parsing.Expression.absolute"><code class="name flex">
+<span>def <span class="ident">absolute</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def absolute(self):
+    ind_start, ind_stop=None, None
+    for i,t in enumerate(self.tokens):
+        if t.content==&#39;|&#39;:
+            if ind_start is None:
+                ind_start=i
+            else:
+                ind_stop=i
+                tokens=self.tokens[ind_start+1:ind_stop]
+                for i in range(ind_start, ind_stop+1)[::-1]:
+                    self.tokens.pop(i)
+                
+                node=Expression(tokens=tokens, operation=&#39;ABS&#39;)
+                self.tokens.insert(ind_start,node)
+                ind_start, ind_stop=None, None </code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.parsing.Expression.clean_tree"><code class="name flex">
+<span>def <span class="ident">clean_tree</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clean_tree(self):
+    for i, node in enumerate(self.nodes):
+        if len(node.tokens)==1 and isinstance(node.tokens[0], Expression):
+            self.nodes[i]=node.tokens[0]
+    if len(self.tokens)==1 and len(self.nodes)==0 and self.operation is None and isinstance(self.tokens[0], Expression):
+        self.__dict__.update(self.tokens[0].__dict__)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.parsing.Expression.get_leaves"><code class="name flex">
+<span>def <span class="ident">get_leaves</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_leaves(self):
+    if self.is_leaf():
+        return [self.tokens[0].content]
+    leaves=[]
+    if len(self.tokens)==1 and isinstance(self.tokens[0], Expression):
+        leaves+=self.tokens[0].get_leaves()
+    else:
+        for node in self.nodes:
+            leaves+=node.get_leaves()
+    return leaves</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.parsing.Expression.get_tree"><code class="name flex">
+<span>def <span class="ident">get_tree</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_tree(self):
+    if self.is_leaf():
+        return self.tokens[0].content
+    else:
+        return dict({self.operation:[node.get_tree() for node in self.nodes]})</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.parsing.Expression.is_leaf"><code class="name flex">
+<span>def <span class="ident">is_leaf</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_leaf(self):
+    return len(self.tokens)==1 and not isinstance(self.tokens[0], Expression) and self.operation is None</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.parsing.Expression.lexer"><code class="name flex">
+<span>def <span class="ident">lexer</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lexer(self):
+    i=0
+    previous_token=None
+    while i&lt;len(self.content):
+        
+        if self.content[i] in Expression.specials:
+            if self.content[i] in [&#39;e&#39;, &#39;(&#39;, &#39;|&#39;] and previous_token is None:
+                token=Token(&#39;operator&#39;,self.content[i])
+                self.tokens.append(token)
+                previous_token=token
+            elif self.content[i]==&#39;-&#39; and previous_token is None:
+                token=Token(&#39;number&#39;,&#39;-1&#39;)
+                self.tokens.append(token)
+                token=Token(&#39;operator&#39;,&#39;*&#39;)
+                self.tokens.append(token)
+                previous_token=token
+            elif self.content[i]==&#39;-&#39; and previous_token.content in [&#39;(&#39;,&#39;^&#39;,&#39;+&#39;,&#39;/&#39;,&#39;*&#39;,&#39;|&#39;,&#39;&lt;&#39;,&#39;&gt;&#39;]:
+                token=Token(&#39;number&#39;,&#39;-1&#39;)
+                self.tokens.append(token)
+                token=Token(&#39;operator&#39;,&#39;*&#39;)
+                self.tokens.append(token)
+                previous_token=token
+            elif self.content[i] in [&#39;(&#39;,&#39;e&#39;] and \
+            previous_token.content in Expression.numbers:
+                token=Token(&#39;operator&#39;,&#39;*&#39;)
+                self.tokens.append(token)
+                token=Token(&#39;operator&#39;,self.content[i])
+                self.tokens.append(token)
+                previous_token=token
+            elif self.content[i] ==&#39;s&#39;:
+                if i+3&lt;len(self.content):
+                    if self.content[i:i+4]==&#39;sqrt&#39;:
+                        token=Token(&#39;operator&#39;,&#39;sqrt&#39;)
+                        self.tokens.append(token)
+                        previous_token=token
+                        i+=3
+                if i+2&lt;len(self.content):
+                    if self.content[i:i+3]==&#39;sin&#39;:
+                        token=Token(&#39;operator&#39;,&#39;sin&#39;)
+                        self.tokens.append(token)
+                        previous_token=token
+                        i+=2
+            elif self.content[i] ==&#39;c&#39;:
+                if i+3&lt;len(self.content):
+                    if self.content[i:i+3]==&#39;cos&#39;:
+                        token=Token(&#39;operator&#39;,&#39;cos&#39;)
+                        self.tokens.append(token)
+                        previous_token=token
+                        i+=2
+            else:
+                token=Token(&#39;operator&#39;,self.content[i])
+                previous_token=token
+                self.tokens.append(token)
+            i+=1
+        elif self.content[i] in Expression.numbers:
+            if previous_token is not None and previous_token.content in Expression.numbers:
+                token=Token(&#39;operator&#39;,&#39;*&#39;)
+                self.tokens.append(token)
+            j=0
+            end=False
+            while not(end):
+                if i+j&lt;len(self.content):
+                    if self.content[i+j] in Expression.numbers:
+                        j+=1
+                    else:
+                        end=True
+                else:
+                    end=True
+            token=Token(&#39;number&#39;,self.content[i:i+j])
+            self.tokens.append(token)
+            previous_token=token
+            i=i+j
+        elif self.content[i] in Expression.nodes:
+            if previous_token is not None and previous_token.content in Expression.numbers:
+                token=Token(&#39;operator&#39;,&#39;*&#39;)
+                self.tokens.append(token)
+            token=Token(&#39;number&#39;,self.content[i])
+            self.tokens.append(token)
+            previous_token=token
+            i+=1
+        else:
+            print(&#34;unexpected character&#34;)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.parsing.Expression.parenthesis"><code class="name flex">
+<span>def <span class="ident">parenthesis</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parenthesis(self):
+    done=False
+    while not done:
+        ind_start, ind_stop=None, None
+        for i,t in enumerate(self.tokens):
+            if t.content==&#39;(&#39;:
+                 ind_start=i
+            elif t.content==&#39;)&#39;:
+                 ind_stop=i
+                 break
+        if ind_start is not None and ind_stop is not None:
+            tokens=self.tokens[ind_start+1:ind_stop]
+            for i in range(ind_start, ind_stop+1)[::-1]:
+                self.tokens.pop(i)
+            node=Expression(tokens=tokens)
+            self.tokens.insert(ind_start,node)
+        else:
+            done=True</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.parsing.Expression.parse"><code class="name flex">
+<span>def <span class="ident">parse</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse(self):
+    operation_found=False
+    if self.operation is not None:
+        self.nodes=[Expression(tokens=self.tokens)]
+    else:
+        for i,t in enumerate(self.tokens):
+            if t.content in [&#39;+&#39;,&#39;-&#39;]:
+                operation_found=True
+                node_1=Expression(tokens=self.tokens[:i])
+                node_2=Expression(tokens=self.tokens[i+1:])
+                self.nodes=[node_1, node_2]
+                self.operation=t.content
+        if not operation_found:
+            for i,t in enumerate(self.tokens):
+                if t.content in [&#39;*&#39;,&#39;/&#39;, &#39;&gt;&#39;, &#39;&lt;&#39;]:
+                    operation_found=True
+                    node_1=Expression(tokens=self.tokens[:i])
+                    node_2=Expression(tokens=self.tokens[i+1:])
+                    self.nodes=[node_1, node_2]
+                    self.operation=t.content
+        if not operation_found:
+            for i,t in enumerate(self.tokens):
+                if t.content in [&#39;^&#39;]:
+                    operation_found=True
+                    node_1=Expression(tokens=self.tokens[:i])
+                    node_2=Expression(tokens=self.tokens[i+1:])
+                    self.nodes=[node_1, node_2]
+                    self.operation=t.content
+                elif t.content in [&#39;sqrt&#39;, &#39;sin&#39;, &#39;cos&#39;]:
+                    operation_found=True
+                    node_1=Expression(tokens=self.tokens[i+1:])
+                    self.nodes=[node_1]
+                    self.operation=t.content</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.parsing.Node"><code class="flex name class">
+<span>class <span class="ident">Node</span></span>
+<span>(</span><span>name='X')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Node:
+    
+    def __init__(self, name=&#39;X&#39;):
+        self.name</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.parsing.Operator"><code class="flex name class">
+<span>class <span class="ident">Operator</span></span>
+<span>(</span><span>left=None, right=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Operator:
+    
+    def __init__(self, left=None, right=None):
+        self.left=left
+        self.right=right</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.parsing.Token"><code class="flex name class">
+<span>class <span class="ident">Token</span></span>
+<span>(</span><span>token_type='', content='')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Token:
+    
+    def __init__(self, token_type=&#39;&#39;, content=&#39;&#39;):
+        self.token_type=token_type
+        self.content=content</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="BlenderPy" href="index.html">BlenderPy</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="BlenderPy.parsing.Expression" href="#BlenderPy.parsing.Expression">Expression</a></code></h4>
+<ul class="two-column">
+<li><code><a title="BlenderPy.parsing.Expression.absolute" href="#BlenderPy.parsing.Expression.absolute">absolute</a></code></li>
+<li><code><a title="BlenderPy.parsing.Expression.clean_tree" href="#BlenderPy.parsing.Expression.clean_tree">clean_tree</a></code></li>
+<li><code><a title="BlenderPy.parsing.Expression.get_leaves" href="#BlenderPy.parsing.Expression.get_leaves">get_leaves</a></code></li>
+<li><code><a title="BlenderPy.parsing.Expression.get_tree" href="#BlenderPy.parsing.Expression.get_tree">get_tree</a></code></li>
+<li><code><a title="BlenderPy.parsing.Expression.is_leaf" href="#BlenderPy.parsing.Expression.is_leaf">is_leaf</a></code></li>
+<li><code><a title="BlenderPy.parsing.Expression.lexer" href="#BlenderPy.parsing.Expression.lexer">lexer</a></code></li>
+<li><code><a title="BlenderPy.parsing.Expression.nodes" href="#BlenderPy.parsing.Expression.nodes">nodes</a></code></li>
+<li><code><a title="BlenderPy.parsing.Expression.numbers" href="#BlenderPy.parsing.Expression.numbers">numbers</a></code></li>
+<li><code><a title="BlenderPy.parsing.Expression.parenthesis" href="#BlenderPy.parsing.Expression.parenthesis">parenthesis</a></code></li>
+<li><code><a title="BlenderPy.parsing.Expression.parse" href="#BlenderPy.parsing.Expression.parse">parse</a></code></li>
+<li><code><a title="BlenderPy.parsing.Expression.specials" href="#BlenderPy.parsing.Expression.specials">specials</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.parsing.Node" href="#BlenderPy.parsing.Node">Node</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.parsing.Operator" href="#BlenderPy.parsing.Operator">Operator</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.parsing.Token" href="#BlenderPy.parsing.Token">Token</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

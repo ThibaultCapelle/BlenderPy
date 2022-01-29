@@ -1,0 +1,4425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>BlenderPy.sending_data API documentation</title>
+<meta name="description" content="Created on Wed Aug 26 09:56:27 2020 …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>BlenderPy.sending_data</code></h1>
+</header>
+<section id="section-intro">
+<p>Created on Wed Aug 26 09:56:27 2020</p>
+<p>@author: Thibault</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+&#34;&#34;&#34;
+Created on Wed Aug 26 09:56:27 2020
+
+@author: Thibault
+&#34;&#34;&#34;
+
+import socket
+import json
+import os
+import time
+from BlenderPy.parsing import Expression
+import numpy as np
+HOST = &#39;127.0.0.1&#39;
+PORT = 20000
+
+def delete_all():
+    &#39;&#39;&#39;Delete all objects, meshes, cameras, ...&#39;&#39;&#39;
+    assert Communication.ask(&#39;delete_all&#39;)==&#34;DONE&#34;
+    
+class Communication:
+    &#39;&#39;&#39;A static class for communicating with the server&#39;&#39;&#39;
+
+    @staticmethod
+    def send(message, **kwargs):
+        &#39;&#39;&#39;Send a message to the Blender Server
+        
+        Take a message, format it, encode it with its length at the
+        beginning, and send it to the Blender server.
+        
+        Parameters:
+            message: string to send
+        
+        Return:
+            None
+        &#39;&#39;&#39;
+        message=Communication.parse(message, **kwargs)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((HOST, PORT))
+            s.sendall((&#39;{:010x}&#39;.format(len(message))+message).encode())
+    
+    @staticmethod
+    def receive_all(sock, n):
+        &#39;&#39;&#39;Receive a message of a given length from the server.
+        
+        After having found its length, receive packets until
+        the amount of data is equal to this length
+        
+        Parameters:
+            sock: socket to read from
+            n: expected length of the data
+        
+        Return:
+            data: the raw data
+        &#39;&#39;&#39;
+        data = bytearray()
+        i=1
+        while len(data) &lt; n:
+            packet = sock.recv(n - len(data))
+            if not packet:
+                return None
+            data.extend(packet)
+            i+=1
+        return data  
+    
+    @staticmethod
+    def ask(message, **kwargs):
+        &#39;&#39;&#39;Ask a question to the Blender Server.
+        
+        Open a socket,encode properly the data to send like the 
+        send method with the length of the data at the beginning,
+        then send the data, receive the beginning of the answer
+        which contains the length of the answer, and then call
+        receive_all to receive the data.
+        Then, return the json extracted dictionnary that contain
+        the data.
+        
+        Parameters:
+            message: the question to ask
+        
+        Return:
+            the data
+        &#39;&#39;&#39;
+        message=Communication.parse(message, **kwargs)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((HOST, PORT))
+            s.sendall((&#39;{:010x}&#39;.format(len(message))+message).encode())
+            raw_msglen = s.recv(10)
+            msglen = int(raw_msglen.decode(),16)
+            data=Communication.receive_all(s, msglen)
+            return json.loads(data)[&#39;content&#39;]
+    
+    @staticmethod
+    def parse(message, **kwargs):
+        &#39;&#39;&#39;Format a message to be sent to the Blender Server.
+        
+        Parameters:
+            message: the question to ask
+        
+        Return:
+            the data
+        &#39;&#39;&#39;
+        res=dict()
+        res[&#39;command&#39;]=message
+        res[&#39;kwargs&#39;]=kwargs
+        msg=json.dumps(res)
+        return msg
+    
+class GeometricEntity:
+    &#39;&#39;&#39;a class encompassing the geometric absolute positioning
+    of vertices of meshes&#39;&#39;&#39;
+    
+    def set_origin(self, position):
+        &#39;&#39;&#39;set the origin of a mesh to a position. The vertices
+        position will have this point as a new origin
+        
+        Parameters:
+            position: the position you want to set to
+        
+        Returns:
+            None
+        &#39;&#39;&#39;
+        verts=self.vertices_absolute
+        x,y,z=self.x, self.y, self.z
+        verts[:,0]-=position[0]-x
+        verts[:,1]-=position[1]-y
+        verts[:,2]-=position[2]-z
+        self.vertices_absolute=verts
+        self.location=position
+    
+    @property
+    def vertices_absolute(self):
+        &#39;&#39;&#39;get the position of the vertices in
+        absolute coordinates
+        
+        Parameters:
+            None
+        
+        Returns:
+            a numpy array representing the absolute coordinates
+        &#39;&#39;&#39;
+        mat=self.matrix_world
+        verts=self.vertices
+        verts_4D=np.transpose(np.hstack([verts, np.ones((len(verts),1))]))
+        return np.transpose(np.dot(mat, verts_4D))
+    
+    @vertices_absolute.setter
+    def vertices_absolute(self, val):
+        &#39;&#39;&#39;set the position of the vertices in
+        absolute coordinates
+        
+        Parameters:
+            val: a numpy array or a list representing the desired positions
+        
+        Returns:
+            None
+        &#39;&#39;&#39;
+        mat=np.linalg.inv(self.matrix_world)
+        if np.array(val).shape[1]!=4:
+            val=np.hstack([np.array(val), np.ones((len(val),1))])
+        self.vertices=np.transpose(np.dot(mat, np.transpose(val)))[:,:3]
+        
+    @property
+    def xmin(self):
+        &#39;&#39;&#39;minimum x position&#39;&#39;&#39;
+        
+        return np.min(self.vertices_absolute[:,0])
+    
+    @property
+    def xmax(self):
+        &#39;&#39;&#39;maximum x position&#39;&#39;&#39;
+        return np.max(self.vertices_absolute[:,0])
+    
+    @property
+    def ymin(self):
+        &#39;&#39;&#39;minimum y position&#39;&#39;&#39;
+        return np.min(self.vertices_absolute[:,1])
+    
+    @property
+    def ymax(self):
+        &#39;&#39;&#39;maximum y position&#39;&#39;&#39;
+        return np.max(self.vertices_absolute[:,1])
+    
+    @property
+    def zmin(self):
+        &#39;&#39;&#39;minimum z position&#39;&#39;&#39;
+        return np.min(self.vertices_absolute[:,2])
+    
+    @property
+    def zmax(self):
+        &#39;&#39;&#39;maximum z position&#39;&#39;&#39;
+        return np.max(self.vertices_absolute[:,2])
+    
+    @xmin.setter
+    def xmin(self, val):
+        self.x+=val-self.xmin
+    
+    @ymin.setter
+    def ymin(self, val):
+        self.y+=val-self.ymin
+        
+    @zmin.setter
+    def zmin(self, val):
+        self.z+=val-self.zmin
+        
+    @xmax.setter
+    def xmax(self, val):
+        self.x+=val-self.xmax
+        
+    @ymax.setter
+    def ymax(self, val):
+        self.y+=val-self.ymax
+        
+    @zmax.setter
+    def zmax(self, val):
+        self.z+=val-self.zmax
+    
+    @property
+    def center(self):
+        &#39;&#39;&#39;absolute center&#39;&#39;&#39;
+        return np.array([0.5*(self.xmin+self.xmax),
+                         0.5*(self.ymin+self.ymax),
+                         0.5*(self.zmin+self.zmax)])
+    
+    @center.setter
+    def center(self, val):
+        center=self.center
+        self.x+=val[0]-center[0]
+        self.y+=val[1]-center[1]
+        self.z+=val[2]-center[2]
+    
+    @property
+    def dx(self):
+        &#39;&#39;&#39;Absolute x extension&#39;&#39;&#39;
+        return self.xmax-self.xmin
+    
+    @property
+    def dy(self):
+        &#39;&#39;&#39;Absolute y extension&#39;&#39;&#39;
+        return self.ymax-self.ymin
+    
+    @property
+    def dz(self):
+        &#39;&#39;&#39;Absolute z extension&#39;&#39;&#39;
+        return self.zmax-self.zmin
+    
+    
+    
+class Scene:
+    &#39;&#39;&#39;Class representing a scene. Used for changing the frame numbers,
+    and render properties&#39;&#39;&#39;
+    
+    def __init__(self, use_bloom=True, volumetric_tile_size=2,
+                 frame_current=1, frame_start=1,
+                 frame_end=250):
+        self._properties=PropertyDict(func=&#39;scene_property&#39;)
+        self.use_bloom=use_bloom
+        self.volumetric_tile_size=volumetric_tile_size
+        self.frame_current=frame_current
+        self.frame_start=frame_start
+        self.frame_end=frame_end
+    
+    @property
+    def volumetric_tile_size(self):
+        &#39;&#39;&#39;for the eevee render, change the tile size.
+        It should be a power of two, and the lowest is 2, 
+        which corresponds to the finest representation of
+        an emission volume&#39;&#39;&#39;
+        return int(self._properties[[&#39;eevee&#39;, &#39;volumetric_tile_size&#39;]])
+    
+    @volumetric_tile_size.setter
+    def volumetric_tile_size(self, val):
+        self._properties[[&#39;eevee&#39;, &#39;volumetric_tile_size&#39;]]=str(val)
+    
+    @property
+    def use_bloom(self):
+        &#39;&#39;&#39;for the eevee render, activate or not the bloom,
+        which creates a &#34;halo&#34; around emission materials&#39;&#39;&#39;
+        return self._properties[[&#39;eevee&#39;, &#39;use_bloom&#39;]]
+    
+    @use_bloom.setter
+    def use_bloom(self, val):
+        self._properties[[&#39;eevee&#39;, &#39;use_bloom&#39;]]=val
+    
+    @property
+    def frame_current(self):
+        &#39;&#39;&#39;current frame&#39;&#39;&#39;
+        return self._properties[&#39;frame_current&#39;]
+    
+    @frame_current.setter
+    def frame_current(self, val):
+        self._properties[&#39;frame_current&#39;]=val
+        
+    @property
+    def frame_start(self):
+        &#39;&#39;&#39;first frame number&#39;&#39;&#39;
+        return self._properties[&#39;frame_start&#39;]
+    
+    @frame_start.setter
+    def frame_start(self, val):
+        self._properties[&#39;frame_start&#39;]=val
+        
+    @property
+    def frame_end(self):
+        &#39;&#39;&#39;last frame number&#39;&#39;&#39;
+        return self._properties[&#39;frame_end&#39;]
+    
+    @frame_end.setter
+    def frame_end(self, val):
+        self._properties[&#39;frame_end&#39;]=val
+
+class ShaderDict(dict):
+    &#39;&#39;&#39;Class representing the Shadernodes inputs, outputs
+    and properties. It rewrites the setter and getter
+    of the dict class to use the properties as a dictionary 
+    with the server&#39;&#39;&#39;
+    
+    def __init__(self, name, material_name, func, **kwargs):
+        super().__init__()
+        self.name=name
+        self.material_name=material_name
+        self.func=func
+        self.params=kwargs
+        
+    def __setitem__(self, key, value):
+        kwargs=self.params.copy()
+        if hasattr(value, &#39;to_dict&#39;):
+            kwargs.update(value.to_dict(material_name=self.material_name,
+                                        from_name=self.name,
+                                       from_key=key))
+            Communication.ask(&#39;set_&#39;+self.func, **kwargs)
+        else:
+            kwargs.update(dict({&#39;material_name&#39;:self.material_name,
+                                &#39;from_name&#39;:self.name,
+                                &#39;from_key&#39;:key,
+                                &#39;value&#39;:value}))
+            Communication.ask(&#39;set_&#39;+self.func, **kwargs)
+    
+    def __getitem__(self, key):
+        kwargs=self.params.copy()
+        kwargs.update(dict({&#39;material_name&#39;:self.material_name,
+                     &#39;name&#39;:self.name,
+                     &#39;key&#39;:key}))
+        res=Communication.ask(&#39;get_&#39;+self.func, **kwargs)
+        if isinstance(res, dict):
+            node=ShaderNode(**res)
+            return ShaderSocket(material_parent=node.parent_name,
+                                parent=node, 
+                                key=res[&#39;socket_name&#39;],
+                                shader_socket_type=res[&#39;shader_socket_type&#39;])
+        else:
+            return res
+
+class ShaderSocket:
+    &#39;&#39;&#39;Class representing the ShaderSocket of a ShaderNode&#39;&#39;&#39;
+    
+    def __init__(self, material_parent=None, shader_socket_type=&#39;input&#39;,
+                 parent=None, key=None, value=None, **kwargs):
+        assert isinstance(parent, ShaderNode)
+        self.material_parent=material_parent
+        self.parent=parent
+        self.key=key
+        self.value=value
+        self.shader_socket_type=shader_socket_type
+        self._properties=PropertyDict(self.parent.name,
+                                      &#39;&#39;, func=&#39;shadersocket_property&#39;,
+                                      **self.to_dict(socket_key=self.key))
+    
+    def to_dict(self, **kwargs):
+        &#39;&#39;&#39;returns a dictionnary representing the ShaderSocket
+        and extra parameters with kwargs&#39;&#39;&#39;
+        params=dict({&#39;material_name&#39;:self.material_parent,
+                     &#39;parent_name&#39;:self.parent.name,
+                     &#39;shader_socket_type&#39;:self.shader_socket_type,
+                     &#39;key&#39;:self.key,
+                     &#39;value&#39;:self.value})
+        params.update(kwargs)
+        return params
+    
+    def insert_keyframe(self, key, frame=&#39;current&#39;):
+        Communication.ask(&#39;insert_keyframe_shadersocket&#39;,
+                   **self.to_dict(key_to_keyframe=key, 
+                                  frame=frame))
+    
+    @property
+    def properties(self):
+        return self._properties
+
+class Image:
+    
+    def __init__(self, path):
+        self.path=path
+    
+    def to_dict(self, **kwargs):
+        kwargs.update(dict({&#39;path&#39;:self.path}))
+        return kwargs
+        
+class ShaderNode:
+    
+    def __init__(self, parent=None, shader_type=&#39;Emission&#39;,
+                 name=None, **kwargs):
+        self.shader_type=shader_type
+        assert parent is not None
+        self._shadertype_dict=dict({&#39;Emission&#39;:&#39;ShaderNodeEmission&#39;,
+                         &#39;Add&#39;:&#39;ShaderNodeAddShader&#39;,
+                         &#39;Math&#39;:&#39;ShaderNodeMath&#39;,
+                         &#39;Texture_coordinates&#39;:&#39;ShaderNodeTexCoord&#39;,
+                         &#39;Separate_XYZ&#39;:&#39;ShaderNodeSeparateXYZ&#39;,
+                         &#39;Combine_XYZ&#39;:&#39;ShaderNodeCombineXYZ&#39;,
+                         &#39;Principled BSDF&#39;:&#39;ShaderNodeBsdfPrincipled&#39;,
+                         &#39;Material Output&#39;:&#39;ShaderNodeOutputMaterial&#39;,
+                         &#39;Image&#39;:&#39;ShaderNodeTexImage&#39;,
+                         &#39;Glossy&#39;:&#39;ShaderNodeBsdfGlossy&#39;,
+                         &#39;Noise&#39;:&#39;ShaderNodeTexNoise&#39;,
+                         &#39;Color_Ramp&#39;:&#39;ShaderNodeValToRGB&#39;})
+        if name==None:
+            kwargs[&#39;shader_type&#39;]=self._format_type(shader_type)
+            kwargs[&#39;parent_name&#39;]=parent
+            self.parent_name=parent
+            self.name=Communication.ask(&#39;create_shadernode&#39;, **kwargs)
+        else:
+            self.parent_name=parent
+            self.name=name
+        self._inputs=ShaderDict(self.name, self.parent_name, &#39;shadernode_input&#39;)
+        self._outputs=ShaderDict(self.name, self.parent_name, &#39;shadernode_output&#39;)
+        self._properties=ShaderDict(self.name, self.parent_name, &#39;shadernode_property&#39;)
+    
+    def to_dict(self, **kwargs):
+        params=dict({&#39;parent_name&#39;:self.parent_name,
+                     &#39;name&#39;:self.name})
+        params.update(kwargs)
+        return params
+    
+    def _format_type(self, key):
+        assert key in self._shadertype_dict.keys()
+        return self._shadertype_dict[key]
+    
+    def remove(self):
+        Communication.send(&#39;remove_shader&#39;, **self.to_dict())
+    
+    @property
+    def inputs(self):
+        return self._inputs
+    
+    @property
+    def outputs(self):
+        return self._outputs
+    
+    @property
+    def properties(self):
+        return self._properties
+
+
+class Constraint:
+    
+    def __init__(self, parent=None, constraint_type=&#39;FOLLOW_PATH&#39;, **kwargs):
+        kwargs[&#39;constraint_type&#39;]=constraint_type
+        kwargs[&#39;parent_name&#39;]=parent
+        self.parent_name=parent
+        self.name=Communication.ask(&#39;create_constraint&#39;, **kwargs)
+        self._properties=PropertyDict(self.name, self.parent_name,
+                                      func=&#39;constraint_property&#39;)
+    
+    def insert_keyframe(self, key, frame=&#39;current&#39;):
+        Communication.ask(&#39;insert_keyframe_constraint&#39;, key=key, frame=frame,
+                          name_obj=self.parent_name, name=self.name)
+    
+    @property
+    def properties(self):
+        return self._properties
+    
+class PropertyDict(dict):
+    
+    def __init__(self, name=None, name_obj=None, func=None, **kwargs):
+        super().__init__()
+        self.name=name
+        self.name_obj=name_obj
+        self.func=func
+        self.params=kwargs
+        
+    def __setitem__(self, key, value):
+        kwargs=self.params.copy()
+        kwargs.update(dict({&#39;key&#39;:key,
+                     &#39;parent_name&#39;:self.name,
+                     &#39;parent_name_obj&#39;:self.name_obj}))
+        if hasattr(value, &#39;to_dict&#39;):
+            value=value.to_dict()
+        kwargs[&#39;value&#39;]=value
+        Communication.ask(&#39;set_&#39;+self.func,
+                          **kwargs)
+    
+    def __getitem__(self, key):
+        kwargs=self.params.copy()
+        kwargs.update(dict({&#39;key&#39;:key,
+                     &#39;parent_name&#39;:self.name,
+                     &#39;parent_name_obj&#39;:self.name_obj}))
+        res=Communication.ask(&#39;get_&#39;+self.func, **kwargs)
+        if isinstance(res, dict):
+            return Object(**res)
+        else:
+            return res
+
+class Modifier:
+    
+    def __init__(self, parent=None, modifier_type=&#39;CURVE&#39;, **kwargs):
+        kwargs[&#39;modifier_type&#39;]=modifier_type
+        kwargs[&#39;parent_name&#39;]=parent
+        self.parent_name=parent
+        self.name=Communication.ask(&#39;create_modifier&#39;, **kwargs)
+        self._properties=PropertyDict(self.name, self.parent_name,
+                                      func=&#39;modifier_property&#39;)
+    
+    @property
+    def properties(self):
+        return self._properties
+    
+    def apply(self):
+        if self.properties[&#39;type&#39;]==&#39;BOOLEAN&#39;:
+            kwargs=dict({&#39;name&#39;:self.name,
+                         &#39;name_obj&#39;:self.parent_name})
+            time.sleep(0.1)
+            Communication.ask(&#39;apply_modifier&#39;, **kwargs)
+        
+    
+class Material:
+    
+    def __init__(self, name=&#39;material&#39;, color=&#39;#FFFFFF&#39;, alpha=1., transmission=0,
+                 use_screen_refraction=False, refraction_depth=0.,
+                 blend_method=&#39;OPAQUE&#39;, blend_method_shadow=&#39;OPAQUE&#39;,
+                 use_backface_culling=False, create_new=True,
+                 metallic=0.,
+                 **kwargs):
+        if not create_new:
+            names = self.get_material_names()
+            if name in names:
+                self.material_object = self.get_material(name)
+            else:
+                self.material_object = self.create_material(name)
+        else:
+            self.material_object = self.create_material(name)
+        self.color=self.convert_color(color)
+        params=dict({&#39;name&#39;:self.material_object, &#39;color&#39;:self.color,
+                     &#39;alpha&#39;:alpha, &#39;transmission&#39;:transmission,
+                     &#39;use_screen_refraction&#39;:use_screen_refraction,
+                     &#39;refraction_depth&#39;:refraction_depth,
+                     &#39;blend_method&#39;:blend_method,
+                     &#39;use_backface_culling&#39;:use_backface_culling,
+                     &#39;blend_method_shadow&#39;:blend_method_shadow,
+                     &#39;metallic&#39;:metallic})
+        params.update(kwargs)
+        Communication.send(&#39;update_material&#39;, **params)
+        self.operations=dict({&#39;*&#39;:&#39;MULTIPLY&#39;,
+                         &#39;/&#39;:&#39;DIVIDE&#39;,
+                         &#39;+&#39;:&#39;ADD&#39;,
+                         &#39;-&#39;:&#39;SUBTRACT&#39;,
+                         &#39;^&#39;:&#39;POWER&#39;,
+                         &#39;&gt;&#39;:&#39;GREATER_THAN&#39;,
+                         &#39;&lt;&#39;:&#39;LESS_THAN&#39;,
+                         &#39;ABS&#39;:&#39;ABSOLUTE&#39;,
+                         &#39;sqrt&#39;:&#39;SQRT&#39;,
+                         &#39;cos&#39;:&#39;COSINE&#39;,
+                         &#39;sin&#39;:&#39;SINE&#39;})
+        names=[&#39;Principled BSDF&#39;, &#39;Material Output&#39;]
+        self.shadernodes_dimensions=dict()
+        for name in names:
+            self.shadernodes_dimensions[name]=ShaderNode(name=name, parent=self.material_object,
+                                                shader_type=name).properties[&#39;location&#39;]
+    
+    @property
+    def xmax_shadernode_dimensions(self):
+        return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,0])
+    
+    @property
+    def ymax_shadernode_dimensions(self):
+        return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,1])
+    
+    @property
+    def xmin_shadernode_dimensions(self):
+        return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,0])
+    
+    @property
+    def ymin_shadernode_dimensions(self):
+        return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,1])
+    
+    @property
+    def height_shadernode_dimensions(self):
+        return self.ymax_shadernode_dimensions-self.ymin_shadernode_dimensions
+    
+    @property
+    def width_shadernode_dimensions(self):
+        return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions
+    
+    def add_shader(self, shader_type):
+        dx, dy=200, 200
+        i,j=0,0
+        while [i*dx, j*dy] in list(self.shadernodes_dimensions.values()):
+            i+=1
+            if i*dx&gt;self.width_shadernode_dimensions:
+                i=0
+                j+=1
+                if j*dy&gt;self.height_shadernode_dimensions:
+                    j=0
+                    i=int(self.width_shadernode_dimensions)/dx+1
+                    break
+        res= ShaderNode(shader_type=shader_type,
+                          parent=self.material_object)
+        res.properties[&#39;location&#39;]=[i*dx, j*dy]
+        self.shadernodes_dimensions[res.name]=[i*dx, j*dy]
+        return res
+    
+    def get_shader(self, name=None, find_math_operation=None):
+        if find_math_operation is not None:
+            for node_name in self.shadernodes_dimensions.keys():
+                if &#39;Math&#39; in node_name:
+                    node=self.get_shader(
+                            name=node_name)
+                    if (node._properties[&#39;operation&#39;]==
+                        self.operations[find_math_operation]):
+                        return node
+        else:
+            return ShaderNode(parent=self.material_object, name=name)
+    
+    def coordinate_expression(self, exp, input_shader=None, special_keys=None):
+        e=Expression(content=exp, tokens=[])
+        if not e.is_leaf():
+            tree=e.get_tree()
+            tree[&#39;parent&#39;]=None
+            return self.distribute_shaders(tree,input_shader=input_shader,
+                                           special_keys=special_keys)
+    
+    def distribute_shaders(self, tree, input_shader=None, special_keys=None):
+        return_shader=None
+        if isinstance(tree, dict):
+            operation=list(tree.keys())[0]
+            tree[&#39;shader&#39;]=self.add_shader(shader_type=&#39;Math&#39;)
+            tree[&#39;shader&#39;].properties[&#39;operation&#39;]=self.operations[operation]
+            if tree[&#39;parent&#39;] is None:
+                return_shader=tree[&#39;shader&#39;]
+            subtree=tree[operation]
+            for node in subtree:
+                if isinstance(node, dict):
+                    node[&#39;parent&#39;]=tree[&#39;shader&#39;]
+                self.distribute_shaders(node, input_shader=input_shader,
+                                        special_keys=special_keys)
+            for i, node in enumerate(subtree):
+                if isinstance(node, dict):
+                    tree[&#39;shader&#39;].inputs[i]=node[&#39;shader&#39;].outputs[&#39;Value&#39;]
+                else:
+                    try:
+                        tree[&#39;shader&#39;].inputs[i]=float(node)
+                    except ValueError:
+                        if node==&#39;e&#39;:
+                            tree[&#39;shader&#39;].inputs[i]=np.e
+                        if node in special_keys.keys():
+                            tree[&#39;shader&#39;].inputs[i]=special_keys[node]
+                            
+        else:
+            pass
+        return return_shader
+        
+        
+            
+        
+    def z_dependant_color(self, colors=None, positions=None,
+                          coordinate=&#39;Generated&#39;):
+        coord=self.add_shader(&#39;Texture_coordinates&#39;)
+        sep=self.add_shader(&#39;Separate_XYZ&#39;)
+        sep.inputs[&#39;Vector&#39;]=coord.outputs[coordinate]
+        color_ramp=self.add_shader(&#39;Color_Ramp&#39;)
+        color_ramp.inputs[&#39;Fac&#39;]=sep.outputs[&#39;Z&#39;]
+        color_ramp.properties[&#39;color_ramp&#39;]=dict({&#39;positions&#39;:positions,
+                             &#39;colors&#39;:[self.convert_color(color) for color in colors]})
+        principled=self.get_shader(&#39;Principled BSDF&#39;)
+        principled.inputs[&#39;Base Color&#39;]=color_ramp.outputs[&#39;Color&#39;]
+    
+    def surface_noise(self, scale=3, detail=2, roughness=0.5,
+                      dimension=&#39;2D&#39;,
+                      orientation=&#39;Z&#39;, origin=&#39;Generated&#39;):
+        noise=self.add_shader(&#39;Noise&#39;)
+        coord=self.add_shader(&#39;Texture_coordinates&#39;)
+        output=self.get_shader(&#39;Material Output&#39;)
+        
+        if dimension==&#39;2D&#39;:
+            sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
+            sepxyz2=self.add_shader(&#39;Separate_XYZ&#39;)
+            combine=self.add_shader(&#39;Combine_XYZ&#39;)
+            combine.inputs[&#39;X&#39;]=sepxyz2.outputs[&#39;X&#39;]
+            combine.inputs[&#39;Y&#39;]=sepxyz2.outputs[&#39;Y&#39;]
+            sepxyz.inputs[&#39;Vector&#39;]=coord.outputs[&#39;Normal&#39;]
+            sup=self.add_shader(&#39;Math&#39;)
+            sup.properties[&#39;operation&#39;]=self.operations[&#39;&gt;&#39;]
+            sup.inputs[0]=sepxyz.outputs[orientation]
+            sup.inputs[1]=0.5
+            mult=self.add_shader(&#39;Math&#39;)
+            mult.properties[&#39;operation&#39;]=self.operations[&#39;*&#39;]
+            mult.inputs[0]=sup.outputs[&#39;Value&#39;]
+            sepxyz2.inputs[&#39;Vector&#39;]=coord.outputs[origin]
+            noise.inputs[&#39;Vector&#39;]=combine.outputs[&#39;Vector&#39;]
+            mult.inputs[1]=noise.outputs[&#39;Fac&#39;]
+            output.inputs[&#39;Displacement&#39;]=mult.outputs[&#39;Value&#39;]
+        elif dimension==&#39;3D&#39;:
+            output.inputs[&#39;Displacement&#39;]=noise.outputs[&#39;Fac&#39;]
+        noise.inputs[&#39;Scale&#39;]=scale
+        noise.inputs[&#39;Detail&#39;]=detail
+        noise.inputs[&#39;Roughness&#39;]=roughness
+    
+    def glowing(self, color=&#39;#FFFFFF&#39;, strength=10, **kwargs):
+        emission=self.add_shader(&#39;Emission&#39;)
+        emission.inputs[&#39;Color&#39;]=self.convert_color(color)
+        emission.inputs[&#39;Strength&#39;]=strength
+        output=self.get_shader(&#39;Material Output&#39;)
+        add_shader=self.add_shader(&#39;Add&#39;)
+        add_shader.inputs[0]=output.inputs[&#39;Surface&#39;]
+        output.inputs[&#39;Surface&#39;]=add_shader.outputs[&#39;Shader&#39;]
+        add_shader.inputs[1]=emission.outputs[&#39;Emission&#39;]
+
+        
+    def get_material(self, name):
+        return Communication.ask(&#39;get_material&#39;, name=name)
+    
+    def create_material(self, name):
+        return Communication.ask(&#39;create_material&#39;, name=name)
+    
+    def get_material_names(self):
+        return Communication.ask(&#39;get_material_names&#39;)
+    
+    def convert_color(self, color, alpha=1):
+        if len(color)==3:
+            if alpha is None:
+                alpha=1.0
+            return color+[alpha]
+        elif len(color)==4:
+            return color
+        elif color[0]==&#39;#&#39;:
+            if len(color)==7:
+                if alpha is None:
+                    alpha=1.0
+            else:
+                alpha=int(color[7:9], 16)/256.
+            return [int(color[i:i+2], 16)/256. for i in [1,3,5]] +[alpha]
+ 
+class MetallicMaterial(Material):
+
+    def __init__(self, name=&#39;metal&#39;, color=&#39;#DCC811&#39;, randomness=1, detail=10,
+                 roughness=0.5, orientation=&#39;Z&#39;, origin=&#39;Generated&#39;,
+                 **kwargs):
+        super().__init__(name, color, **kwargs) 
+        output=self.get_shader(&#39;Material Output&#39;)
+        glossy=self.add_shader(&#39;Glossy&#39;)
+        coord=self.add_shader(&#39;Texture_coordinates&#39;)
+        output.inputs[&#39;Surface&#39;]=glossy.outputs[&#39;BSDF&#39;]
+        glossy.inputs[&#39;Color&#39;]=self.convert_color(color)
+        noise=self.add_shader(&#39;Noise&#39;)
+        coord=self.add_shader(&#39;Texture_coordinates&#39;)
+        noise.inputs[&#39;Vector&#39;]=coord.outputs[origin]
+        
+        noise.inputs[&#39;Scale&#39;]=randomness
+        noise.inputs[&#39;Detail&#39;]=detail
+        noise.inputs[&#39;Roughness&#39;]=roughness
+        sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
+        sepxyz.inputs[&#39;Vector&#39;]=coord.outputs[&#39;Normal&#39;]
+        sup=self.add_shader(&#39;Math&#39;)
+        sup.properties[&#39;operation&#39;]=self.operations[&#39;&gt;&#39;]
+        sup.inputs[0]=sepxyz.outputs[orientation]
+        sup.inputs[1]=0.5
+        mult=self.add_shader(&#39;Math&#39;)
+        mult.properties[&#39;operation&#39;]=self.operations[&#39;*&#39;]
+        mult.inputs[0]=sup.outputs[&#39;Value&#39;]
+        mult.inputs[1]=noise.outputs[&#39;Fac&#39;]
+        output.inputs[&#39;Displacement&#39;]=mult.outputs[&#39;Value&#39;]
+
+class EmissionMaterial(Material):
+    
+    def __init__(self, color=&#39;#AF2020&#39;, expression=None, strength=None, **kwargs):
+         super().__init__(**kwargs)
+         emission=self.add_shader(&#39;Emission&#39;)
+         emission.inputs[&#39;Color&#39;]=self.convert_color(color)
+         output=self.get_shader(&#39;Material Output&#39;)
+         output.inputs[&#39;Volume&#39;]=emission.outputs[&#39;Emission&#39;]
+         Principled=self.get_shader(&#39;Principled BSDF&#39;)
+         Principled.remove()
+         
+         if expression is not None:
+             coords=self.add_shader(&#39;Texture_coordinates&#39;)
+             sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
+             sepxyz.inputs[&#39;Vector&#39;]=coords.outputs[&#39;Generated&#39;]
+             shader=self.coordinate_expression(expression, 
+                                               special_keys=dict({&#39;x&#39;:sepxyz.outputs[&#39;X&#39;],
+                                                             &#39;y&#39;:sepxyz.outputs[&#39;Y&#39;],
+                                                             &#39;z&#39;:sepxyz.outputs[&#39;Z&#39;]}))
+             emission.inputs[&#39;Strength&#39;]=shader.outputs[&#39;Value&#39;] 
+         elif strength is not None:
+             emission.inputs[&#39;Strength&#39;]=strength
+
+class PositionDependantMaterial(Material):
+    
+    def __init__(self, expression, 
+                 colors=None,
+                 positions=None,
+                 coordinate=&#39;Generated&#39;,
+                 **kwargs):
+        super().__init__(**kwargs)
+        coord=self.add_shader(&#39;Texture_coordinates&#39;)
+        sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
+        sepxyz.inputs[&#39;Vector&#39;]=coord.outputs[coordinate]
+        color_ramp=self.add_shader(&#39;Color_Ramp&#39;)
+        if len(expression)==1:
+            color_ramp.inputs[&#39;Fac&#39;]=sepxyz.outputs[expression]
+        else:
+            shader=self.coordinate_expression(expression, 
+                                           special_keys=dict({&#39;x&#39;:sepxyz.outputs[&#39;X&#39;],
+                                                         &#39;y&#39;:sepxyz.outputs[&#39;Y&#39;],
+                                                         &#39;z&#39;:sepxyz.outputs[&#39;Z&#39;]}))
+            color_ramp.inputs[&#39;Fac&#39;]=shader.outputs[&#39;Value&#39;]
+        color_ramp.properties[&#39;color_ramp&#39;]=dict({&#39;positions&#39;:positions,
+                             &#39;colors&#39;:[self.convert_color(color) for color in colors]})
+        principled=self.get_shader(&#39;Principled BSDF&#39;)
+        principled.inputs[&#39;Base Color&#39;]=color_ramp.outputs[&#39;Color&#39;]
+        
+class ZColorRampMaterial(PositionDependantMaterial):
+    
+    def __init__(self, colors=None, positions=None,
+                          coordinate=&#39;Generated&#39;, **kwargs):
+        super().__init__(&#39;Z&#39;, colors=colors,
+                         positions=positions,
+                         coordinate=coordinate,
+                         **kwargs)
+
+            
+class GaussianLaserMaterial(EmissionMaterial):
+    
+    def __init__(self, alpha=0.001, waist=0.1, strength=3, **kwargs):
+        expression=&#39;{:}*e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))&#39;.format(strength, alpha, waist**2)
+        super().__init__(expression=expression, **kwargs) 
+    
+class Object:
+    
+    def __init__(self, name_obj=None, filepath=None,
+                 location=None, scale=None,
+                 material=None, rotation=None,
+                 **kwargs):
+        if name_obj is not None:
+            self.name_obj=name_obj
+        self._properties=PropertyDict(&#39;&#39;, self.name_obj, func=&#39;object_property&#39;)
+        self.constraints=[]
+        self.modifiers=[]
+        if filepath is not None:
+            self.load(filepath)
+        if location is not None:
+            self.location=location
+        if scale is not None:
+            self.scale=scale
+        if rotation is not None:
+            self.rotation=rotation
+        if material is not None:
+            self.assign_material(material)
+    
+    def assign_material(self, material):
+        if isinstance(material, list):
+            kwargs = dict({&#39;name_obj&#39;:self.name_obj,
+                           &#39;name_mat&#39;:[mat.material_object for mat in material]})
+        else:
+            kwargs = dict({&#39;name_obj&#39;:self.name_obj,
+                           &#39;name_mat&#39;:material.material_object})
+        Communication.send(&#39;assign_material&#39;, **kwargs)
+    
+    def load(self, filepath):
+        with open(filepath, &#39;r&#39;) as f:
+            data=json.load(f)
+        for k, v in data.items():
+            self.properties[k]=v
+    
+    def duplicate(self):
+        return Object(name_obj=Communication.ask(&#39;duplicate&#39;,
+                                                 name_obj=self.name_obj))
+    
+    def follow_path(self, target=None, use_curve_follow=True,
+                    forward_axis=&#39;FORWARD_X&#39;):
+        constraint=self.assign_constraint(constraint_type=&#39;FOLLOW_PATH&#39;)
+        constraint.properties[&#39;target&#39;]=target
+        constraint.properties[&#39;use_curve_follow&#39;]=use_curve_follow
+        constraint.properties[&#39;forward_axis&#39;]=forward_axis
+        self.constraints.append(constraint)
+        return constraint
+    
+    def insert_keyframe(self, key, frame=&#39;current&#39;):
+        Communication.ask(&#39;insert_keyframe_object&#39;,
+                          key=key, frame=frame,
+                          name_obj=self.name_obj)
+        
+    def assign_constraint(self, constraint_type=&#39;FOLLOW_PATH&#39;, **kwargs):
+        return Constraint(parent=self.name_obj,
+                                   constraint_type=constraint_type,
+                                   **kwargs)
+    
+    def curve_modifier(self, target=None, deform_axis=&#39;POS_X&#39;):
+        modifier=self.assign_modifier(modifier_type=&#39;CURVE&#39;)
+        modifier.properties[&#39;object&#39;]=target
+        modifier.properties[&#39;deform_axis&#39;]=deform_axis
+        self.modifiers.append(modifier)
+    
+    def assign_modifier(self, modifier_type=&#39;CURVE&#39;, **kwargs):
+        return Modifier(parent=self.name_obj,
+                                   modifier_type=modifier_type,
+                                   **kwargs)
+    
+    def subtract(self, target):
+        boolean=self.assign_modifier(modifier_type=&#39;BOOLEAN&#39;)
+        boolean.properties[&#39;object&#39;]=target
+        boolean.apply()
+    
+    def copy_location(self, target=None):
+        self.assign_constraint(constraint_type=&#39;COPY_LOCATION&#39;)
+        self.constraint.properties[&#39;target&#39;]=target
+    
+    def to_dict(self, **kwargs):
+        kwargs.update(dict({&#39;name_obj&#39;:self.name_obj}))
+        return kwargs
+    
+    def remove(self):
+        Communication.send(&#39;remove_object&#39;, **self.to_dict())
+        
+    @property
+    def properties(self):
+        return self._properties
+    
+    @property
+    def scale(self):
+        return self.properties[&#39;scale&#39;]
+    
+    @scale.setter
+    def scale(self, val):
+        self.properties[&#39;scale&#39;]=val
+    
+    @property
+    def location(self):
+        return self.properties[&#39;location&#39;]
+    
+    @location.setter
+    def location(self, val):
+        self.properties[&#39;location&#39;]=val
+    
+    @property
+    def rotation(self):
+        return self.properties[&#39;rotation_euler&#39;]
+    
+    @rotation.setter
+    def rotation(self, val):
+        self.properties[&#39;rotation_euler&#39;]=val
+    
+    @property
+    def x(self):
+        return self.location[0]
+    
+    @property
+    def y(self):
+        return self.location[1]
+    
+    @property
+    def z(self):
+        return self.location[2]
+    
+    @x.setter
+    def x(self, val):
+        self.location=dict({&#39;x&#39;:val})
+    
+    @y.setter
+    def y(self, val):
+        self.location=dict({&#39;y&#39;:val})
+    
+    @z.setter
+    def z(self, val):
+        self.location=dict({&#39;z&#39;:val})
+    
+    @property
+    def matrix_world(self):
+        return np.array(self.properties[&#39;matrix_world&#39;])
+
+class Camera(Object):
+    
+    def __init__(self, name=&#39;camera&#39;,
+                 **kwargs):
+        self.add_camera(name)
+        super().__init__(**kwargs)
+        self._cam_properties=PropertyDict(self.name, &#39;&#39;,
+                                          func=&#39;camera_property&#39;)
+    
+    def add_camera(self, name):
+        self.name, self.name_obj=Communication.ask(&#39;create_camera&#39;,
+                                                   name=name)
+    
+    @property
+    def cam_properties(self):
+        return self._cam_properties
+
+class Curve(Object):
+    
+    def __init__(self, points, **kwargs):
+        self.name, self.name_obj=Communication.ask(&#39;create_curve&#39;,
+                                                   points=points,
+                                                   **kwargs) 
+        super().__init__(**kwargs)
+    
+    @property
+    def points(self):
+        return np.array(Communication.ask(&#39;get_curve_points&#39;,
+                                          name=self.name,
+                                          name_obj=self.name_obj))
+    
+    @points.setter
+    def points(self, val):
+        if hasattr(val, &#39;tolist&#39;):
+            val=val.tolist()
+        Communication.send(&#39;set_curve_points&#39;,
+                           name=self.name,
+                           points=val)
+        
+class Light(Object):
+    
+    def __init__(self, name=&#39;light&#39;,
+                 power=2, radius=0.25, light_type=&#39;POINT&#39;,
+                 filepath=None, **kwargs):
+        self.add_light(name, light_type=light_type)
+        super().__init__(**kwargs)
+        self._light_properties=PropertyDict(self.name,
+                                           self.name_obj,
+                                           func=&#39;light_property&#39;)
+        self.light_properties[&#39;energy&#39;]=power
+        self.light_properties[&#39;shadow_soft_size&#39;]=radius
+        if filepath is not None:
+            self.load(filepath)
+            self.load_light(filepath)
+        
+    def add_light(self, name, light_type=&#39;POINT&#39;):
+        res=dict()
+        kwargs = dict()
+        kwargs[&#39;light_type&#39;]=light_type
+        res[&#39;args&#39;]=[]
+        res[&#39;command&#39;]=&#39;create_light&#39;
+        res[&#39;kwargs&#39;]=kwargs
+        self.name, self.name_obj=Communication.ask(&#39;create_light&#39;,
+                                                   light_type=light_type)
+    
+    def load_light(self, filepath):
+        with open(filepath, &#39;r&#39;) as f:
+            data=json.load(f)
+        for k, v in data.items():
+            self.light_properties[k]=v
+    
+    @property
+    def light_properties(self):
+        return self._light_properties
+        
+
+class Mesh(Object, GeometricEntity):
+    
+    def __init__(self, mesh=None, cells=None, points=None,
+                 thickness=None, name=&#39;mesh&#39;, subdivide=1,
+                 material=None, **kwargs):
+        self.subdivide=subdivide
+        self.thickness=thickness
+        self.cells=cells
+        self.points=points
+        self.mesh=mesh
+        self.name_obj, self.name_msh = self.send_mesh(self.mesh, 
+                                                      thickness=self.thickness,
+                                                      name=name)
+        super().__init__(**kwargs)
+        if material is not None:
+            self.assign_material(material)
+        
+    def send_mesh(self, mesh, thickness=None, name=&#39;mesh&#39;):
+        if self.mesh is not None:
+            points=[[float(coord) for coord in p] for p in self.points]
+            cells=[]
+            for celltype in self.cells:
+                if celltype.type==&#39;triangle&#39;:
+                    cells+=[[int(ind) for ind in cell] for cell in celltype.data]
+            
+        else:
+            cells=[]
+            points=[[coord for coord in p] for p in self.points]
+            for celltype in self.cells:
+                if not isinstance(celltype[0], str):
+                    cells+=[[int(ind) for ind in celltype]]
+                elif celltype[0]==&#39;triangle&#39;:
+                    cells+=[[int(ind) for ind in cell] for cell in celltype[1]]
+        return Communication.ask(&#39;create_mesh&#39;,
+                                 name=name,
+                                 thickness=thickness,
+                                 subdivide=self.subdivide,
+                                 points=points,
+                                 cells=cells) 
+    
+    def insert_mesh_keyframe(self, frame=&#39;current&#39;,
+                             waiting_time_between_points=0.01):
+         Communication.ask(&#39;insert_keyframe_mesh&#39;,
+                           name_msh=self.name_msh,
+                           frame=frame,
+                           waiting_time_between_points=waiting_time_between_points)
+        
+    def cut_mesh(self, plane_points, plane_normals):
+        Communication.send(&#39;cut_mesh&#39;, name_msh=self.name_msh,
+                           planes_co=plane_points,
+                           planes_no=plane_normals)
+    
+    def smooth(self):
+        Communication.ask(&#39;smooth&#39;, name_msh=self.name_msh)
+    
+    def divide(self, Nx=None, Ny=None, Nz=None):
+        if Nx is not None:
+            xs=np.linspace(self.xmin, self.xmax, Nx)
+            self.cut_mesh([[x,0,0] for x in xs],
+                          [[1,0,0] for x in xs])
+        if Ny is not None:
+            ys=np.linspace(self.ymin, self.ymax, Ny)
+            self.cut_mesh([[0,y,0] for y in ys],
+                          [[0,1,0] for y in ys])
+        if Nz is not None:
+            zs=np.linspace(self.zmin, self.zmax, Nz)
+            self.cut_mesh([[0,0,z] for z in zs],
+                          [[0,0,1] for z in zs])
+    
+    @property
+    def use_auto_smooth(self):
+        return self._properties[[&#39;data&#39;, &#39;use_auto_smooth&#39;]]
+    
+    @use_auto_smooth.setter
+    def use_auto_smooth(self, val):
+        self._properties[[&#39;data&#39;, &#39;use_auto_smooth&#39;]]=val
+    
+    @property
+    def auto_smooth_angle(self):
+        return self._properties[[&#39;data&#39;, &#39;auto_smooth_angle&#39;]]
+    
+    @auto_smooth_angle.setter
+    def auto_smooth_angle(self, val):
+        self._properties[[&#39;data&#39;, &#39;auto_smooth_angle&#39;]]=val
+
+    @property
+    def parent(self):
+        return Object(self.name_obj)
+
+    @property
+    def vertices(self):
+        return np.array(Communication.ask(&#39;get_vertices&#39;,
+                                          name_msh=self.name_msh))
+    
+    @vertices.setter
+    def vertices(self, val):
+        if hasattr(val, &#39;tolist&#39;):
+            val=val.tolist()
+        Communication.send(&#39;set_vertices&#39;,
+                           name_msh=self.name_msh,
+                           val=val)
+        
+
+if __name__==&#39;__main__&#39;:
+    pass
+    
+                          
+                      
+                      
+            </code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="BlenderPy.sending_data.delete_all"><code class="name flex">
+<span>def <span class="ident">delete_all</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Delete all objects, meshes, cameras, &hellip;</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def delete_all():
+    &#39;&#39;&#39;Delete all objects, meshes, cameras, ...&#39;&#39;&#39;
+    assert Communication.ask(&#39;delete_all&#39;)==&#34;DONE&#34;</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="BlenderPy.sending_data.Camera"><code class="flex name class">
+<span>class <span class="ident">Camera</span></span>
+<span>(</span><span>name='camera', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Camera(Object):
+    
+    def __init__(self, name=&#39;camera&#39;,
+                 **kwargs):
+        self.add_camera(name)
+        super().__init__(**kwargs)
+        self._cam_properties=PropertyDict(self.name, &#39;&#39;,
+                                          func=&#39;camera_property&#39;)
+    
+    def add_camera(self, name):
+        self.name, self.name_obj=Communication.ask(&#39;create_camera&#39;,
+                                                   name=name)
+    
+    @property
+    def cam_properties(self):
+        return self._cam_properties</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.Object" href="#BlenderPy.sending_data.Object">Object</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Camera.cam_properties"><code class="name">var <span class="ident">cam_properties</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def cam_properties(self):
+    return self._cam_properties</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Camera.add_camera"><code class="name flex">
+<span>def <span class="ident">add_camera</span></span>(<span>self, name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_camera(self, name):
+    self.name, self.name_obj=Communication.ask(&#39;create_camera&#39;,
+                                               name=name)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.sending_data.Communication"><code class="flex name class">
+<span>class <span class="ident">Communication</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>A static class for communicating with the server</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Communication:
+    &#39;&#39;&#39;A static class for communicating with the server&#39;&#39;&#39;
+
+    @staticmethod
+    def send(message, **kwargs):
+        &#39;&#39;&#39;Send a message to the Blender Server
+        
+        Take a message, format it, encode it with its length at the
+        beginning, and send it to the Blender server.
+        
+        Parameters:
+            message: string to send
+        
+        Return:
+            None
+        &#39;&#39;&#39;
+        message=Communication.parse(message, **kwargs)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((HOST, PORT))
+            s.sendall((&#39;{:010x}&#39;.format(len(message))+message).encode())
+    
+    @staticmethod
+    def receive_all(sock, n):
+        &#39;&#39;&#39;Receive a message of a given length from the server.
+        
+        After having found its length, receive packets until
+        the amount of data is equal to this length
+        
+        Parameters:
+            sock: socket to read from
+            n: expected length of the data
+        
+        Return:
+            data: the raw data
+        &#39;&#39;&#39;
+        data = bytearray()
+        i=1
+        while len(data) &lt; n:
+            packet = sock.recv(n - len(data))
+            if not packet:
+                return None
+            data.extend(packet)
+            i+=1
+        return data  
+    
+    @staticmethod
+    def ask(message, **kwargs):
+        &#39;&#39;&#39;Ask a question to the Blender Server.
+        
+        Open a socket,encode properly the data to send like the 
+        send method with the length of the data at the beginning,
+        then send the data, receive the beginning of the answer
+        which contains the length of the answer, and then call
+        receive_all to receive the data.
+        Then, return the json extracted dictionnary that contain
+        the data.
+        
+        Parameters:
+            message: the question to ask
+        
+        Return:
+            the data
+        &#39;&#39;&#39;
+        message=Communication.parse(message, **kwargs)
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((HOST, PORT))
+            s.sendall((&#39;{:010x}&#39;.format(len(message))+message).encode())
+            raw_msglen = s.recv(10)
+            msglen = int(raw_msglen.decode(),16)
+            data=Communication.receive_all(s, msglen)
+            return json.loads(data)[&#39;content&#39;]
+    
+    @staticmethod
+    def parse(message, **kwargs):
+        &#39;&#39;&#39;Format a message to be sent to the Blender Server.
+        
+        Parameters:
+            message: the question to ask
+        
+        Return:
+            the data
+        &#39;&#39;&#39;
+        res=dict()
+        res[&#39;command&#39;]=message
+        res[&#39;kwargs&#39;]=kwargs
+        msg=json.dumps(res)
+        return msg</code></pre>
+</details>
+<h3>Static methods</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Communication.ask"><code class="name flex">
+<span>def <span class="ident">ask</span></span>(<span>message, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Ask a question to the Blender Server.</p>
+<p>Open a socket,encode properly the data to send like the
+send method with the length of the data at the beginning,
+then send the data, receive the beginning of the answer
+which contains the length of the answer, and then call
+receive_all to receive the data.
+Then, return the json extracted dictionnary that contain
+the data.</p>
+<h2 id="parameters">Parameters</h2>
+<p>message: the question to ask</p>
+<h2 id="return">Return</h2>
+<p>the data</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def ask(message, **kwargs):
+    &#39;&#39;&#39;Ask a question to the Blender Server.
+    
+    Open a socket,encode properly the data to send like the 
+    send method with the length of the data at the beginning,
+    then send the data, receive the beginning of the answer
+    which contains the length of the answer, and then call
+    receive_all to receive the data.
+    Then, return the json extracted dictionnary that contain
+    the data.
+    
+    Parameters:
+        message: the question to ask
+    
+    Return:
+        the data
+    &#39;&#39;&#39;
+    message=Communication.parse(message, **kwargs)
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HOST, PORT))
+        s.sendall((&#39;{:010x}&#39;.format(len(message))+message).encode())
+        raw_msglen = s.recv(10)
+        msglen = int(raw_msglen.decode(),16)
+        data=Communication.receive_all(s, msglen)
+        return json.loads(data)[&#39;content&#39;]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Communication.parse"><code class="name flex">
+<span>def <span class="ident">parse</span></span>(<span>message, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Format a message to be sent to the Blender Server.</p>
+<h2 id="parameters">Parameters</h2>
+<p>message: the question to ask</p>
+<h2 id="return">Return</h2>
+<p>the data</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def parse(message, **kwargs):
+    &#39;&#39;&#39;Format a message to be sent to the Blender Server.
+    
+    Parameters:
+        message: the question to ask
+    
+    Return:
+        the data
+    &#39;&#39;&#39;
+    res=dict()
+    res[&#39;command&#39;]=message
+    res[&#39;kwargs&#39;]=kwargs
+    msg=json.dumps(res)
+    return msg</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Communication.receive_all"><code class="name flex">
+<span>def <span class="ident">receive_all</span></span>(<span>sock, n)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Receive a message of a given length from the server.</p>
+<p>After having found its length, receive packets until
+the amount of data is equal to this length</p>
+<h2 id="parameters">Parameters</h2>
+<p>sock: socket to read from
+n: expected length of the data</p>
+<h2 id="return">Return</h2>
+<p>data: the raw data</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def receive_all(sock, n):
+    &#39;&#39;&#39;Receive a message of a given length from the server.
+    
+    After having found its length, receive packets until
+    the amount of data is equal to this length
+    
+    Parameters:
+        sock: socket to read from
+        n: expected length of the data
+    
+    Return:
+        data: the raw data
+    &#39;&#39;&#39;
+    data = bytearray()
+    i=1
+    while len(data) &lt; n:
+        packet = sock.recv(n - len(data))
+        if not packet:
+            return None
+        data.extend(packet)
+        i+=1
+    return data  </code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Communication.send"><code class="name flex">
+<span>def <span class="ident">send</span></span>(<span>message, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Send a message to the Blender Server</p>
+<p>Take a message, format it, encode it with its length at the
+beginning, and send it to the Blender server.</p>
+<h2 id="parameters">Parameters</h2>
+<p>message: string to send</p>
+<h2 id="return">Return</h2>
+<p>None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@staticmethod
+def send(message, **kwargs):
+    &#39;&#39;&#39;Send a message to the Blender Server
+    
+    Take a message, format it, encode it with its length at the
+    beginning, and send it to the Blender server.
+    
+    Parameters:
+        message: string to send
+    
+    Return:
+        None
+    &#39;&#39;&#39;
+    message=Communication.parse(message, **kwargs)
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HOST, PORT))
+        s.sendall((&#39;{:010x}&#39;.format(len(message))+message).encode())</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.sending_data.Constraint"><code class="flex name class">
+<span>class <span class="ident">Constraint</span></span>
+<span>(</span><span>parent=None, constraint_type='FOLLOW_PATH', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Constraint:
+    
+    def __init__(self, parent=None, constraint_type=&#39;FOLLOW_PATH&#39;, **kwargs):
+        kwargs[&#39;constraint_type&#39;]=constraint_type
+        kwargs[&#39;parent_name&#39;]=parent
+        self.parent_name=parent
+        self.name=Communication.ask(&#39;create_constraint&#39;, **kwargs)
+        self._properties=PropertyDict(self.name, self.parent_name,
+                                      func=&#39;constraint_property&#39;)
+    
+    def insert_keyframe(self, key, frame=&#39;current&#39;):
+        Communication.ask(&#39;insert_keyframe_constraint&#39;, key=key, frame=frame,
+                          name_obj=self.parent_name, name=self.name)
+    
+    @property
+    def properties(self):
+        return self._properties</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Constraint.properties"><code class="name">var <span class="ident">properties</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def properties(self):
+    return self._properties</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Constraint.insert_keyframe"><code class="name flex">
+<span>def <span class="ident">insert_keyframe</span></span>(<span>self, key, frame='current')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def insert_keyframe(self, key, frame=&#39;current&#39;):
+    Communication.ask(&#39;insert_keyframe_constraint&#39;, key=key, frame=frame,
+                      name_obj=self.parent_name, name=self.name)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.sending_data.Curve"><code class="flex name class">
+<span>class <span class="ident">Curve</span></span>
+<span>(</span><span>points, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Curve(Object):
+    
+    def __init__(self, points, **kwargs):
+        self.name, self.name_obj=Communication.ask(&#39;create_curve&#39;,
+                                                   points=points,
+                                                   **kwargs) 
+        super().__init__(**kwargs)
+    
+    @property
+    def points(self):
+        return np.array(Communication.ask(&#39;get_curve_points&#39;,
+                                          name=self.name,
+                                          name_obj=self.name_obj))
+    
+    @points.setter
+    def points(self, val):
+        if hasattr(val, &#39;tolist&#39;):
+            val=val.tolist()
+        Communication.send(&#39;set_curve_points&#39;,
+                           name=self.name,
+                           points=val)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.Object" href="#BlenderPy.sending_data.Object">Object</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Curve.points"><code class="name">var <span class="ident">points</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def points(self):
+    return np.array(Communication.ask(&#39;get_curve_points&#39;,
+                                      name=self.name,
+                                      name_obj=self.name_obj))</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.sending_data.EmissionMaterial"><code class="flex name class">
+<span>class <span class="ident">EmissionMaterial</span></span>
+<span>(</span><span>color='#AF2020', expression=None, strength=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class EmissionMaterial(Material):
+    
+    def __init__(self, color=&#39;#AF2020&#39;, expression=None, strength=None, **kwargs):
+         super().__init__(**kwargs)
+         emission=self.add_shader(&#39;Emission&#39;)
+         emission.inputs[&#39;Color&#39;]=self.convert_color(color)
+         output=self.get_shader(&#39;Material Output&#39;)
+         output.inputs[&#39;Volume&#39;]=emission.outputs[&#39;Emission&#39;]
+         Principled=self.get_shader(&#39;Principled BSDF&#39;)
+         Principled.remove()
+         
+         if expression is not None:
+             coords=self.add_shader(&#39;Texture_coordinates&#39;)
+             sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
+             sepxyz.inputs[&#39;Vector&#39;]=coords.outputs[&#39;Generated&#39;]
+             shader=self.coordinate_expression(expression, 
+                                               special_keys=dict({&#39;x&#39;:sepxyz.outputs[&#39;X&#39;],
+                                                             &#39;y&#39;:sepxyz.outputs[&#39;Y&#39;],
+                                                             &#39;z&#39;:sepxyz.outputs[&#39;Z&#39;]}))
+             emission.inputs[&#39;Strength&#39;]=shader.outputs[&#39;Value&#39;] 
+         elif strength is not None:
+             emission.inputs[&#39;Strength&#39;]=strength</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.Material" href="#BlenderPy.sending_data.Material">Material</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.GaussianLaserMaterial" href="#BlenderPy.sending_data.GaussianLaserMaterial">GaussianLaserMaterial</a></li>
+</ul>
+</dd>
+<dt id="BlenderPy.sending_data.GaussianLaserMaterial"><code class="flex name class">
+<span>class <span class="ident">GaussianLaserMaterial</span></span>
+<span>(</span><span>alpha=0.001, waist=0.1, strength=3, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GaussianLaserMaterial(EmissionMaterial):
+    
+    def __init__(self, alpha=0.001, waist=0.1, strength=3, **kwargs):
+        expression=&#39;{:}*e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))&#39;.format(strength, alpha, waist**2)
+        super().__init__(expression=expression, **kwargs) </code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.EmissionMaterial" href="#BlenderPy.sending_data.EmissionMaterial">EmissionMaterial</a></li>
+<li><a title="BlenderPy.sending_data.Material" href="#BlenderPy.sending_data.Material">Material</a></li>
+</ul>
+</dd>
+<dt id="BlenderPy.sending_data.GeometricEntity"><code class="flex name class">
+<span>class <span class="ident">GeometricEntity</span></span>
+</code></dt>
+<dd>
+<div class="desc"><p>a class encompassing the geometric absolute positioning
+of vertices of meshes</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeometricEntity:
+    &#39;&#39;&#39;a class encompassing the geometric absolute positioning
+    of vertices of meshes&#39;&#39;&#39;
+    
+    def set_origin(self, position):
+        &#39;&#39;&#39;set the origin of a mesh to a position. The vertices
+        position will have this point as a new origin
+        
+        Parameters:
+            position: the position you want to set to
+        
+        Returns:
+            None
+        &#39;&#39;&#39;
+        verts=self.vertices_absolute
+        x,y,z=self.x, self.y, self.z
+        verts[:,0]-=position[0]-x
+        verts[:,1]-=position[1]-y
+        verts[:,2]-=position[2]-z
+        self.vertices_absolute=verts
+        self.location=position
+    
+    @property
+    def vertices_absolute(self):
+        &#39;&#39;&#39;get the position of the vertices in
+        absolute coordinates
+        
+        Parameters:
+            None
+        
+        Returns:
+            a numpy array representing the absolute coordinates
+        &#39;&#39;&#39;
+        mat=self.matrix_world
+        verts=self.vertices
+        verts_4D=np.transpose(np.hstack([verts, np.ones((len(verts),1))]))
+        return np.transpose(np.dot(mat, verts_4D))
+    
+    @vertices_absolute.setter
+    def vertices_absolute(self, val):
+        &#39;&#39;&#39;set the position of the vertices in
+        absolute coordinates
+        
+        Parameters:
+            val: a numpy array or a list representing the desired positions
+        
+        Returns:
+            None
+        &#39;&#39;&#39;
+        mat=np.linalg.inv(self.matrix_world)
+        if np.array(val).shape[1]!=4:
+            val=np.hstack([np.array(val), np.ones((len(val),1))])
+        self.vertices=np.transpose(np.dot(mat, np.transpose(val)))[:,:3]
+        
+    @property
+    def xmin(self):
+        &#39;&#39;&#39;minimum x position&#39;&#39;&#39;
+        
+        return np.min(self.vertices_absolute[:,0])
+    
+    @property
+    def xmax(self):
+        &#39;&#39;&#39;maximum x position&#39;&#39;&#39;
+        return np.max(self.vertices_absolute[:,0])
+    
+    @property
+    def ymin(self):
+        &#39;&#39;&#39;minimum y position&#39;&#39;&#39;
+        return np.min(self.vertices_absolute[:,1])
+    
+    @property
+    def ymax(self):
+        &#39;&#39;&#39;maximum y position&#39;&#39;&#39;
+        return np.max(self.vertices_absolute[:,1])
+    
+    @property
+    def zmin(self):
+        &#39;&#39;&#39;minimum z position&#39;&#39;&#39;
+        return np.min(self.vertices_absolute[:,2])
+    
+    @property
+    def zmax(self):
+        &#39;&#39;&#39;maximum z position&#39;&#39;&#39;
+        return np.max(self.vertices_absolute[:,2])
+    
+    @xmin.setter
+    def xmin(self, val):
+        self.x+=val-self.xmin
+    
+    @ymin.setter
+    def ymin(self, val):
+        self.y+=val-self.ymin
+        
+    @zmin.setter
+    def zmin(self, val):
+        self.z+=val-self.zmin
+        
+    @xmax.setter
+    def xmax(self, val):
+        self.x+=val-self.xmax
+        
+    @ymax.setter
+    def ymax(self, val):
+        self.y+=val-self.ymax
+        
+    @zmax.setter
+    def zmax(self, val):
+        self.z+=val-self.zmax
+    
+    @property
+    def center(self):
+        &#39;&#39;&#39;absolute center&#39;&#39;&#39;
+        return np.array([0.5*(self.xmin+self.xmax),
+                         0.5*(self.ymin+self.ymax),
+                         0.5*(self.zmin+self.zmax)])
+    
+    @center.setter
+    def center(self, val):
+        center=self.center
+        self.x+=val[0]-center[0]
+        self.y+=val[1]-center[1]
+        self.z+=val[2]-center[2]
+    
+    @property
+    def dx(self):
+        &#39;&#39;&#39;Absolute x extension&#39;&#39;&#39;
+        return self.xmax-self.xmin
+    
+    @property
+    def dy(self):
+        &#39;&#39;&#39;Absolute y extension&#39;&#39;&#39;
+        return self.ymax-self.ymin
+    
+    @property
+    def dz(self):
+        &#39;&#39;&#39;Absolute z extension&#39;&#39;&#39;
+        return self.zmax-self.zmin</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.PlaneGeom" href="meshing.html#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></li>
+<li><a title="BlenderPy.sending_data.Mesh" href="#BlenderPy.sending_data.Mesh">Mesh</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.sending_data.GeometricEntity.center"><code class="name">var <span class="ident">center</span></code></dt>
+<dd>
+<div class="desc"><p>absolute center</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def center(self):
+    &#39;&#39;&#39;absolute center&#39;&#39;&#39;
+    return np.array([0.5*(self.xmin+self.xmax),
+                     0.5*(self.ymin+self.ymax),
+                     0.5*(self.zmin+self.zmax)])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.GeometricEntity.dx"><code class="name">var <span class="ident">dx</span></code></dt>
+<dd>
+<div class="desc"><p>Absolute x extension</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def dx(self):
+    &#39;&#39;&#39;Absolute x extension&#39;&#39;&#39;
+    return self.xmax-self.xmin</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.GeometricEntity.dy"><code class="name">var <span class="ident">dy</span></code></dt>
+<dd>
+<div class="desc"><p>Absolute y extension</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def dy(self):
+    &#39;&#39;&#39;Absolute y extension&#39;&#39;&#39;
+    return self.ymax-self.ymin</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.GeometricEntity.dz"><code class="name">var <span class="ident">dz</span></code></dt>
+<dd>
+<div class="desc"><p>Absolute z extension</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def dz(self):
+    &#39;&#39;&#39;Absolute z extension&#39;&#39;&#39;
+    return self.zmax-self.zmin</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.GeometricEntity.vertices_absolute"><code class="name">var <span class="ident">vertices_absolute</span></code></dt>
+<dd>
+<div class="desc"><p>get the position of the vertices in
+absolute coordinates</p>
+<h2 id="parameters">Parameters</h2>
+<p>None</p>
+<h2 id="returns">Returns</h2>
+<p>a numpy array representing the absolute coordinates</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def vertices_absolute(self):
+    &#39;&#39;&#39;get the position of the vertices in
+    absolute coordinates
+    
+    Parameters:
+        None
+    
+    Returns:
+        a numpy array representing the absolute coordinates
+    &#39;&#39;&#39;
+    mat=self.matrix_world
+    verts=self.vertices
+    verts_4D=np.transpose(np.hstack([verts, np.ones((len(verts),1))]))
+    return np.transpose(np.dot(mat, verts_4D))</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.GeometricEntity.xmax"><code class="name">var <span class="ident">xmax</span></code></dt>
+<dd>
+<div class="desc"><p>maximum x position</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def xmax(self):
+    &#39;&#39;&#39;maximum x position&#39;&#39;&#39;
+    return np.max(self.vertices_absolute[:,0])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.GeometricEntity.xmin"><code class="name">var <span class="ident">xmin</span></code></dt>
+<dd>
+<div class="desc"><p>minimum x position</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def xmin(self):
+    &#39;&#39;&#39;minimum x position&#39;&#39;&#39;
+    
+    return np.min(self.vertices_absolute[:,0])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.GeometricEntity.ymax"><code class="name">var <span class="ident">ymax</span></code></dt>
+<dd>
+<div class="desc"><p>maximum y position</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def ymax(self):
+    &#39;&#39;&#39;maximum y position&#39;&#39;&#39;
+    return np.max(self.vertices_absolute[:,1])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.GeometricEntity.ymin"><code class="name">var <span class="ident">ymin</span></code></dt>
+<dd>
+<div class="desc"><p>minimum y position</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def ymin(self):
+    &#39;&#39;&#39;minimum y position&#39;&#39;&#39;
+    return np.min(self.vertices_absolute[:,1])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.GeometricEntity.zmax"><code class="name">var <span class="ident">zmax</span></code></dt>
+<dd>
+<div class="desc"><p>maximum z position</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def zmax(self):
+    &#39;&#39;&#39;maximum z position&#39;&#39;&#39;
+    return np.max(self.vertices_absolute[:,2])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.GeometricEntity.zmin"><code class="name">var <span class="ident">zmin</span></code></dt>
+<dd>
+<div class="desc"><p>minimum z position</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def zmin(self):
+    &#39;&#39;&#39;minimum z position&#39;&#39;&#39;
+    return np.min(self.vertices_absolute[:,2])</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.sending_data.GeometricEntity.set_origin"><code class="name flex">
+<span>def <span class="ident">set_origin</span></span>(<span>self, position)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>set the origin of a mesh to a position. The vertices
+position will have this point as a new origin</p>
+<h2 id="parameters">Parameters</h2>
+<p>position: the position you want to set to</p>
+<h2 id="returns">Returns</h2>
+<p>None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def set_origin(self, position):
+    &#39;&#39;&#39;set the origin of a mesh to a position. The vertices
+    position will have this point as a new origin
+    
+    Parameters:
+        position: the position you want to set to
+    
+    Returns:
+        None
+    &#39;&#39;&#39;
+    verts=self.vertices_absolute
+    x,y,z=self.x, self.y, self.z
+    verts[:,0]-=position[0]-x
+    verts[:,1]-=position[1]-y
+    verts[:,2]-=position[2]-z
+    self.vertices_absolute=verts
+    self.location=position</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.sending_data.Image"><code class="flex name class">
+<span>class <span class="ident">Image</span></span>
+<span>(</span><span>path)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Image:
+    
+    def __init__(self, path):
+        self.path=path
+    
+    def to_dict(self, **kwargs):
+        kwargs.update(dict({&#39;path&#39;:self.path}))
+        return kwargs</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Image.to_dict"><code class="name flex">
+<span>def <span class="ident">to_dict</span></span>(<span>self, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_dict(self, **kwargs):
+    kwargs.update(dict({&#39;path&#39;:self.path}))
+    return kwargs</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.sending_data.Light"><code class="flex name class">
+<span>class <span class="ident">Light</span></span>
+<span>(</span><span>name='light', power=2, radius=0.25, light_type='POINT', filepath=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Light(Object):
+    
+    def __init__(self, name=&#39;light&#39;,
+                 power=2, radius=0.25, light_type=&#39;POINT&#39;,
+                 filepath=None, **kwargs):
+        self.add_light(name, light_type=light_type)
+        super().__init__(**kwargs)
+        self._light_properties=PropertyDict(self.name,
+                                           self.name_obj,
+                                           func=&#39;light_property&#39;)
+        self.light_properties[&#39;energy&#39;]=power
+        self.light_properties[&#39;shadow_soft_size&#39;]=radius
+        if filepath is not None:
+            self.load(filepath)
+            self.load_light(filepath)
+        
+    def add_light(self, name, light_type=&#39;POINT&#39;):
+        res=dict()
+        kwargs = dict()
+        kwargs[&#39;light_type&#39;]=light_type
+        res[&#39;args&#39;]=[]
+        res[&#39;command&#39;]=&#39;create_light&#39;
+        res[&#39;kwargs&#39;]=kwargs
+        self.name, self.name_obj=Communication.ask(&#39;create_light&#39;,
+                                                   light_type=light_type)
+    
+    def load_light(self, filepath):
+        with open(filepath, &#39;r&#39;) as f:
+            data=json.load(f)
+        for k, v in data.items():
+            self.light_properties[k]=v
+    
+    @property
+    def light_properties(self):
+        return self._light_properties</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.Object" href="#BlenderPy.sending_data.Object">Object</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Light.light_properties"><code class="name">var <span class="ident">light_properties</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def light_properties(self):
+    return self._light_properties</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Light.add_light"><code class="name flex">
+<span>def <span class="ident">add_light</span></span>(<span>self, name, light_type='POINT')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_light(self, name, light_type=&#39;POINT&#39;):
+    res=dict()
+    kwargs = dict()
+    kwargs[&#39;light_type&#39;]=light_type
+    res[&#39;args&#39;]=[]
+    res[&#39;command&#39;]=&#39;create_light&#39;
+    res[&#39;kwargs&#39;]=kwargs
+    self.name, self.name_obj=Communication.ask(&#39;create_light&#39;,
+                                               light_type=light_type)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Light.load_light"><code class="name flex">
+<span>def <span class="ident">load_light</span></span>(<span>self, filepath)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load_light(self, filepath):
+    with open(filepath, &#39;r&#39;) as f:
+        data=json.load(f)
+    for k, v in data.items():
+        self.light_properties[k]=v</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.sending_data.Material"><code class="flex name class">
+<span>class <span class="ident">Material</span></span>
+<span>(</span><span>name='material', color='#FFFFFF', alpha=1.0, transmission=0, use_screen_refraction=False, refraction_depth=0.0, blend_method='OPAQUE', blend_method_shadow='OPAQUE', use_backface_culling=False, create_new=True, metallic=0.0, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Material:
+    
+    def __init__(self, name=&#39;material&#39;, color=&#39;#FFFFFF&#39;, alpha=1., transmission=0,
+                 use_screen_refraction=False, refraction_depth=0.,
+                 blend_method=&#39;OPAQUE&#39;, blend_method_shadow=&#39;OPAQUE&#39;,
+                 use_backface_culling=False, create_new=True,
+                 metallic=0.,
+                 **kwargs):
+        if not create_new:
+            names = self.get_material_names()
+            if name in names:
+                self.material_object = self.get_material(name)
+            else:
+                self.material_object = self.create_material(name)
+        else:
+            self.material_object = self.create_material(name)
+        self.color=self.convert_color(color)
+        params=dict({&#39;name&#39;:self.material_object, &#39;color&#39;:self.color,
+                     &#39;alpha&#39;:alpha, &#39;transmission&#39;:transmission,
+                     &#39;use_screen_refraction&#39;:use_screen_refraction,
+                     &#39;refraction_depth&#39;:refraction_depth,
+                     &#39;blend_method&#39;:blend_method,
+                     &#39;use_backface_culling&#39;:use_backface_culling,
+                     &#39;blend_method_shadow&#39;:blend_method_shadow,
+                     &#39;metallic&#39;:metallic})
+        params.update(kwargs)
+        Communication.send(&#39;update_material&#39;, **params)
+        self.operations=dict({&#39;*&#39;:&#39;MULTIPLY&#39;,
+                         &#39;/&#39;:&#39;DIVIDE&#39;,
+                         &#39;+&#39;:&#39;ADD&#39;,
+                         &#39;-&#39;:&#39;SUBTRACT&#39;,
+                         &#39;^&#39;:&#39;POWER&#39;,
+                         &#39;&gt;&#39;:&#39;GREATER_THAN&#39;,
+                         &#39;&lt;&#39;:&#39;LESS_THAN&#39;,
+                         &#39;ABS&#39;:&#39;ABSOLUTE&#39;,
+                         &#39;sqrt&#39;:&#39;SQRT&#39;,
+                         &#39;cos&#39;:&#39;COSINE&#39;,
+                         &#39;sin&#39;:&#39;SINE&#39;})
+        names=[&#39;Principled BSDF&#39;, &#39;Material Output&#39;]
+        self.shadernodes_dimensions=dict()
+        for name in names:
+            self.shadernodes_dimensions[name]=ShaderNode(name=name, parent=self.material_object,
+                                                shader_type=name).properties[&#39;location&#39;]
+    
+    @property
+    def xmax_shadernode_dimensions(self):
+        return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,0])
+    
+    @property
+    def ymax_shadernode_dimensions(self):
+        return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,1])
+    
+    @property
+    def xmin_shadernode_dimensions(self):
+        return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,0])
+    
+    @property
+    def ymin_shadernode_dimensions(self):
+        return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,1])
+    
+    @property
+    def height_shadernode_dimensions(self):
+        return self.ymax_shadernode_dimensions-self.ymin_shadernode_dimensions
+    
+    @property
+    def width_shadernode_dimensions(self):
+        return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions
+    
+    def add_shader(self, shader_type):
+        dx, dy=200, 200
+        i,j=0,0
+        while [i*dx, j*dy] in list(self.shadernodes_dimensions.values()):
+            i+=1
+            if i*dx&gt;self.width_shadernode_dimensions:
+                i=0
+                j+=1
+                if j*dy&gt;self.height_shadernode_dimensions:
+                    j=0
+                    i=int(self.width_shadernode_dimensions)/dx+1
+                    break
+        res= ShaderNode(shader_type=shader_type,
+                          parent=self.material_object)
+        res.properties[&#39;location&#39;]=[i*dx, j*dy]
+        self.shadernodes_dimensions[res.name]=[i*dx, j*dy]
+        return res
+    
+    def get_shader(self, name=None, find_math_operation=None):
+        if find_math_operation is not None:
+            for node_name in self.shadernodes_dimensions.keys():
+                if &#39;Math&#39; in node_name:
+                    node=self.get_shader(
+                            name=node_name)
+                    if (node._properties[&#39;operation&#39;]==
+                        self.operations[find_math_operation]):
+                        return node
+        else:
+            return ShaderNode(parent=self.material_object, name=name)
+    
+    def coordinate_expression(self, exp, input_shader=None, special_keys=None):
+        e=Expression(content=exp, tokens=[])
+        if not e.is_leaf():
+            tree=e.get_tree()
+            tree[&#39;parent&#39;]=None
+            return self.distribute_shaders(tree,input_shader=input_shader,
+                                           special_keys=special_keys)
+    
+    def distribute_shaders(self, tree, input_shader=None, special_keys=None):
+        return_shader=None
+        if isinstance(tree, dict):
+            operation=list(tree.keys())[0]
+            tree[&#39;shader&#39;]=self.add_shader(shader_type=&#39;Math&#39;)
+            tree[&#39;shader&#39;].properties[&#39;operation&#39;]=self.operations[operation]
+            if tree[&#39;parent&#39;] is None:
+                return_shader=tree[&#39;shader&#39;]
+            subtree=tree[operation]
+            for node in subtree:
+                if isinstance(node, dict):
+                    node[&#39;parent&#39;]=tree[&#39;shader&#39;]
+                self.distribute_shaders(node, input_shader=input_shader,
+                                        special_keys=special_keys)
+            for i, node in enumerate(subtree):
+                if isinstance(node, dict):
+                    tree[&#39;shader&#39;].inputs[i]=node[&#39;shader&#39;].outputs[&#39;Value&#39;]
+                else:
+                    try:
+                        tree[&#39;shader&#39;].inputs[i]=float(node)
+                    except ValueError:
+                        if node==&#39;e&#39;:
+                            tree[&#39;shader&#39;].inputs[i]=np.e
+                        if node in special_keys.keys():
+                            tree[&#39;shader&#39;].inputs[i]=special_keys[node]
+                            
+        else:
+            pass
+        return return_shader
+        
+        
+            
+        
+    def z_dependant_color(self, colors=None, positions=None,
+                          coordinate=&#39;Generated&#39;):
+        coord=self.add_shader(&#39;Texture_coordinates&#39;)
+        sep=self.add_shader(&#39;Separate_XYZ&#39;)
+        sep.inputs[&#39;Vector&#39;]=coord.outputs[coordinate]
+        color_ramp=self.add_shader(&#39;Color_Ramp&#39;)
+        color_ramp.inputs[&#39;Fac&#39;]=sep.outputs[&#39;Z&#39;]
+        color_ramp.properties[&#39;color_ramp&#39;]=dict({&#39;positions&#39;:positions,
+                             &#39;colors&#39;:[self.convert_color(color) for color in colors]})
+        principled=self.get_shader(&#39;Principled BSDF&#39;)
+        principled.inputs[&#39;Base Color&#39;]=color_ramp.outputs[&#39;Color&#39;]
+    
+    def surface_noise(self, scale=3, detail=2, roughness=0.5,
+                      dimension=&#39;2D&#39;,
+                      orientation=&#39;Z&#39;, origin=&#39;Generated&#39;):
+        noise=self.add_shader(&#39;Noise&#39;)
+        coord=self.add_shader(&#39;Texture_coordinates&#39;)
+        output=self.get_shader(&#39;Material Output&#39;)
+        
+        if dimension==&#39;2D&#39;:
+            sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
+            sepxyz2=self.add_shader(&#39;Separate_XYZ&#39;)
+            combine=self.add_shader(&#39;Combine_XYZ&#39;)
+            combine.inputs[&#39;X&#39;]=sepxyz2.outputs[&#39;X&#39;]
+            combine.inputs[&#39;Y&#39;]=sepxyz2.outputs[&#39;Y&#39;]
+            sepxyz.inputs[&#39;Vector&#39;]=coord.outputs[&#39;Normal&#39;]
+            sup=self.add_shader(&#39;Math&#39;)
+            sup.properties[&#39;operation&#39;]=self.operations[&#39;&gt;&#39;]
+            sup.inputs[0]=sepxyz.outputs[orientation]
+            sup.inputs[1]=0.5
+            mult=self.add_shader(&#39;Math&#39;)
+            mult.properties[&#39;operation&#39;]=self.operations[&#39;*&#39;]
+            mult.inputs[0]=sup.outputs[&#39;Value&#39;]
+            sepxyz2.inputs[&#39;Vector&#39;]=coord.outputs[origin]
+            noise.inputs[&#39;Vector&#39;]=combine.outputs[&#39;Vector&#39;]
+            mult.inputs[1]=noise.outputs[&#39;Fac&#39;]
+            output.inputs[&#39;Displacement&#39;]=mult.outputs[&#39;Value&#39;]
+        elif dimension==&#39;3D&#39;:
+            output.inputs[&#39;Displacement&#39;]=noise.outputs[&#39;Fac&#39;]
+        noise.inputs[&#39;Scale&#39;]=scale
+        noise.inputs[&#39;Detail&#39;]=detail
+        noise.inputs[&#39;Roughness&#39;]=roughness
+    
+    def glowing(self, color=&#39;#FFFFFF&#39;, strength=10, **kwargs):
+        emission=self.add_shader(&#39;Emission&#39;)
+        emission.inputs[&#39;Color&#39;]=self.convert_color(color)
+        emission.inputs[&#39;Strength&#39;]=strength
+        output=self.get_shader(&#39;Material Output&#39;)
+        add_shader=self.add_shader(&#39;Add&#39;)
+        add_shader.inputs[0]=output.inputs[&#39;Surface&#39;]
+        output.inputs[&#39;Surface&#39;]=add_shader.outputs[&#39;Shader&#39;]
+        add_shader.inputs[1]=emission.outputs[&#39;Emission&#39;]
+
+        
+    def get_material(self, name):
+        return Communication.ask(&#39;get_material&#39;, name=name)
+    
+    def create_material(self, name):
+        return Communication.ask(&#39;create_material&#39;, name=name)
+    
+    def get_material_names(self):
+        return Communication.ask(&#39;get_material_names&#39;)
+    
+    def convert_color(self, color, alpha=1):
+        if len(color)==3:
+            if alpha is None:
+                alpha=1.0
+            return color+[alpha]
+        elif len(color)==4:
+            return color
+        elif color[0]==&#39;#&#39;:
+            if len(color)==7:
+                if alpha is None:
+                    alpha=1.0
+            else:
+                alpha=int(color[7:9], 16)/256.
+            return [int(color[i:i+2], 16)/256. for i in [1,3,5]] +[alpha]</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.EmissionMaterial" href="#BlenderPy.sending_data.EmissionMaterial">EmissionMaterial</a></li>
+<li><a title="BlenderPy.sending_data.MetallicMaterial" href="#BlenderPy.sending_data.MetallicMaterial">MetallicMaterial</a></li>
+<li><a title="BlenderPy.sending_data.PositionDependantMaterial" href="#BlenderPy.sending_data.PositionDependantMaterial">PositionDependantMaterial</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Material.height_shadernode_dimensions"><code class="name">var <span class="ident">height_shadernode_dimensions</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def height_shadernode_dimensions(self):
+    return self.ymax_shadernode_dimensions-self.ymin_shadernode_dimensions</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.width_shadernode_dimensions"><code class="name">var <span class="ident">width_shadernode_dimensions</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def width_shadernode_dimensions(self):
+    return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.xmax_shadernode_dimensions"><code class="name">var <span class="ident">xmax_shadernode_dimensions</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def xmax_shadernode_dimensions(self):
+    return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,0])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.xmin_shadernode_dimensions"><code class="name">var <span class="ident">xmin_shadernode_dimensions</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def xmin_shadernode_dimensions(self):
+    return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,0])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.ymax_shadernode_dimensions"><code class="name">var <span class="ident">ymax_shadernode_dimensions</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def ymax_shadernode_dimensions(self):
+    return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,1])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.ymin_shadernode_dimensions"><code class="name">var <span class="ident">ymin_shadernode_dimensions</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def ymin_shadernode_dimensions(self):
+    return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,1])</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Material.add_shader"><code class="name flex">
+<span>def <span class="ident">add_shader</span></span>(<span>self, shader_type)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_shader(self, shader_type):
+    dx, dy=200, 200
+    i,j=0,0
+    while [i*dx, j*dy] in list(self.shadernodes_dimensions.values()):
+        i+=1
+        if i*dx&gt;self.width_shadernode_dimensions:
+            i=0
+            j+=1
+            if j*dy&gt;self.height_shadernode_dimensions:
+                j=0
+                i=int(self.width_shadernode_dimensions)/dx+1
+                break
+    res= ShaderNode(shader_type=shader_type,
+                      parent=self.material_object)
+    res.properties[&#39;location&#39;]=[i*dx, j*dy]
+    self.shadernodes_dimensions[res.name]=[i*dx, j*dy]
+    return res</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.convert_color"><code class="name flex">
+<span>def <span class="ident">convert_color</span></span>(<span>self, color, alpha=1)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def convert_color(self, color, alpha=1):
+    if len(color)==3:
+        if alpha is None:
+            alpha=1.0
+        return color+[alpha]
+    elif len(color)==4:
+        return color
+    elif color[0]==&#39;#&#39;:
+        if len(color)==7:
+            if alpha is None:
+                alpha=1.0
+        else:
+            alpha=int(color[7:9], 16)/256.
+        return [int(color[i:i+2], 16)/256. for i in [1,3,5]] +[alpha]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.coordinate_expression"><code class="name flex">
+<span>def <span class="ident">coordinate_expression</span></span>(<span>self, exp, input_shader=None, special_keys=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def coordinate_expression(self, exp, input_shader=None, special_keys=None):
+    e=Expression(content=exp, tokens=[])
+    if not e.is_leaf():
+        tree=e.get_tree()
+        tree[&#39;parent&#39;]=None
+        return self.distribute_shaders(tree,input_shader=input_shader,
+                                       special_keys=special_keys)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.create_material"><code class="name flex">
+<span>def <span class="ident">create_material</span></span>(<span>self, name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def create_material(self, name):
+    return Communication.ask(&#39;create_material&#39;, name=name)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.distribute_shaders"><code class="name flex">
+<span>def <span class="ident">distribute_shaders</span></span>(<span>self, tree, input_shader=None, special_keys=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def distribute_shaders(self, tree, input_shader=None, special_keys=None):
+    return_shader=None
+    if isinstance(tree, dict):
+        operation=list(tree.keys())[0]
+        tree[&#39;shader&#39;]=self.add_shader(shader_type=&#39;Math&#39;)
+        tree[&#39;shader&#39;].properties[&#39;operation&#39;]=self.operations[operation]
+        if tree[&#39;parent&#39;] is None:
+            return_shader=tree[&#39;shader&#39;]
+        subtree=tree[operation]
+        for node in subtree:
+            if isinstance(node, dict):
+                node[&#39;parent&#39;]=tree[&#39;shader&#39;]
+            self.distribute_shaders(node, input_shader=input_shader,
+                                    special_keys=special_keys)
+        for i, node in enumerate(subtree):
+            if isinstance(node, dict):
+                tree[&#39;shader&#39;].inputs[i]=node[&#39;shader&#39;].outputs[&#39;Value&#39;]
+            else:
+                try:
+                    tree[&#39;shader&#39;].inputs[i]=float(node)
+                except ValueError:
+                    if node==&#39;e&#39;:
+                        tree[&#39;shader&#39;].inputs[i]=np.e
+                    if node in special_keys.keys():
+                        tree[&#39;shader&#39;].inputs[i]=special_keys[node]
+                        
+    else:
+        pass
+    return return_shader</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.get_material"><code class="name flex">
+<span>def <span class="ident">get_material</span></span>(<span>self, name)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_material(self, name):
+    return Communication.ask(&#39;get_material&#39;, name=name)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.get_material_names"><code class="name flex">
+<span>def <span class="ident">get_material_names</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_material_names(self):
+    return Communication.ask(&#39;get_material_names&#39;)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.get_shader"><code class="name flex">
+<span>def <span class="ident">get_shader</span></span>(<span>self, name=None, find_math_operation=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_shader(self, name=None, find_math_operation=None):
+    if find_math_operation is not None:
+        for node_name in self.shadernodes_dimensions.keys():
+            if &#39;Math&#39; in node_name:
+                node=self.get_shader(
+                        name=node_name)
+                if (node._properties[&#39;operation&#39;]==
+                    self.operations[find_math_operation]):
+                    return node
+    else:
+        return ShaderNode(parent=self.material_object, name=name)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.glowing"><code class="name flex">
+<span>def <span class="ident">glowing</span></span>(<span>self, color='#FFFFFF', strength=10, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def glowing(self, color=&#39;#FFFFFF&#39;, strength=10, **kwargs):
+    emission=self.add_shader(&#39;Emission&#39;)
+    emission.inputs[&#39;Color&#39;]=self.convert_color(color)
+    emission.inputs[&#39;Strength&#39;]=strength
+    output=self.get_shader(&#39;Material Output&#39;)
+    add_shader=self.add_shader(&#39;Add&#39;)
+    add_shader.inputs[0]=output.inputs[&#39;Surface&#39;]
+    output.inputs[&#39;Surface&#39;]=add_shader.outputs[&#39;Shader&#39;]
+    add_shader.inputs[1]=emission.outputs[&#39;Emission&#39;]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.surface_noise"><code class="name flex">
+<span>def <span class="ident">surface_noise</span></span>(<span>self, scale=3, detail=2, roughness=0.5, dimension='2D', orientation='Z', origin='Generated')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def surface_noise(self, scale=3, detail=2, roughness=0.5,
+                  dimension=&#39;2D&#39;,
+                  orientation=&#39;Z&#39;, origin=&#39;Generated&#39;):
+    noise=self.add_shader(&#39;Noise&#39;)
+    coord=self.add_shader(&#39;Texture_coordinates&#39;)
+    output=self.get_shader(&#39;Material Output&#39;)
+    
+    if dimension==&#39;2D&#39;:
+        sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
+        sepxyz2=self.add_shader(&#39;Separate_XYZ&#39;)
+        combine=self.add_shader(&#39;Combine_XYZ&#39;)
+        combine.inputs[&#39;X&#39;]=sepxyz2.outputs[&#39;X&#39;]
+        combine.inputs[&#39;Y&#39;]=sepxyz2.outputs[&#39;Y&#39;]
+        sepxyz.inputs[&#39;Vector&#39;]=coord.outputs[&#39;Normal&#39;]
+        sup=self.add_shader(&#39;Math&#39;)
+        sup.properties[&#39;operation&#39;]=self.operations[&#39;&gt;&#39;]
+        sup.inputs[0]=sepxyz.outputs[orientation]
+        sup.inputs[1]=0.5
+        mult=self.add_shader(&#39;Math&#39;)
+        mult.properties[&#39;operation&#39;]=self.operations[&#39;*&#39;]
+        mult.inputs[0]=sup.outputs[&#39;Value&#39;]
+        sepxyz2.inputs[&#39;Vector&#39;]=coord.outputs[origin]
+        noise.inputs[&#39;Vector&#39;]=combine.outputs[&#39;Vector&#39;]
+        mult.inputs[1]=noise.outputs[&#39;Fac&#39;]
+        output.inputs[&#39;Displacement&#39;]=mult.outputs[&#39;Value&#39;]
+    elif dimension==&#39;3D&#39;:
+        output.inputs[&#39;Displacement&#39;]=noise.outputs[&#39;Fac&#39;]
+    noise.inputs[&#39;Scale&#39;]=scale
+    noise.inputs[&#39;Detail&#39;]=detail
+    noise.inputs[&#39;Roughness&#39;]=roughness</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Material.z_dependant_color"><code class="name flex">
+<span>def <span class="ident">z_dependant_color</span></span>(<span>self, colors=None, positions=None, coordinate='Generated')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def z_dependant_color(self, colors=None, positions=None,
+                      coordinate=&#39;Generated&#39;):
+    coord=self.add_shader(&#39;Texture_coordinates&#39;)
+    sep=self.add_shader(&#39;Separate_XYZ&#39;)
+    sep.inputs[&#39;Vector&#39;]=coord.outputs[coordinate]
+    color_ramp=self.add_shader(&#39;Color_Ramp&#39;)
+    color_ramp.inputs[&#39;Fac&#39;]=sep.outputs[&#39;Z&#39;]
+    color_ramp.properties[&#39;color_ramp&#39;]=dict({&#39;positions&#39;:positions,
+                         &#39;colors&#39;:[self.convert_color(color) for color in colors]})
+    principled=self.get_shader(&#39;Principled BSDF&#39;)
+    principled.inputs[&#39;Base Color&#39;]=color_ramp.outputs[&#39;Color&#39;]</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.sending_data.Mesh"><code class="flex name class">
+<span>class <span class="ident">Mesh</span></span>
+<span>(</span><span>mesh=None, cells=None, points=None, thickness=None, name='mesh', subdivide=1, material=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>a class encompassing the geometric absolute positioning
+of vertices of meshes</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Mesh(Object, GeometricEntity):
+    
+    def __init__(self, mesh=None, cells=None, points=None,
+                 thickness=None, name=&#39;mesh&#39;, subdivide=1,
+                 material=None, **kwargs):
+        self.subdivide=subdivide
+        self.thickness=thickness
+        self.cells=cells
+        self.points=points
+        self.mesh=mesh
+        self.name_obj, self.name_msh = self.send_mesh(self.mesh, 
+                                                      thickness=self.thickness,
+                                                      name=name)
+        super().__init__(**kwargs)
+        if material is not None:
+            self.assign_material(material)
+        
+    def send_mesh(self, mesh, thickness=None, name=&#39;mesh&#39;):
+        if self.mesh is not None:
+            points=[[float(coord) for coord in p] for p in self.points]
+            cells=[]
+            for celltype in self.cells:
+                if celltype.type==&#39;triangle&#39;:
+                    cells+=[[int(ind) for ind in cell] for cell in celltype.data]
+            
+        else:
+            cells=[]
+            points=[[coord for coord in p] for p in self.points]
+            for celltype in self.cells:
+                if not isinstance(celltype[0], str):
+                    cells+=[[int(ind) for ind in celltype]]
+                elif celltype[0]==&#39;triangle&#39;:
+                    cells+=[[int(ind) for ind in cell] for cell in celltype[1]]
+        return Communication.ask(&#39;create_mesh&#39;,
+                                 name=name,
+                                 thickness=thickness,
+                                 subdivide=self.subdivide,
+                                 points=points,
+                                 cells=cells) 
+    
+    def insert_mesh_keyframe(self, frame=&#39;current&#39;,
+                             waiting_time_between_points=0.01):
+         Communication.ask(&#39;insert_keyframe_mesh&#39;,
+                           name_msh=self.name_msh,
+                           frame=frame,
+                           waiting_time_between_points=waiting_time_between_points)
+        
+    def cut_mesh(self, plane_points, plane_normals):
+        Communication.send(&#39;cut_mesh&#39;, name_msh=self.name_msh,
+                           planes_co=plane_points,
+                           planes_no=plane_normals)
+    
+    def smooth(self):
+        Communication.ask(&#39;smooth&#39;, name_msh=self.name_msh)
+    
+    def divide(self, Nx=None, Ny=None, Nz=None):
+        if Nx is not None:
+            xs=np.linspace(self.xmin, self.xmax, Nx)
+            self.cut_mesh([[x,0,0] for x in xs],
+                          [[1,0,0] for x in xs])
+        if Ny is not None:
+            ys=np.linspace(self.ymin, self.ymax, Ny)
+            self.cut_mesh([[0,y,0] for y in ys],
+                          [[0,1,0] for y in ys])
+        if Nz is not None:
+            zs=np.linspace(self.zmin, self.zmax, Nz)
+            self.cut_mesh([[0,0,z] for z in zs],
+                          [[0,0,1] for z in zs])
+    
+    @property
+    def use_auto_smooth(self):
+        return self._properties[[&#39;data&#39;, &#39;use_auto_smooth&#39;]]
+    
+    @use_auto_smooth.setter
+    def use_auto_smooth(self, val):
+        self._properties[[&#39;data&#39;, &#39;use_auto_smooth&#39;]]=val
+    
+    @property
+    def auto_smooth_angle(self):
+        return self._properties[[&#39;data&#39;, &#39;auto_smooth_angle&#39;]]
+    
+    @auto_smooth_angle.setter
+    def auto_smooth_angle(self, val):
+        self._properties[[&#39;data&#39;, &#39;auto_smooth_angle&#39;]]=val
+
+    @property
+    def parent(self):
+        return Object(self.name_obj)
+
+    @property
+    def vertices(self):
+        return np.array(Communication.ask(&#39;get_vertices&#39;,
+                                          name_msh=self.name_msh))
+    
+    @vertices.setter
+    def vertices(self, val):
+        if hasattr(val, &#39;tolist&#39;):
+            val=val.tolist()
+        Communication.send(&#39;set_vertices&#39;,
+                           name_msh=self.name_msh,
+                           val=val)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.Object" href="#BlenderPy.sending_data.Object">Object</a></li>
+<li><a title="BlenderPy.sending_data.GeometricEntity" href="#BlenderPy.sending_data.GeometricEntity">GeometricEntity</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.meshing.PlaneGeom" href="meshing.html#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></li>
+<li><a title="BlenderPy.meshing.Sphere" href="meshing.html#BlenderPy.meshing.Sphere">Sphere</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Mesh.auto_smooth_angle"><code class="name">var <span class="ident">auto_smooth_angle</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def auto_smooth_angle(self):
+    return self._properties[[&#39;data&#39;, &#39;auto_smooth_angle&#39;]]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Mesh.parent"><code class="name">var <span class="ident">parent</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def parent(self):
+    return Object(self.name_obj)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Mesh.use_auto_smooth"><code class="name">var <span class="ident">use_auto_smooth</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def use_auto_smooth(self):
+    return self._properties[[&#39;data&#39;, &#39;use_auto_smooth&#39;]]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Mesh.vertices"><code class="name">var <span class="ident">vertices</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def vertices(self):
+    return np.array(Communication.ask(&#39;get_vertices&#39;,
+                                      name_msh=self.name_msh))</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Mesh.cut_mesh"><code class="name flex">
+<span>def <span class="ident">cut_mesh</span></span>(<span>self, plane_points, plane_normals)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def cut_mesh(self, plane_points, plane_normals):
+    Communication.send(&#39;cut_mesh&#39;, name_msh=self.name_msh,
+                       planes_co=plane_points,
+                       planes_no=plane_normals)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Mesh.divide"><code class="name flex">
+<span>def <span class="ident">divide</span></span>(<span>self, Nx=None, Ny=None, Nz=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def divide(self, Nx=None, Ny=None, Nz=None):
+    if Nx is not None:
+        xs=np.linspace(self.xmin, self.xmax, Nx)
+        self.cut_mesh([[x,0,0] for x in xs],
+                      [[1,0,0] for x in xs])
+    if Ny is not None:
+        ys=np.linspace(self.ymin, self.ymax, Ny)
+        self.cut_mesh([[0,y,0] for y in ys],
+                      [[0,1,0] for y in ys])
+    if Nz is not None:
+        zs=np.linspace(self.zmin, self.zmax, Nz)
+        self.cut_mesh([[0,0,z] for z in zs],
+                      [[0,0,1] for z in zs])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Mesh.insert_mesh_keyframe"><code class="name flex">
+<span>def <span class="ident">insert_mesh_keyframe</span></span>(<span>self, frame='current', waiting_time_between_points=0.01)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def insert_mesh_keyframe(self, frame=&#39;current&#39;,
+                         waiting_time_between_points=0.01):
+     Communication.ask(&#39;insert_keyframe_mesh&#39;,
+                       name_msh=self.name_msh,
+                       frame=frame,
+                       waiting_time_between_points=waiting_time_between_points)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Mesh.send_mesh"><code class="name flex">
+<span>def <span class="ident">send_mesh</span></span>(<span>self, mesh, thickness=None, name='mesh')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def send_mesh(self, mesh, thickness=None, name=&#39;mesh&#39;):
+    if self.mesh is not None:
+        points=[[float(coord) for coord in p] for p in self.points]
+        cells=[]
+        for celltype in self.cells:
+            if celltype.type==&#39;triangle&#39;:
+                cells+=[[int(ind) for ind in cell] for cell in celltype.data]
+        
+    else:
+        cells=[]
+        points=[[coord for coord in p] for p in self.points]
+        for celltype in self.cells:
+            if not isinstance(celltype[0], str):
+                cells+=[[int(ind) for ind in celltype]]
+            elif celltype[0]==&#39;triangle&#39;:
+                cells+=[[int(ind) for ind in cell] for cell in celltype[1]]
+    return Communication.ask(&#39;create_mesh&#39;,
+                             name=name,
+                             thickness=thickness,
+                             subdivide=self.subdivide,
+                             points=points,
+                             cells=cells) </code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Mesh.smooth"><code class="name flex">
+<span>def <span class="ident">smooth</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def smooth(self):
+    Communication.ask(&#39;smooth&#39;, name_msh=self.name_msh)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.sending_data.GeometricEntity" href="#BlenderPy.sending_data.GeometricEntity">GeometricEntity</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.center" href="#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.dx" href="#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.dy" href="#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.dz" href="#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.set_origin" href="#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.vertices_absolute" href="#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.xmax" href="#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.xmin" href="#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.ymax" href="#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.ymin" href="#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.zmax" href="#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.zmin" href="#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="BlenderPy.sending_data.MetallicMaterial"><code class="flex name class">
+<span>class <span class="ident">MetallicMaterial</span></span>
+<span>(</span><span>name='metal', color='#DCC811', randomness=1, detail=10, roughness=0.5, orientation='Z', origin='Generated', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MetallicMaterial(Material):
+
+    def __init__(self, name=&#39;metal&#39;, color=&#39;#DCC811&#39;, randomness=1, detail=10,
+                 roughness=0.5, orientation=&#39;Z&#39;, origin=&#39;Generated&#39;,
+                 **kwargs):
+        super().__init__(name, color, **kwargs) 
+        output=self.get_shader(&#39;Material Output&#39;)
+        glossy=self.add_shader(&#39;Glossy&#39;)
+        coord=self.add_shader(&#39;Texture_coordinates&#39;)
+        output.inputs[&#39;Surface&#39;]=glossy.outputs[&#39;BSDF&#39;]
+        glossy.inputs[&#39;Color&#39;]=self.convert_color(color)
+        noise=self.add_shader(&#39;Noise&#39;)
+        coord=self.add_shader(&#39;Texture_coordinates&#39;)
+        noise.inputs[&#39;Vector&#39;]=coord.outputs[origin]
+        
+        noise.inputs[&#39;Scale&#39;]=randomness
+        noise.inputs[&#39;Detail&#39;]=detail
+        noise.inputs[&#39;Roughness&#39;]=roughness
+        sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
+        sepxyz.inputs[&#39;Vector&#39;]=coord.outputs[&#39;Normal&#39;]
+        sup=self.add_shader(&#39;Math&#39;)
+        sup.properties[&#39;operation&#39;]=self.operations[&#39;&gt;&#39;]
+        sup.inputs[0]=sepxyz.outputs[orientation]
+        sup.inputs[1]=0.5
+        mult=self.add_shader(&#39;Math&#39;)
+        mult.properties[&#39;operation&#39;]=self.operations[&#39;*&#39;]
+        mult.inputs[0]=sup.outputs[&#39;Value&#39;]
+        mult.inputs[1]=noise.outputs[&#39;Fac&#39;]
+        output.inputs[&#39;Displacement&#39;]=mult.outputs[&#39;Value&#39;]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.Material" href="#BlenderPy.sending_data.Material">Material</a></li>
+</ul>
+</dd>
+<dt id="BlenderPy.sending_data.Modifier"><code class="flex name class">
+<span>class <span class="ident">Modifier</span></span>
+<span>(</span><span>parent=None, modifier_type='CURVE', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Modifier:
+    
+    def __init__(self, parent=None, modifier_type=&#39;CURVE&#39;, **kwargs):
+        kwargs[&#39;modifier_type&#39;]=modifier_type
+        kwargs[&#39;parent_name&#39;]=parent
+        self.parent_name=parent
+        self.name=Communication.ask(&#39;create_modifier&#39;, **kwargs)
+        self._properties=PropertyDict(self.name, self.parent_name,
+                                      func=&#39;modifier_property&#39;)
+    
+    @property
+    def properties(self):
+        return self._properties
+    
+    def apply(self):
+        if self.properties[&#39;type&#39;]==&#39;BOOLEAN&#39;:
+            kwargs=dict({&#39;name&#39;:self.name,
+                         &#39;name_obj&#39;:self.parent_name})
+            time.sleep(0.1)
+            Communication.ask(&#39;apply_modifier&#39;, **kwargs)</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Modifier.properties"><code class="name">var <span class="ident">properties</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def properties(self):
+    return self._properties</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Modifier.apply"><code class="name flex">
+<span>def <span class="ident">apply</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def apply(self):
+    if self.properties[&#39;type&#39;]==&#39;BOOLEAN&#39;:
+        kwargs=dict({&#39;name&#39;:self.name,
+                     &#39;name_obj&#39;:self.parent_name})
+        time.sleep(0.1)
+        Communication.ask(&#39;apply_modifier&#39;, **kwargs)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.sending_data.Object"><code class="flex name class">
+<span>class <span class="ident">Object</span></span>
+<span>(</span><span>name_obj=None, filepath=None, location=None, scale=None, material=None, rotation=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Object:
+    
+    def __init__(self, name_obj=None, filepath=None,
+                 location=None, scale=None,
+                 material=None, rotation=None,
+                 **kwargs):
+        if name_obj is not None:
+            self.name_obj=name_obj
+        self._properties=PropertyDict(&#39;&#39;, self.name_obj, func=&#39;object_property&#39;)
+        self.constraints=[]
+        self.modifiers=[]
+        if filepath is not None:
+            self.load(filepath)
+        if location is not None:
+            self.location=location
+        if scale is not None:
+            self.scale=scale
+        if rotation is not None:
+            self.rotation=rotation
+        if material is not None:
+            self.assign_material(material)
+    
+    def assign_material(self, material):
+        if isinstance(material, list):
+            kwargs = dict({&#39;name_obj&#39;:self.name_obj,
+                           &#39;name_mat&#39;:[mat.material_object for mat in material]})
+        else:
+            kwargs = dict({&#39;name_obj&#39;:self.name_obj,
+                           &#39;name_mat&#39;:material.material_object})
+        Communication.send(&#39;assign_material&#39;, **kwargs)
+    
+    def load(self, filepath):
+        with open(filepath, &#39;r&#39;) as f:
+            data=json.load(f)
+        for k, v in data.items():
+            self.properties[k]=v
+    
+    def duplicate(self):
+        return Object(name_obj=Communication.ask(&#39;duplicate&#39;,
+                                                 name_obj=self.name_obj))
+    
+    def follow_path(self, target=None, use_curve_follow=True,
+                    forward_axis=&#39;FORWARD_X&#39;):
+        constraint=self.assign_constraint(constraint_type=&#39;FOLLOW_PATH&#39;)
+        constraint.properties[&#39;target&#39;]=target
+        constraint.properties[&#39;use_curve_follow&#39;]=use_curve_follow
+        constraint.properties[&#39;forward_axis&#39;]=forward_axis
+        self.constraints.append(constraint)
+        return constraint
+    
+    def insert_keyframe(self, key, frame=&#39;current&#39;):
+        Communication.ask(&#39;insert_keyframe_object&#39;,
+                          key=key, frame=frame,
+                          name_obj=self.name_obj)
+        
+    def assign_constraint(self, constraint_type=&#39;FOLLOW_PATH&#39;, **kwargs):
+        return Constraint(parent=self.name_obj,
+                                   constraint_type=constraint_type,
+                                   **kwargs)
+    
+    def curve_modifier(self, target=None, deform_axis=&#39;POS_X&#39;):
+        modifier=self.assign_modifier(modifier_type=&#39;CURVE&#39;)
+        modifier.properties[&#39;object&#39;]=target
+        modifier.properties[&#39;deform_axis&#39;]=deform_axis
+        self.modifiers.append(modifier)
+    
+    def assign_modifier(self, modifier_type=&#39;CURVE&#39;, **kwargs):
+        return Modifier(parent=self.name_obj,
+                                   modifier_type=modifier_type,
+                                   **kwargs)
+    
+    def subtract(self, target):
+        boolean=self.assign_modifier(modifier_type=&#39;BOOLEAN&#39;)
+        boolean.properties[&#39;object&#39;]=target
+        boolean.apply()
+    
+    def copy_location(self, target=None):
+        self.assign_constraint(constraint_type=&#39;COPY_LOCATION&#39;)
+        self.constraint.properties[&#39;target&#39;]=target
+    
+    def to_dict(self, **kwargs):
+        kwargs.update(dict({&#39;name_obj&#39;:self.name_obj}))
+        return kwargs
+    
+    def remove(self):
+        Communication.send(&#39;remove_object&#39;, **self.to_dict())
+        
+    @property
+    def properties(self):
+        return self._properties
+    
+    @property
+    def scale(self):
+        return self.properties[&#39;scale&#39;]
+    
+    @scale.setter
+    def scale(self, val):
+        self.properties[&#39;scale&#39;]=val
+    
+    @property
+    def location(self):
+        return self.properties[&#39;location&#39;]
+    
+    @location.setter
+    def location(self, val):
+        self.properties[&#39;location&#39;]=val
+    
+    @property
+    def rotation(self):
+        return self.properties[&#39;rotation_euler&#39;]
+    
+    @rotation.setter
+    def rotation(self, val):
+        self.properties[&#39;rotation_euler&#39;]=val
+    
+    @property
+    def x(self):
+        return self.location[0]
+    
+    @property
+    def y(self):
+        return self.location[1]
+    
+    @property
+    def z(self):
+        return self.location[2]
+    
+    @x.setter
+    def x(self, val):
+        self.location=dict({&#39;x&#39;:val})
+    
+    @y.setter
+    def y(self, val):
+        self.location=dict({&#39;y&#39;:val})
+    
+    @z.setter
+    def z(self, val):
+        self.location=dict({&#39;z&#39;:val})
+    
+    @property
+    def matrix_world(self):
+        return np.array(self.properties[&#39;matrix_world&#39;])</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.Camera" href="#BlenderPy.sending_data.Camera">Camera</a></li>
+<li><a title="BlenderPy.sending_data.Curve" href="#BlenderPy.sending_data.Curve">Curve</a></li>
+<li><a title="BlenderPy.sending_data.Light" href="#BlenderPy.sending_data.Light">Light</a></li>
+<li><a title="BlenderPy.sending_data.Mesh" href="#BlenderPy.sending_data.Mesh">Mesh</a></li>
+</ul>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Object.location"><code class="name">var <span class="ident">location</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def location(self):
+    return self.properties[&#39;location&#39;]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.matrix_world"><code class="name">var <span class="ident">matrix_world</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def matrix_world(self):
+    return np.array(self.properties[&#39;matrix_world&#39;])</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.properties"><code class="name">var <span class="ident">properties</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def properties(self):
+    return self._properties</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.rotation"><code class="name">var <span class="ident">rotation</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def rotation(self):
+    return self.properties[&#39;rotation_euler&#39;]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.scale"><code class="name">var <span class="ident">scale</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def scale(self):
+    return self.properties[&#39;scale&#39;]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.x"><code class="name">var <span class="ident">x</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def x(self):
+    return self.location[0]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.y"><code class="name">var <span class="ident">y</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def y(self):
+    return self.location[1]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.z"><code class="name">var <span class="ident">z</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def z(self):
+    return self.location[2]</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Object.assign_constraint"><code class="name flex">
+<span>def <span class="ident">assign_constraint</span></span>(<span>self, constraint_type='FOLLOW_PATH', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def assign_constraint(self, constraint_type=&#39;FOLLOW_PATH&#39;, **kwargs):
+    return Constraint(parent=self.name_obj,
+                               constraint_type=constraint_type,
+                               **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.assign_material"><code class="name flex">
+<span>def <span class="ident">assign_material</span></span>(<span>self, material)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def assign_material(self, material):
+    if isinstance(material, list):
+        kwargs = dict({&#39;name_obj&#39;:self.name_obj,
+                       &#39;name_mat&#39;:[mat.material_object for mat in material]})
+    else:
+        kwargs = dict({&#39;name_obj&#39;:self.name_obj,
+                       &#39;name_mat&#39;:material.material_object})
+    Communication.send(&#39;assign_material&#39;, **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.assign_modifier"><code class="name flex">
+<span>def <span class="ident">assign_modifier</span></span>(<span>self, modifier_type='CURVE', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def assign_modifier(self, modifier_type=&#39;CURVE&#39;, **kwargs):
+    return Modifier(parent=self.name_obj,
+                               modifier_type=modifier_type,
+                               **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.copy_location"><code class="name flex">
+<span>def <span class="ident">copy_location</span></span>(<span>self, target=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def copy_location(self, target=None):
+    self.assign_constraint(constraint_type=&#39;COPY_LOCATION&#39;)
+    self.constraint.properties[&#39;target&#39;]=target</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.curve_modifier"><code class="name flex">
+<span>def <span class="ident">curve_modifier</span></span>(<span>self, target=None, deform_axis='POS_X')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def curve_modifier(self, target=None, deform_axis=&#39;POS_X&#39;):
+    modifier=self.assign_modifier(modifier_type=&#39;CURVE&#39;)
+    modifier.properties[&#39;object&#39;]=target
+    modifier.properties[&#39;deform_axis&#39;]=deform_axis
+    self.modifiers.append(modifier)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.duplicate"><code class="name flex">
+<span>def <span class="ident">duplicate</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def duplicate(self):
+    return Object(name_obj=Communication.ask(&#39;duplicate&#39;,
+                                             name_obj=self.name_obj))</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.follow_path"><code class="name flex">
+<span>def <span class="ident">follow_path</span></span>(<span>self, target=None, use_curve_follow=True, forward_axis='FORWARD_X')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def follow_path(self, target=None, use_curve_follow=True,
+                forward_axis=&#39;FORWARD_X&#39;):
+    constraint=self.assign_constraint(constraint_type=&#39;FOLLOW_PATH&#39;)
+    constraint.properties[&#39;target&#39;]=target
+    constraint.properties[&#39;use_curve_follow&#39;]=use_curve_follow
+    constraint.properties[&#39;forward_axis&#39;]=forward_axis
+    self.constraints.append(constraint)
+    return constraint</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.insert_keyframe"><code class="name flex">
+<span>def <span class="ident">insert_keyframe</span></span>(<span>self, key, frame='current')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def insert_keyframe(self, key, frame=&#39;current&#39;):
+    Communication.ask(&#39;insert_keyframe_object&#39;,
+                      key=key, frame=frame,
+                      name_obj=self.name_obj)</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.load"><code class="name flex">
+<span>def <span class="ident">load</span></span>(<span>self, filepath)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def load(self, filepath):
+    with open(filepath, &#39;r&#39;) as f:
+        data=json.load(f)
+    for k, v in data.items():
+        self.properties[k]=v</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.remove"><code class="name flex">
+<span>def <span class="ident">remove</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove(self):
+    Communication.send(&#39;remove_object&#39;, **self.to_dict())</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.subtract"><code class="name flex">
+<span>def <span class="ident">subtract</span></span>(<span>self, target)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def subtract(self, target):
+    boolean=self.assign_modifier(modifier_type=&#39;BOOLEAN&#39;)
+    boolean.properties[&#39;object&#39;]=target
+    boolean.apply()</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.to_dict"><code class="name flex">
+<span>def <span class="ident">to_dict</span></span>(<span>self, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_dict(self, **kwargs):
+    kwargs.update(dict({&#39;name_obj&#39;:self.name_obj}))
+    return kwargs</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.sending_data.PositionDependantMaterial"><code class="flex name class">
+<span>class <span class="ident">PositionDependantMaterial</span></span>
+<span>(</span><span>expression, colors=None, positions=None, coordinate='Generated', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PositionDependantMaterial(Material):
+    
+    def __init__(self, expression, 
+                 colors=None,
+                 positions=None,
+                 coordinate=&#39;Generated&#39;,
+                 **kwargs):
+        super().__init__(**kwargs)
+        coord=self.add_shader(&#39;Texture_coordinates&#39;)
+        sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
+        sepxyz.inputs[&#39;Vector&#39;]=coord.outputs[coordinate]
+        color_ramp=self.add_shader(&#39;Color_Ramp&#39;)
+        if len(expression)==1:
+            color_ramp.inputs[&#39;Fac&#39;]=sepxyz.outputs[expression]
+        else:
+            shader=self.coordinate_expression(expression, 
+                                           special_keys=dict({&#39;x&#39;:sepxyz.outputs[&#39;X&#39;],
+                                                         &#39;y&#39;:sepxyz.outputs[&#39;Y&#39;],
+                                                         &#39;z&#39;:sepxyz.outputs[&#39;Z&#39;]}))
+            color_ramp.inputs[&#39;Fac&#39;]=shader.outputs[&#39;Value&#39;]
+        color_ramp.properties[&#39;color_ramp&#39;]=dict({&#39;positions&#39;:positions,
+                             &#39;colors&#39;:[self.convert_color(color) for color in colors]})
+        principled=self.get_shader(&#39;Principled BSDF&#39;)
+        principled.inputs[&#39;Base Color&#39;]=color_ramp.outputs[&#39;Color&#39;]</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.Material" href="#BlenderPy.sending_data.Material">Material</a></li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.ZColorRampMaterial" href="#BlenderPy.sending_data.ZColorRampMaterial">ZColorRampMaterial</a></li>
+</ul>
+</dd>
+<dt id="BlenderPy.sending_data.PropertyDict"><code class="flex name class">
+<span>class <span class="ident">PropertyDict</span></span>
+<span>(</span><span>name=None, name_obj=None, func=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>dict() -&gt; new empty dictionary
+dict(mapping) -&gt; new dictionary initialized from a mapping object's
+(key, value) pairs
+dict(iterable) -&gt; new dictionary initialized as if via:
+d = {}
+for k, v in iterable:
+d[k] = v
+dict(**kwargs) -&gt; new dictionary initialized with the name=value pairs
+in the keyword argument list.
+For example:
+dict(one=1, two=2)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PropertyDict(dict):
+    
+    def __init__(self, name=None, name_obj=None, func=None, **kwargs):
+        super().__init__()
+        self.name=name
+        self.name_obj=name_obj
+        self.func=func
+        self.params=kwargs
+        
+    def __setitem__(self, key, value):
+        kwargs=self.params.copy()
+        kwargs.update(dict({&#39;key&#39;:key,
+                     &#39;parent_name&#39;:self.name,
+                     &#39;parent_name_obj&#39;:self.name_obj}))
+        if hasattr(value, &#39;to_dict&#39;):
+            value=value.to_dict()
+        kwargs[&#39;value&#39;]=value
+        Communication.ask(&#39;set_&#39;+self.func,
+                          **kwargs)
+    
+    def __getitem__(self, key):
+        kwargs=self.params.copy()
+        kwargs.update(dict({&#39;key&#39;:key,
+                     &#39;parent_name&#39;:self.name,
+                     &#39;parent_name_obj&#39;:self.name_obj}))
+        res=Communication.ask(&#39;get_&#39;+self.func, **kwargs)
+        if isinstance(res, dict):
+            return Object(**res)
+        else:
+            return res</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.dict</li>
+</ul>
+</dd>
+<dt id="BlenderPy.sending_data.Scene"><code class="flex name class">
+<span>class <span class="ident">Scene</span></span>
+<span>(</span><span>use_bloom=True, volumetric_tile_size=2, frame_current=1, frame_start=1, frame_end=250)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class representing a scene. Used for changing the frame numbers,
+and render properties</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Scene:
+    &#39;&#39;&#39;Class representing a scene. Used for changing the frame numbers,
+    and render properties&#39;&#39;&#39;
+    
+    def __init__(self, use_bloom=True, volumetric_tile_size=2,
+                 frame_current=1, frame_start=1,
+                 frame_end=250):
+        self._properties=PropertyDict(func=&#39;scene_property&#39;)
+        self.use_bloom=use_bloom
+        self.volumetric_tile_size=volumetric_tile_size
+        self.frame_current=frame_current
+        self.frame_start=frame_start
+        self.frame_end=frame_end
+    
+    @property
+    def volumetric_tile_size(self):
+        &#39;&#39;&#39;for the eevee render, change the tile size.
+        It should be a power of two, and the lowest is 2, 
+        which corresponds to the finest representation of
+        an emission volume&#39;&#39;&#39;
+        return int(self._properties[[&#39;eevee&#39;, &#39;volumetric_tile_size&#39;]])
+    
+    @volumetric_tile_size.setter
+    def volumetric_tile_size(self, val):
+        self._properties[[&#39;eevee&#39;, &#39;volumetric_tile_size&#39;]]=str(val)
+    
+    @property
+    def use_bloom(self):
+        &#39;&#39;&#39;for the eevee render, activate or not the bloom,
+        which creates a &#34;halo&#34; around emission materials&#39;&#39;&#39;
+        return self._properties[[&#39;eevee&#39;, &#39;use_bloom&#39;]]
+    
+    @use_bloom.setter
+    def use_bloom(self, val):
+        self._properties[[&#39;eevee&#39;, &#39;use_bloom&#39;]]=val
+    
+    @property
+    def frame_current(self):
+        &#39;&#39;&#39;current frame&#39;&#39;&#39;
+        return self._properties[&#39;frame_current&#39;]
+    
+    @frame_current.setter
+    def frame_current(self, val):
+        self._properties[&#39;frame_current&#39;]=val
+        
+    @property
+    def frame_start(self):
+        &#39;&#39;&#39;first frame number&#39;&#39;&#39;
+        return self._properties[&#39;frame_start&#39;]
+    
+    @frame_start.setter
+    def frame_start(self, val):
+        self._properties[&#39;frame_start&#39;]=val
+        
+    @property
+    def frame_end(self):
+        &#39;&#39;&#39;last frame number&#39;&#39;&#39;
+        return self._properties[&#39;frame_end&#39;]
+    
+    @frame_end.setter
+    def frame_end(self, val):
+        self._properties[&#39;frame_end&#39;]=val</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.sending_data.Scene.frame_current"><code class="name">var <span class="ident">frame_current</span></code></dt>
+<dd>
+<div class="desc"><p>current frame</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def frame_current(self):
+    &#39;&#39;&#39;current frame&#39;&#39;&#39;
+    return self._properties[&#39;frame_current&#39;]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Scene.frame_end"><code class="name">var <span class="ident">frame_end</span></code></dt>
+<dd>
+<div class="desc"><p>last frame number</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def frame_end(self):
+    &#39;&#39;&#39;last frame number&#39;&#39;&#39;
+    return self._properties[&#39;frame_end&#39;]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Scene.frame_start"><code class="name">var <span class="ident">frame_start</span></code></dt>
+<dd>
+<div class="desc"><p>first frame number</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def frame_start(self):
+    &#39;&#39;&#39;first frame number&#39;&#39;&#39;
+    return self._properties[&#39;frame_start&#39;]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Scene.use_bloom"><code class="name">var <span class="ident">use_bloom</span></code></dt>
+<dd>
+<div class="desc"><p>for the eevee render, activate or not the bloom,
+which creates a "halo" around emission materials</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def use_bloom(self):
+    &#39;&#39;&#39;for the eevee render, activate or not the bloom,
+    which creates a &#34;halo&#34; around emission materials&#39;&#39;&#39;
+    return self._properties[[&#39;eevee&#39;, &#39;use_bloom&#39;]]</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Scene.volumetric_tile_size"><code class="name">var <span class="ident">volumetric_tile_size</span></code></dt>
+<dd>
+<div class="desc"><p>for the eevee render, change the tile size.
+It should be a power of two, and the lowest is 2,
+which corresponds to the finest representation of
+an emission volume</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def volumetric_tile_size(self):
+    &#39;&#39;&#39;for the eevee render, change the tile size.
+    It should be a power of two, and the lowest is 2, 
+    which corresponds to the finest representation of
+    an emission volume&#39;&#39;&#39;
+    return int(self._properties[[&#39;eevee&#39;, &#39;volumetric_tile_size&#39;]])</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.sending_data.ShaderDict"><code class="flex name class">
+<span>class <span class="ident">ShaderDict</span></span>
+<span>(</span><span>name, material_name, func, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class representing the Shadernodes inputs, outputs
+and properties. It rewrites the setter and getter
+of the dict class to use the properties as a dictionary
+with the server</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ShaderDict(dict):
+    &#39;&#39;&#39;Class representing the Shadernodes inputs, outputs
+    and properties. It rewrites the setter and getter
+    of the dict class to use the properties as a dictionary 
+    with the server&#39;&#39;&#39;
+    
+    def __init__(self, name, material_name, func, **kwargs):
+        super().__init__()
+        self.name=name
+        self.material_name=material_name
+        self.func=func
+        self.params=kwargs
+        
+    def __setitem__(self, key, value):
+        kwargs=self.params.copy()
+        if hasattr(value, &#39;to_dict&#39;):
+            kwargs.update(value.to_dict(material_name=self.material_name,
+                                        from_name=self.name,
+                                       from_key=key))
+            Communication.ask(&#39;set_&#39;+self.func, **kwargs)
+        else:
+            kwargs.update(dict({&#39;material_name&#39;:self.material_name,
+                                &#39;from_name&#39;:self.name,
+                                &#39;from_key&#39;:key,
+                                &#39;value&#39;:value}))
+            Communication.ask(&#39;set_&#39;+self.func, **kwargs)
+    
+    def __getitem__(self, key):
+        kwargs=self.params.copy()
+        kwargs.update(dict({&#39;material_name&#39;:self.material_name,
+                     &#39;name&#39;:self.name,
+                     &#39;key&#39;:key}))
+        res=Communication.ask(&#39;get_&#39;+self.func, **kwargs)
+        if isinstance(res, dict):
+            node=ShaderNode(**res)
+            return ShaderSocket(material_parent=node.parent_name,
+                                parent=node, 
+                                key=res[&#39;socket_name&#39;],
+                                shader_socket_type=res[&#39;shader_socket_type&#39;])
+        else:
+            return res</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.dict</li>
+</ul>
+</dd>
+<dt id="BlenderPy.sending_data.ShaderNode"><code class="flex name class">
+<span>class <span class="ident">ShaderNode</span></span>
+<span>(</span><span>parent=None, shader_type='Emission', name=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ShaderNode:
+    
+    def __init__(self, parent=None, shader_type=&#39;Emission&#39;,
+                 name=None, **kwargs):
+        self.shader_type=shader_type
+        assert parent is not None
+        self._shadertype_dict=dict({&#39;Emission&#39;:&#39;ShaderNodeEmission&#39;,
+                         &#39;Add&#39;:&#39;ShaderNodeAddShader&#39;,
+                         &#39;Math&#39;:&#39;ShaderNodeMath&#39;,
+                         &#39;Texture_coordinates&#39;:&#39;ShaderNodeTexCoord&#39;,
+                         &#39;Separate_XYZ&#39;:&#39;ShaderNodeSeparateXYZ&#39;,
+                         &#39;Combine_XYZ&#39;:&#39;ShaderNodeCombineXYZ&#39;,
+                         &#39;Principled BSDF&#39;:&#39;ShaderNodeBsdfPrincipled&#39;,
+                         &#39;Material Output&#39;:&#39;ShaderNodeOutputMaterial&#39;,
+                         &#39;Image&#39;:&#39;ShaderNodeTexImage&#39;,
+                         &#39;Glossy&#39;:&#39;ShaderNodeBsdfGlossy&#39;,
+                         &#39;Noise&#39;:&#39;ShaderNodeTexNoise&#39;,
+                         &#39;Color_Ramp&#39;:&#39;ShaderNodeValToRGB&#39;})
+        if name==None:
+            kwargs[&#39;shader_type&#39;]=self._format_type(shader_type)
+            kwargs[&#39;parent_name&#39;]=parent
+            self.parent_name=parent
+            self.name=Communication.ask(&#39;create_shadernode&#39;, **kwargs)
+        else:
+            self.parent_name=parent
+            self.name=name
+        self._inputs=ShaderDict(self.name, self.parent_name, &#39;shadernode_input&#39;)
+        self._outputs=ShaderDict(self.name, self.parent_name, &#39;shadernode_output&#39;)
+        self._properties=ShaderDict(self.name, self.parent_name, &#39;shadernode_property&#39;)
+    
+    def to_dict(self, **kwargs):
+        params=dict({&#39;parent_name&#39;:self.parent_name,
+                     &#39;name&#39;:self.name})
+        params.update(kwargs)
+        return params
+    
+    def _format_type(self, key):
+        assert key in self._shadertype_dict.keys()
+        return self._shadertype_dict[key]
+    
+    def remove(self):
+        Communication.send(&#39;remove_shader&#39;, **self.to_dict())
+    
+    @property
+    def inputs(self):
+        return self._inputs
+    
+    @property
+    def outputs(self):
+        return self._outputs
+    
+    @property
+    def properties(self):
+        return self._properties</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.sending_data.ShaderNode.inputs"><code class="name">var <span class="ident">inputs</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def inputs(self):
+    return self._inputs</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.ShaderNode.outputs"><code class="name">var <span class="ident">outputs</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def outputs(self):
+    return self._outputs</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.ShaderNode.properties"><code class="name">var <span class="ident">properties</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def properties(self):
+    return self._properties</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.sending_data.ShaderNode.remove"><code class="name flex">
+<span>def <span class="ident">remove</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def remove(self):
+    Communication.send(&#39;remove_shader&#39;, **self.to_dict())</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.ShaderNode.to_dict"><code class="name flex">
+<span>def <span class="ident">to_dict</span></span>(<span>self, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_dict(self, **kwargs):
+    params=dict({&#39;parent_name&#39;:self.parent_name,
+                 &#39;name&#39;:self.name})
+    params.update(kwargs)
+    return params</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.sending_data.ShaderSocket"><code class="flex name class">
+<span>class <span class="ident">ShaderSocket</span></span>
+<span>(</span><span>material_parent=None, shader_socket_type='input', parent=None, key=None, value=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class representing the ShaderSocket of a ShaderNode</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ShaderSocket:
+    &#39;&#39;&#39;Class representing the ShaderSocket of a ShaderNode&#39;&#39;&#39;
+    
+    def __init__(self, material_parent=None, shader_socket_type=&#39;input&#39;,
+                 parent=None, key=None, value=None, **kwargs):
+        assert isinstance(parent, ShaderNode)
+        self.material_parent=material_parent
+        self.parent=parent
+        self.key=key
+        self.value=value
+        self.shader_socket_type=shader_socket_type
+        self._properties=PropertyDict(self.parent.name,
+                                      &#39;&#39;, func=&#39;shadersocket_property&#39;,
+                                      **self.to_dict(socket_key=self.key))
+    
+    def to_dict(self, **kwargs):
+        &#39;&#39;&#39;returns a dictionnary representing the ShaderSocket
+        and extra parameters with kwargs&#39;&#39;&#39;
+        params=dict({&#39;material_name&#39;:self.material_parent,
+                     &#39;parent_name&#39;:self.parent.name,
+                     &#39;shader_socket_type&#39;:self.shader_socket_type,
+                     &#39;key&#39;:self.key,
+                     &#39;value&#39;:self.value})
+        params.update(kwargs)
+        return params
+    
+    def insert_keyframe(self, key, frame=&#39;current&#39;):
+        Communication.ask(&#39;insert_keyframe_shadersocket&#39;,
+                   **self.to_dict(key_to_keyframe=key, 
+                                  frame=frame))
+    
+    @property
+    def properties(self):
+        return self._properties</code></pre>
+</details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="BlenderPy.sending_data.ShaderSocket.properties"><code class="name">var <span class="ident">properties</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def properties(self):
+    return self._properties</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="BlenderPy.sending_data.ShaderSocket.insert_keyframe"><code class="name flex">
+<span>def <span class="ident">insert_keyframe</span></span>(<span>self, key, frame='current')</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def insert_keyframe(self, key, frame=&#39;current&#39;):
+    Communication.ask(&#39;insert_keyframe_shadersocket&#39;,
+               **self.to_dict(key_to_keyframe=key, 
+                              frame=frame))</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.ShaderSocket.to_dict"><code class="name flex">
+<span>def <span class="ident">to_dict</span></span>(<span>self, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>returns a dictionnary representing the ShaderSocket
+and extra parameters with kwargs</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_dict(self, **kwargs):
+    &#39;&#39;&#39;returns a dictionnary representing the ShaderSocket
+    and extra parameters with kwargs&#39;&#39;&#39;
+    params=dict({&#39;material_name&#39;:self.material_parent,
+                 &#39;parent_name&#39;:self.parent.name,
+                 &#39;shader_socket_type&#39;:self.shader_socket_type,
+                 &#39;key&#39;:self.key,
+                 &#39;value&#39;:self.value})
+    params.update(kwargs)
+    return params</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="BlenderPy.sending_data.ZColorRampMaterial"><code class="flex name class">
+<span>class <span class="ident">ZColorRampMaterial</span></span>
+<span>(</span><span>colors=None, positions=None, coordinate='Generated', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ZColorRampMaterial(PositionDependantMaterial):
+    
+    def __init__(self, colors=None, positions=None,
+                          coordinate=&#39;Generated&#39;, **kwargs):
+        super().__init__(&#39;Z&#39;, colors=colors,
+                         positions=positions,
+                         coordinate=coordinate,
+                         **kwargs)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="BlenderPy.sending_data.PositionDependantMaterial" href="#BlenderPy.sending_data.PositionDependantMaterial">PositionDependantMaterial</a></li>
+<li><a title="BlenderPy.sending_data.Material" href="#BlenderPy.sending_data.Material">Material</a></li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="BlenderPy" href="index.html">BlenderPy</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="BlenderPy.sending_data.delete_all" href="#BlenderPy.sending_data.delete_all">delete_all</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="BlenderPy.sending_data.Camera" href="#BlenderPy.sending_data.Camera">Camera</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.sending_data.Camera.add_camera" href="#BlenderPy.sending_data.Camera.add_camera">add_camera</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Camera.cam_properties" href="#BlenderPy.sending_data.Camera.cam_properties">cam_properties</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.Communication" href="#BlenderPy.sending_data.Communication">Communication</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.sending_data.Communication.ask" href="#BlenderPy.sending_data.Communication.ask">ask</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Communication.parse" href="#BlenderPy.sending_data.Communication.parse">parse</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Communication.receive_all" href="#BlenderPy.sending_data.Communication.receive_all">receive_all</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Communication.send" href="#BlenderPy.sending_data.Communication.send">send</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.Constraint" href="#BlenderPy.sending_data.Constraint">Constraint</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.sending_data.Constraint.insert_keyframe" href="#BlenderPy.sending_data.Constraint.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Constraint.properties" href="#BlenderPy.sending_data.Constraint.properties">properties</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.Curve" href="#BlenderPy.sending_data.Curve">Curve</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.sending_data.Curve.points" href="#BlenderPy.sending_data.Curve.points">points</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.EmissionMaterial" href="#BlenderPy.sending_data.EmissionMaterial">EmissionMaterial</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.GaussianLaserMaterial" href="#BlenderPy.sending_data.GaussianLaserMaterial">GaussianLaserMaterial</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.GeometricEntity" href="#BlenderPy.sending_data.GeometricEntity">GeometricEntity</a></code></h4>
+<ul class="two-column">
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.center" href="#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.dx" href="#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.dy" href="#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.dz" href="#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.set_origin" href="#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.vertices_absolute" href="#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.xmax" href="#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.xmin" href="#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.ymax" href="#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.ymin" href="#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.zmax" href="#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
+<li><code><a title="BlenderPy.sending_data.GeometricEntity.zmin" href="#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.Image" href="#BlenderPy.sending_data.Image">Image</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.sending_data.Image.to_dict" href="#BlenderPy.sending_data.Image.to_dict">to_dict</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.Light" href="#BlenderPy.sending_data.Light">Light</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.sending_data.Light.add_light" href="#BlenderPy.sending_data.Light.add_light">add_light</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Light.light_properties" href="#BlenderPy.sending_data.Light.light_properties">light_properties</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Light.load_light" href="#BlenderPy.sending_data.Light.load_light">load_light</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.Material" href="#BlenderPy.sending_data.Material">Material</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.sending_data.Material.add_shader" href="#BlenderPy.sending_data.Material.add_shader">add_shader</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.convert_color" href="#BlenderPy.sending_data.Material.convert_color">convert_color</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.coordinate_expression" href="#BlenderPy.sending_data.Material.coordinate_expression">coordinate_expression</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.create_material" href="#BlenderPy.sending_data.Material.create_material">create_material</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.distribute_shaders" href="#BlenderPy.sending_data.Material.distribute_shaders">distribute_shaders</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.get_material" href="#BlenderPy.sending_data.Material.get_material">get_material</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.get_material_names" href="#BlenderPy.sending_data.Material.get_material_names">get_material_names</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.get_shader" href="#BlenderPy.sending_data.Material.get_shader">get_shader</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.glowing" href="#BlenderPy.sending_data.Material.glowing">glowing</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.height_shadernode_dimensions" href="#BlenderPy.sending_data.Material.height_shadernode_dimensions">height_shadernode_dimensions</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.surface_noise" href="#BlenderPy.sending_data.Material.surface_noise">surface_noise</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.width_shadernode_dimensions" href="#BlenderPy.sending_data.Material.width_shadernode_dimensions">width_shadernode_dimensions</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.xmax_shadernode_dimensions" href="#BlenderPy.sending_data.Material.xmax_shadernode_dimensions">xmax_shadernode_dimensions</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.xmin_shadernode_dimensions" href="#BlenderPy.sending_data.Material.xmin_shadernode_dimensions">xmin_shadernode_dimensions</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.ymax_shadernode_dimensions" href="#BlenderPy.sending_data.Material.ymax_shadernode_dimensions">ymax_shadernode_dimensions</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.ymin_shadernode_dimensions" href="#BlenderPy.sending_data.Material.ymin_shadernode_dimensions">ymin_shadernode_dimensions</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.z_dependant_color" href="#BlenderPy.sending_data.Material.z_dependant_color">z_dependant_color</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.Mesh" href="#BlenderPy.sending_data.Mesh">Mesh</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.sending_data.Mesh.auto_smooth_angle" href="#BlenderPy.sending_data.Mesh.auto_smooth_angle">auto_smooth_angle</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.cut_mesh" href="#BlenderPy.sending_data.Mesh.cut_mesh">cut_mesh</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.divide" href="#BlenderPy.sending_data.Mesh.divide">divide</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.insert_mesh_keyframe" href="#BlenderPy.sending_data.Mesh.insert_mesh_keyframe">insert_mesh_keyframe</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.parent" href="#BlenderPy.sending_data.Mesh.parent">parent</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.send_mesh" href="#BlenderPy.sending_data.Mesh.send_mesh">send_mesh</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.smooth" href="#BlenderPy.sending_data.Mesh.smooth">smooth</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.use_auto_smooth" href="#BlenderPy.sending_data.Mesh.use_auto_smooth">use_auto_smooth</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.vertices" href="#BlenderPy.sending_data.Mesh.vertices">vertices</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.MetallicMaterial" href="#BlenderPy.sending_data.MetallicMaterial">MetallicMaterial</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.Modifier" href="#BlenderPy.sending_data.Modifier">Modifier</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.sending_data.Modifier.apply" href="#BlenderPy.sending_data.Modifier.apply">apply</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Modifier.properties" href="#BlenderPy.sending_data.Modifier.properties">properties</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.Object" href="#BlenderPy.sending_data.Object">Object</a></code></h4>
+<ul class="two-column">
+<li><code><a title="BlenderPy.sending_data.Object.assign_constraint" href="#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.assign_material" href="#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.assign_modifier" href="#BlenderPy.sending_data.Object.assign_modifier">assign_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.copy_location" href="#BlenderPy.sending_data.Object.copy_location">copy_location</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.curve_modifier" href="#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.duplicate" href="#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.follow_path" href="#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.insert_keyframe" href="#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.load" href="#BlenderPy.sending_data.Object.load">load</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.location" href="#BlenderPy.sending_data.Object.location">location</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.matrix_world" href="#BlenderPy.sending_data.Object.matrix_world">matrix_world</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.properties" href="#BlenderPy.sending_data.Object.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.remove" href="#BlenderPy.sending_data.Object.remove">remove</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.rotation" href="#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.scale" href="#BlenderPy.sending_data.Object.scale">scale</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.subtract" href="#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.to_dict" href="#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.x" href="#BlenderPy.sending_data.Object.x">x</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.y" href="#BlenderPy.sending_data.Object.y">y</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.z" href="#BlenderPy.sending_data.Object.z">z</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.PositionDependantMaterial" href="#BlenderPy.sending_data.PositionDependantMaterial">PositionDependantMaterial</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.PropertyDict" href="#BlenderPy.sending_data.PropertyDict">PropertyDict</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.Scene" href="#BlenderPy.sending_data.Scene">Scene</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.sending_data.Scene.frame_current" href="#BlenderPy.sending_data.Scene.frame_current">frame_current</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Scene.frame_end" href="#BlenderPy.sending_data.Scene.frame_end">frame_end</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Scene.frame_start" href="#BlenderPy.sending_data.Scene.frame_start">frame_start</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Scene.use_bloom" href="#BlenderPy.sending_data.Scene.use_bloom">use_bloom</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Scene.volumetric_tile_size" href="#BlenderPy.sending_data.Scene.volumetric_tile_size">volumetric_tile_size</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.ShaderDict" href="#BlenderPy.sending_data.ShaderDict">ShaderDict</a></code></h4>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.ShaderNode" href="#BlenderPy.sending_data.ShaderNode">ShaderNode</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.sending_data.ShaderNode.inputs" href="#BlenderPy.sending_data.ShaderNode.inputs">inputs</a></code></li>
+<li><code><a title="BlenderPy.sending_data.ShaderNode.outputs" href="#BlenderPy.sending_data.ShaderNode.outputs">outputs</a></code></li>
+<li><code><a title="BlenderPy.sending_data.ShaderNode.properties" href="#BlenderPy.sending_data.ShaderNode.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.sending_data.ShaderNode.remove" href="#BlenderPy.sending_data.ShaderNode.remove">remove</a></code></li>
+<li><code><a title="BlenderPy.sending_data.ShaderNode.to_dict" href="#BlenderPy.sending_data.ShaderNode.to_dict">to_dict</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.ShaderSocket" href="#BlenderPy.sending_data.ShaderSocket">ShaderSocket</a></code></h4>
+<ul class="">
+<li><code><a title="BlenderPy.sending_data.ShaderSocket.insert_keyframe" href="#BlenderPy.sending_data.ShaderSocket.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.sending_data.ShaderSocket.properties" href="#BlenderPy.sending_data.ShaderSocket.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.sending_data.ShaderSocket.to_dict" href="#BlenderPy.sending_data.ShaderSocket.to_dict">to_dict</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="BlenderPy.sending_data.ZColorRampMaterial" href="#BlenderPy.sending_data.ZColorRampMaterial">ZColorRampMaterial</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

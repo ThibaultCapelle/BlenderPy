@@ -73,9 +73,7 @@ s.assign_material(glow_material)
 
 <img src="pictures/oscillation.jpg" alt="drawing" width="350"/>
 
-To see the animated result, you can click ![here](https://video.antopie.org/videos/embed/a417b12b-c46e-451b-9375-9557e7ac82d0?warningTitle=0)
-
-<iframe title="oscillation" src="https://video.antopie.org/videos/embed/a417b12b-c46e-451b-9375-9557e7ac82d0?warningTitle=0" allowfullscreen="" sandbox="allow-same-origin allow-scripts allow-popups" width="560" height="315" frameborder="0"></iframe>
+To see the animated result, you can click [here](https://video.antopie.org/videos/embed/a417b12b-c46e-451b-9375-9557e7ac82d0?warningTitle=0)
 
 ```
 from BlenderPy.sending_data import (delete_all, PositionDependantMaterial,
@@ -199,4 +197,40 @@ from BlenderPy.meshing import Cylinder
 delete_all()
 glow=GaussianLaserMaterial(alpha=0.001, waist=0.1, strength=30)
 cyl=Cylinder(name='cyl', radius=1, height=5, material=glow)
+```
+
+#### Make a Camera turn around a cube
+
+<img src="pictures/cube_rotation.jpg" alt="drawing" width="350"/>
+
+To see the animated result, you can click [here]("https://video.antopie.org/videos/embed/4b626145-8649-4ac6-96fd-c385c5c8ed9e?title=0&amp;warningTitle=0&amp;controls=0")
+
+```
+from BlenderPy.meshing import Box
+from BlenderPy.sending_data import (delete_all, Material, Light, Scene,
+                                    Curve, Camera)
+import numpy as np
+
+delete_all()
+scene=Scene(frame_end=200)
+
+material=Material(color='#16BDC3')
+material.surface_noise(scale=1., detail=14.5,
+                       dimension='3D', roughness=0.308, origin='Object')
+
+b=Box(material=material)
+cam=Camera(location=[2,2,2], rotation=[20.8*np.pi/180,
+                                       43.7*np.pi/180,
+                                       4.8*np.pi/180])
+light=Light(location=[3,3,3], power=100)
+R=np.sqrt(cam.x**2+cam.y**2)
+theta_0=np.arctan2(cam.y, cam.x)
+thetas=np.linspace(0,2*np.pi, 100)+theta_0
+curve=Curve([[R*np.cos(theta), R*np.sin(theta),
+              0] for theta in thetas])
+following=cam.follow_path(target=curve)
+following.properties['offset']=0
+following.insert_keyframe('offset', frame=1)
+following.properties['offset']=-43
+following.insert_keyframe('offset', frame=200)
 ```
