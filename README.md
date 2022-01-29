@@ -1,7 +1,7 @@
 # BlenderPy
 
 BlenderPy is a high level python API wrapped around the Blender python API, but which can be used from a python interpreter thanks to a server
-running on a Blender add-on.
+running on a Blender add-on. The link to the pdocs generated API doc is [link text](html/BlenderPy/index.html 'title text')
 
 ## Installation
 
@@ -203,7 +203,7 @@ cyl=Cylinder(name='cyl', radius=1, height=5, material=glow)
 
 <img src="pictures/cube_rotation.jpg" alt="drawing" width="350"/>
 
-To see the animated result, you can click [here]("https://video.antopie.org/videos/embed/4b626145-8649-4ac6-96fd-c385c5c8ed9e?title=0&amp;warningTitle=0&amp;controls=0")
+To see the animated result, you can click [here](https://video.antopie.org/videos/embed/4b626145-8649-4ac6-96fd-c385c5c8ed9e?title=0&amp;warningTitle=0)
 
 ```
 from BlenderPy.meshing import Box
