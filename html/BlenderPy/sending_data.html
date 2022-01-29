@@ -386,6 +386,19 @@ class ShaderSocket:
     
     def __init__(self, material_parent=None, shader_socket_type=&#39;input&#39;,
                  parent=None, key=None, value=None, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            material_parent: a Material object
+            
+            shader_socket_type: either &#39;input&#39; or &#39;output&#39;
+            
+            parent: the ShaderNode this socket belongs to
+            
+            key: the key of the socket
+            
+            value: the value of the socket
+        &#39;&#39;&#39;
+            
         assert isinstance(parent, ShaderNode)
         self.material_parent=material_parent
         self.parent=parent
@@ -408,27 +421,33 @@ class ShaderSocket:
         return params
     
     def insert_keyframe(self, key, frame=&#39;current&#39;):
+        &#39;&#39;&#39;insert a keyframe for this socket for the parameter &#39;key&#39; at
+        the frame &#39;frame&#39; &#39;&#39;&#39;
         Communication.ask(&#39;insert_keyframe_shadersocket&#39;,
                    **self.to_dict(key_to_keyframe=key, 
                                   frame=frame))
     
     @property
     def properties(self):
+        &#39;&#39;&#39;a PropertyDict to get and set properties of this ShaderSocket&#39;&#39;&#39;
         return self._properties
-
-class Image:
-    
-    def __init__(self, path):
-        self.path=path
-    
-    def to_dict(self, **kwargs):
-        kwargs.update(dict({&#39;path&#39;:self.path}))
-        return kwargs
         
 class ShaderNode:
+    &#39;&#39;&#39;Class representing a ShaderNode of a Material&#39;&#39;&#39;
     
     def __init__(self, parent=None, shader_type=&#39;Emission&#39;,
                  name=None, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            parent: a Material object
+            
+            shader_type: the type of ShaderNode. Can be &#39;Emission&#39;,
+            &#39;Add&#39;, &#39;Math&#39;, &#39;Texture_coordinates&#39;, &#39;Separate_XYZ&#39;,
+            &#39;Combine_XYZ&#39;, &#39;Principled BSDF&#39;, &#39;Material Output&#39;,
+            &#39;Image&#39;, &#39;Glossy&#39;, &#39;Noise&#39;, &#39;Color_Ramp&#39;
+            
+            name: the name the ShaderNode will receive
+        &#39;&#39;&#39;
         self.shader_type=shader_type
         assert parent is not None
         self._shadertype_dict=dict({&#39;Emission&#39;:&#39;ShaderNodeEmission&#39;,
@@ -451,11 +470,16 @@ class ShaderNode:
         else:
             self.parent_name=parent
             self.name=name
-        self._inputs=ShaderDict(self.name, self.parent_name, &#39;shadernode_input&#39;)
-        self._outputs=ShaderDict(self.name, self.parent_name, &#39;shadernode_output&#39;)
-        self._properties=ShaderDict(self.name, self.parent_name, &#39;shadernode_property&#39;)
+        self._inputs=ShaderDict(self.name, self.parent_name,
+                                &#39;shadernode_input&#39;)
+        self._outputs=ShaderDict(self.name, self.parent_name,
+                                 &#39;shadernode_output&#39;)
+        self._properties=ShaderDict(self.name, self.parent_name,
+                                    &#39;shadernode_property&#39;)
     
     def to_dict(self, **kwargs):
+        &#39;&#39;&#39;returns a dictionnary representing the ShaderNode
+        and extra parameters with kwargs&#39;&#39;&#39;
         params=dict({&#39;parent_name&#39;:self.parent_name,
                      &#39;name&#39;:self.name})
         params.update(kwargs)
@@ -466,24 +490,45 @@ class ShaderNode:
         return self._shadertype_dict[key]
     
     def remove(self):
+        &#39;&#39;&#39;remove the ShaderNode from the material&#39;&#39;&#39;
         Communication.send(&#39;remove_shader&#39;, **self.to_dict())
     
     @property
     def inputs(self):
+        &#39;&#39;&#39;ShaderDict to access the input ShaderSockets. The setter will
+        create a link to another ShaderSocket output&#39;&#39;&#39;
         return self._inputs
     
     @property
     def outputs(self):
+        &#39;&#39;&#39;ShaderDict to access the output ShaderSockets. The setter will
+        create a link to another ShaderSocket input&#39;&#39;&#39;
         return self._outputs
     
     @property
     def properties(self):
+        &#39;&#39;&#39;a PropertyDict to get and set properties of this ShaderNode&#39;&#39;&#39;
         return self._properties
 
 
 class Constraint:
+    &#39;&#39;&#39;Class representing a constraint for an object&#39;&#39;&#39;
     
     def __init__(self, parent=None, constraint_type=&#39;FOLLOW_PATH&#39;, **kwargs):
+        &#39;&#39;&#39;: creates a new constraint and link it to an Object
+        
+        Parameters:
+            parent: an Object
+            
+            constraint_type: the type of Constraint. Can be ‘CAMERA_SOLVER’,
+            ‘FOLLOW_TRACK’, ‘OBJECT_SOLVER’, ‘COPY_LOCATION’, ‘COPY_ROTATION’,
+            ‘COPY_SCALE’, ‘COPY_TRANSFORMS’, ‘LIMIT_DISTANCE’,
+            ‘LIMIT_LOCATION’, ‘LIMIT_ROTATION’, ‘LIMIT_SCALE’,
+            ‘MAINTAIN_VOLUME’, ‘TRANSFORM’, ‘TRANSFORM_CACHE’, ‘CLAMP_TO’,
+            ‘DAMPED_TRACK’, ‘IK’, ‘LOCKED_TRACK’, ‘SPLINE_IK’, ‘STRETCH_TO’,
+            ‘TRACK_TO’, ‘ACTION’, ‘ARMATURE’, ‘CHILD_OF’, ‘FLOOR’,
+            ‘FOLLOW_PATH’, ‘PIVOT’, ‘SHRINKWRAP’
+        &#39;&#39;&#39;
         kwargs[&#39;constraint_type&#39;]=constraint_type
         kwargs[&#39;parent_name&#39;]=parent
         self.parent_name=parent
@@ -492,14 +537,20 @@ class Constraint:
                                       func=&#39;constraint_property&#39;)
     
     def insert_keyframe(self, key, frame=&#39;current&#39;):
+        &#39;&#39;&#39;insert a keyframe for this constraint for the parameter &#39;key&#39; at
+        the frame &#39;frame&#39; &#39;&#39;&#39;
         Communication.ask(&#39;insert_keyframe_constraint&#39;, key=key, frame=frame,
                           name_obj=self.parent_name, name=self.name)
     
     @property
     def properties(self):
+        &#39;&#39;&#39;PropertyDict to get and set the properties of this constaint &#39;&#39;&#39;
         return self._properties
     
 class PropertyDict(dict):
+    &#39;&#39;&#39;Class representing an object properties. It rewrites the setter
+    and getter of the dict class to use the properties as a dictionary 
+    with the server&#39;&#39;&#39;
     
     def __init__(self, name=None, name_obj=None, func=None, **kwargs):
         super().__init__()
@@ -531,8 +582,27 @@ class PropertyDict(dict):
             return res
 
 class Modifier:
+    &#39;&#39;&#39;Class representing a modifier for an object&#39;&#39;&#39;
     
     def __init__(self, parent=None, modifier_type=&#39;CURVE&#39;, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            parent: an Object
+            
+            modifier_type: the type of Modifier. Can be ‘DATA_TRANSFER’,
+            ‘MESH_CACHE’, ‘MESH_SEQUENCE_CACHE’, ‘NORMAL_EDIT’,
+            ‘WEIGHTED_NORMAL’, ‘UV_PROJECT’, ‘UV_WARP’, ‘VERTEX_WEIGHT_EDIT’,
+            ‘VERTEX_WEIGHT_MIX’, ‘VERTEX_WEIGHT_PROXIMITY’, ‘ARRAY’, ‘BEVEL’,
+            ‘BOOLEAN’, ‘BUILD’, ‘DECIMATE’, ‘EDGE_SPLIT’, ‘NODES’, ‘MASK’,
+            ‘MIRROR’, ‘MESH_TO_VOLUME’, ‘MULTIRES’, ‘REMESH’, ‘SCREW’, ‘SKIN’,
+            ‘SOLIDIFY’, ‘SUBSURF’, ‘TRIANGULATE’, ‘VOLUME_TO_MESH’, ‘WELD’,
+            ‘WIREFRAME’, ‘ARMATURE’, ‘CAST’, ‘CURVE’, ‘DISPLACE’, ‘HOOK’, 
+            ‘LAPLACIANDEFORM’, ‘LATTICE’, ‘MESH_DEFORM’, ‘SHRINKWRAP’,
+            ‘SIMPLE_DEFORM’, ‘SMOOTH’, ‘CORRECTIVE_SMOOTH’, ‘LAPLACIANSMOOTH’,
+            ‘SURFACE_DEFORM’, ‘WARP’, ‘WAVE’, ‘VOLUME_DISPLACE’, ‘CLOTH’, 
+            ‘COLLISION’, ‘DYNAMIC_PAINT’, ‘EXPLODE’, ‘FLUID’, ‘OCEAN’,
+            ‘PARTICLE_INSTANCE’, ‘PARTICLE_SYSTEM’, ‘SOFT_BODY’, ‘SURFACE’
+        &#39;&#39;&#39;
         kwargs[&#39;modifier_type&#39;]=modifier_type
         kwargs[&#39;parent_name&#39;]=parent
         self.parent_name=parent
@@ -542,9 +612,11 @@ class Modifier:
     
     @property
     def properties(self):
+        &#39;&#39;&#39;PropertyDict to get and set the properties of this Modifier &#39;&#39;&#39;
         return self._properties
     
     def apply(self):
+        &#39;&#39;&#39;apply the modifier&#39;&#39;&#39;
         if self.properties[&#39;type&#39;]==&#39;BOOLEAN&#39;:
             kwargs=dict({&#39;name&#39;:self.name,
                          &#39;name_obj&#39;:self.parent_name})
@@ -553,6 +625,7 @@ class Modifier:
         
     
 class Material:
+    &#39;&#39;&#39;Class representing a Material.&#39;&#39;&#39;
     
     def __init__(self, name=&#39;material&#39;, color=&#39;#FFFFFF&#39;, alpha=1., transmission=0,
                  use_screen_refraction=False, refraction_depth=0.,
@@ -560,6 +633,17 @@ class Material:
                  use_backface_culling=False, create_new=True,
                  metallic=0.,
                  **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            name: the name of the material
+            
+            create_new: create a new material. If False, try to get an existing
+            
+            material with the same name, and if it fails, create a new one
+            
+            other arguments: properties of the Principled BSDF shader
+        &#39;&#39;&#39;
+    
         if not create_new:
             names = self.get_material_names()
             if name in names:
@@ -593,8 +677,9 @@ class Material:
         names=[&#39;Principled BSDF&#39;, &#39;Material Output&#39;]
         self.shadernodes_dimensions=dict()
         for name in names:
-            self.shadernodes_dimensions[name]=ShaderNode(name=name, parent=self.material_object,
-                                                shader_type=name).properties[&#39;location&#39;]
+            self.shadernodes_dimensions[name]=ShaderNode(name=name,
+                                       parent=self.material_object,
+                                       shader_type=name).properties[&#39;location&#39;]
     
     @property
     def xmax_shadernode_dimensions(self):
@@ -621,6 +706,14 @@ class Material:
         return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions
     
     def add_shader(self, shader_type):
+        &#39;&#39;&#39;Add a ShaderNode to this Material.
+        
+        Parameters:
+            shader_type: the type of this shader. See ShaderNode
+        
+        Returns:
+            the created ShaderNode
+        &#39;&#39;&#39;
         dx, dy=200, 200
         i,j=0,0
         while [i*dx, j*dy] in list(self.shadernodes_dimensions.values()):
@@ -639,6 +732,15 @@ class Material:
         return res
     
     def get_shader(self, name=None, find_math_operation=None):
+        &#39;&#39;&#39;Get an existing ShaderNode from his name.
+        
+        Parameters:
+            name: the name of the shader
+            
+            find_math_operation: if not None, find the first 
+            
+            Math ShaderNode to have this operation
+        &#39;&#39;&#39;
         if find_math_operation is not None:
             for node_name in self.shadernodes_dimensions.keys():
                 if &#39;Math&#39; in node_name:
@@ -650,15 +752,30 @@ class Material:
         else:
             return ShaderNode(parent=self.material_object, name=name)
     
-    def coordinate_expression(self, exp, input_shader=None, special_keys=None):
+    def coordinate_expression(self, exp, special_keys=None):
+        &#39;&#39;&#39;Construct a tree of Math ShaderNodes representing the math operation
+        exp.
+        
+        Parameters:
+            exp: String representing the math operation. Can use +,-,/,*,||,
+            sqrt, ^, e, sin, cos
+            
+            special_keys: a dict linking the keys representing the input of
+            this expression to ShaderSockets. for example:
+                dict({&#39;x&#39;:separation_shader.outputs[&#39;X&#39;]})
+        
+        Returns:
+            the last ShaderNode, whose outputs[&#39;Value&#39;] can be linked to
+            another ShaderNode
+        &#39;&#39;&#39;
         e=Expression(content=exp, tokens=[])
         if not e.is_leaf():
             tree=e.get_tree()
             tree[&#39;parent&#39;]=None
-            return self.distribute_shaders(tree,input_shader=input_shader,
+            return self.distribute_shaders(tree,
                                            special_keys=special_keys)
     
-    def distribute_shaders(self, tree, input_shader=None, special_keys=None):
+    def distribute_shaders(self, tree, special_keys=None):
         return_shader=None
         if isinstance(tree, dict):
             operation=list(tree.keys())[0]
@@ -670,7 +787,7 @@ class Material:
             for node in subtree:
                 if isinstance(node, dict):
                     node[&#39;parent&#39;]=tree[&#39;shader&#39;]
-                self.distribute_shaders(node, input_shader=input_shader,
+                self.distribute_shaders(node, 
                                         special_keys=special_keys)
             for i, node in enumerate(subtree):
                 if isinstance(node, dict):
@@ -693,6 +810,19 @@ class Material:
         
     def z_dependant_color(self, colors=None, positions=None,
                           coordinate=&#39;Generated&#39;):
+        &#39;&#39;&#39;add a color ramp based on the Z texture coordinate
+        
+        Parameters:
+           colors: a list of colors to use in the color ramp
+           
+           positions: a list of float positions to use in the color ramp 
+           
+           coordinate: which texture coordinate should be considered.
+           
+        Returns:
+            None
+        &#39;&#39;&#39;
+        
         coord=self.add_shader(&#39;Texture_coordinates&#39;)
         sep=self.add_shader(&#39;Separate_XYZ&#39;)
         sep.inputs[&#39;Vector&#39;]=coord.outputs[coordinate]
@@ -706,6 +836,26 @@ class Material:
     def surface_noise(self, scale=3, detail=2, roughness=0.5,
                       dimension=&#39;2D&#39;,
                       orientation=&#39;Z&#39;, origin=&#39;Generated&#39;):
+        &#39;&#39;&#39;add a displacement noise
+        
+        Parameters:
+           scale: the scale of the noise Texture
+           
+           detail: the detail of the noise Texture
+           
+           roughness: the roughness of the noise Texture
+           
+           dimensions: either &#39;2D&#39; or &#39;3D&#39;. If &#39;3D&#39;, apply the noise to all
+           faces, if &#39;2D&#39;, apply the noise only to a given direction
+           
+           orientation: either &#39;X&#39;, &#39;Y&#39;, or &#39;Z&#39;. The normal to use in case 
+           dimensions is &#39;2D&#39;
+           
+           origin: which Texture coordinates to use for the noise
+           
+        Returns:
+            None
+        &#39;&#39;&#39;
         noise=self.add_shader(&#39;Noise&#39;)
         coord=self.add_shader(&#39;Texture_coordinates&#39;)
         output=self.get_shader(&#39;Material Output&#39;)
@@ -714,8 +864,9 @@ class Material:
             sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
             sepxyz2=self.add_shader(&#39;Separate_XYZ&#39;)
             combine=self.add_shader(&#39;Combine_XYZ&#39;)
-            combine.inputs[&#39;X&#39;]=sepxyz2.outputs[&#39;X&#39;]
-            combine.inputs[&#39;Y&#39;]=sepxyz2.outputs[&#39;Y&#39;]
+            for direction in [&#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;]:
+                if orientation!=direction:
+                    combine.inputs[direction]=sepxyz2.outputs[direction]
             sepxyz.inputs[&#39;Vector&#39;]=coord.outputs[&#39;Normal&#39;]
             sup=self.add_shader(&#39;Math&#39;)
             sup.properties[&#39;operation&#39;]=self.operations[&#39;&gt;&#39;]
@@ -735,6 +886,17 @@ class Material:
         noise.inputs[&#39;Roughness&#39;]=roughness
     
     def glowing(self, color=&#39;#FFFFFF&#39;, strength=10, **kwargs):
+        &#39;&#39;&#39;add a glowing emission to a Material
+        
+        Parameters:
+           color: the color of the glowing
+           
+           strength: the strength of the glowing
+           
+        Returns:
+            None
+        &#39;&#39;&#39;
+        
         emission=self.add_shader(&#39;Emission&#39;)
         emission.inputs[&#39;Color&#39;]=self.convert_color(color)
         emission.inputs[&#39;Strength&#39;]=strength
@@ -770,10 +932,28 @@ class Material:
             return [int(color[i:i+2], 16)/256. for i in [1,3,5]] +[alpha]
  
 class MetallicMaterial(Material):
+    &#39;&#39;&#39;Class representing a Mettalic Material made of a glossy BDSF shader
+    with a surface noise&#39;&#39;&#39;
 
     def __init__(self, name=&#39;metal&#39;, color=&#39;#DCC811&#39;, randomness=1, detail=10,
                  roughness=0.5, orientation=&#39;Z&#39;, origin=&#39;Generated&#39;,
                  **kwargs):
+        &#39;&#39;&#39;Parameters:
+            name: the desired name of the material
+            
+            color: the desired color of the material
+            
+            randomness: the scale of the Texture noise
+            
+            detail: the detail of the Texture noise
+            
+            roughness: the roughness of the Texture noise
+            
+            orientation: see surface_noise for the Material class
+            
+            origin:  see surface_noise for the Material class
+        &#39;&#39;&#39;
+        
         super().__init__(name, color, **kwargs) 
         output=self.get_shader(&#39;Material Output&#39;)
         glossy=self.add_shader(&#39;Glossy&#39;)
@@ -800,8 +980,21 @@ class MetallicMaterial(Material):
         output.inputs[&#39;Displacement&#39;]=mult.outputs[&#39;Value&#39;]
 
 class EmissionMaterial(Material):
+    &#39;&#39;&#39;class representing an Emission volume material&#39;&#39;&#39;
     
     def __init__(self, color=&#39;#AF2020&#39;, expression=None, strength=None, **kwargs):
+         &#39;&#39;&#39;initialize.
+         
+         Parameters:
+             color: the color of the emission
+             
+             expression: if not None, an expression to specify the strength of
+             the emission. See coordinate_expression for Material
+             
+             strength: if no expression is provided, this fixed float will be
+             set to the strength of the emission
+         &#39;&#39;&#39;
+         
          super().__init__(**kwargs)
          emission=self.add_shader(&#39;Emission&#39;)
          emission.inputs[&#39;Color&#39;]=self.convert_color(color)
@@ -823,12 +1016,28 @@ class EmissionMaterial(Material):
              emission.inputs[&#39;Strength&#39;]=strength
 
 class PositionDependantMaterial(Material):
+    &#39;&#39;&#39;class representing an surface color depending on the position through
+    an expression&#39;&#39;&#39;
     
     def __init__(self, expression, 
                  colors=None,
                  positions=None,
                  coordinate=&#39;Generated&#39;,
                  **kwargs):
+        &#39;&#39;&#39;Initialize
+        
+        Parameters:
+            expression: the expression to enter the color ramp. 
+            See coordinate_expression for Material
+            
+            colors: a list of colors to put in the color ramp
+            
+            positions: a list of float positions to put in the color ramp
+            
+            coordinate: which Texture coordinate to use for the input
+            of the expression
+        &#39;&#39;&#39;
+        
         super().__init__(**kwargs)
         coord=self.add_shader(&#39;Texture_coordinates&#39;)
         sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
@@ -848,7 +1057,9 @@ class PositionDependantMaterial(Material):
         principled.inputs[&#39;Base Color&#39;]=color_ramp.outputs[&#39;Color&#39;]
         
 class ZColorRampMaterial(PositionDependantMaterial):
-    
+    &#39;&#39;&#39;PositionDependantMaterial with the expresion &#39;Z&#39;
+    &#39;&#39;&#39;
+        
     def __init__(self, colors=None, positions=None,
                           coordinate=&#39;Generated&#39;, **kwargs):
         super().__init__(&#39;Z&#39;, colors=colors,
@@ -858,17 +1069,46 @@ class ZColorRampMaterial(PositionDependantMaterial):
 
             
 class GaussianLaserMaterial(EmissionMaterial):
+    &#39;&#39;&#39;EmissionMaterial with a Geussian profile.
+    The Generated coordinate is used&#39;&#39;&#39;
     
     def __init__(self, alpha=0.001, waist=0.1, strength=3, **kwargs):
-        expression=&#39;{:}*e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))&#39;.format(strength, alpha, waist**2)
+        &#39;&#39;&#39;Initialize
+        
+        Parameters:
+            alpha: the divergence length of the gaussian beam
+            
+            waist: the waist of the beam
+            
+            strength: the strength of the emission
+        &#39;&#39;&#39;
+        expression=&#39;{:}*e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))&#39;\
+                        .format(strength, alpha, waist**2)
         super().__init__(expression=expression, **kwargs) 
     
 class Object:
+    &#39;&#39;&#39;Class representing an Object&#39;&#39;&#39;
     
     def __init__(self, name_obj=None, filepath=None,
                  location=None, scale=None,
                  material=None, rotation=None,
                  **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            name_obj: the name of the object
+            
+            filepath: if given, a json file location containing properties to 
+            set to the object
+            
+            location: if given, the location of the desired object
+            
+            scale: if given, the scale of the desired object
+            
+            material: if given, the material of the desired object
+            
+            rotation: if given, the rotation of the desired object
+        &#39;&#39;&#39;    
+        
         if name_obj is not None:
             self.name_obj=name_obj
         self._properties=PropertyDict(&#39;&#39;, self.name_obj, func=&#39;object_property&#39;)
@@ -886,6 +1126,12 @@ class Object:
             self.assign_material(material)
     
     def assign_material(self, material):
+        &#39;&#39;&#39;Assign a material to the object
+        
+        Parameters:
+            material: a Material instance
+        &#39;&#39;&#39;
+        
         if isinstance(material, list):
             kwargs = dict({&#39;name_obj&#39;:self.name_obj,
                            &#39;name_mat&#39;:[mat.material_object for mat in material]})
@@ -895,17 +1141,37 @@ class Object:
         Communication.send(&#39;assign_material&#39;, **kwargs)
     
     def load(self, filepath):
+        &#39;&#39;&#39;Load a Json file with properties to set
+        
+        Parameters;
+            filepath: path the Json file
+        &#39;&#39;&#39;
+        
         with open(filepath, &#39;r&#39;) as f:
             data=json.load(f)
         for k, v in data.items():
             self.properties[k]=v
     
     def duplicate(self):
+        &#39;&#39;&#39;Duplicate the object
+        
+        Returns:
+            the new object
+        &#39;&#39;&#39;
+        
         return Object(name_obj=Communication.ask(&#39;duplicate&#39;,
                                                  name_obj=self.name_obj))
     
     def follow_path(self, target=None, use_curve_follow=True,
                     forward_axis=&#39;FORWARD_X&#39;):
+        &#39;&#39;&#39;Add a Follow path constraint to the object
+        
+        Parameters:
+            target: the object to follow
+            
+            use_curve_follow and forward_axis: property of the constraint
+        &#39;&#39;&#39;
+        
         constraint=self.assign_constraint(constraint_type=&#39;FOLLOW_PATH&#39;)
         constraint.properties[&#39;target&#39;]=target
         constraint.properties[&#39;use_curve_follow&#39;]=use_curve_follow
@@ -914,16 +1180,37 @@ class Object:
         return constraint
     
     def insert_keyframe(self, key, frame=&#39;current&#39;):
+        &#39;&#39;&#39;Keyframe a property of the object
+        
+        Parameters:
+            key: the property to keyframe
+            frame: the frame at which the keyframe should be set
+        &#39;&#39;&#39;
+        
         Communication.ask(&#39;insert_keyframe_object&#39;,
                           key=key, frame=frame,
                           name_obj=self.name_obj)
         
     def assign_constraint(self, constraint_type=&#39;FOLLOW_PATH&#39;, **kwargs):
+        &#39;&#39;&#39;Assign a constraint to the object
+        
+        Parameters:
+            constraint_type: type of the constraint. see Constraint
+        &#39;&#39;&#39;
+        
         return Constraint(parent=self.name_obj,
                                    constraint_type=constraint_type,
                                    **kwargs)
     
     def curve_modifier(self, target=None, deform_axis=&#39;POS_X&#39;):
+        &#39;&#39;&#39;Apply a Curve modifier to the object
+        
+        Parameters:
+            target: the Curve object
+            
+            deform_axis: property of the constraint
+        &#39;&#39;&#39;
+        
         modifier=self.assign_modifier(modifier_type=&#39;CURVE&#39;)
         modifier.properties[&#39;object&#39;]=target
         modifier.properties[&#39;deform_axis&#39;]=deform_axis
@@ -1225,7 +1512,15 @@ if __name__==&#39;__main__&#39;:
 <span>(</span><span>name='camera', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class representing an Object</p>
+<h2 id="parameters">Parameters</h2>
+<p>name_obj: the name of the object</p>
+<p>filepath: if given, a json file location containing properties to
+set to the object</p>
+<p>location: if given, the location of the desired object</p>
+<p>scale: if given, the scale of the desired object</p>
+<p>material: if given, the material of the desired object</p>
+<p>rotation: if given, the rotation of the desired object</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1283,6 +1578,20 @@ def cam_properties(self):
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.sending_data.Object" href="#BlenderPy.sending_data.Object">Object</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.sending_data.Object.assign_constraint" href="#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.assign_material" href="#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.curve_modifier" href="#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.duplicate" href="#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.follow_path" href="#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.insert_keyframe" href="#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.load" href="#BlenderPy.sending_data.Object.load">load</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="BlenderPy.sending_data.Communication"><code class="flex name class">
 <span>class <span class="ident">Communication</span></span>
@@ -1543,14 +1852,44 @@ def send(message, **kwargs):
 <span>(</span><span>parent=None, constraint_type='FOLLOW_PATH', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><dl>
+<dt>Class representing a constraint for an object</dt>
+<dd>
+<p>creates a new constraint and link it to an Object</p>
+</dd>
+</dl>
+<h2 id="parameters">Parameters</h2>
+<p>parent: an Object</p>
+<p>constraint_type: the type of Constraint. Can be ‘CAMERA_SOLVER’,
+‘FOLLOW_TRACK’, ‘OBJECT_SOLVER’, ‘COPY_LOCATION’, ‘COPY_ROTATION’,
+‘COPY_SCALE’, ‘COPY_TRANSFORMS’, ‘LIMIT_DISTANCE’,
+‘LIMIT_LOCATION’, ‘LIMIT_ROTATION’, ‘LIMIT_SCALE’,
+‘MAINTAIN_VOLUME’, ‘TRANSFORM’, ‘TRANSFORM_CACHE’, ‘CLAMP_TO’,
+‘DAMPED_TRACK’, ‘IK’, ‘LOCKED_TRACK’, ‘SPLINE_IK’, ‘STRETCH_TO’,
+‘TRACK_TO’, ‘ACTION’, ‘ARMATURE’, ‘CHILD_OF’, ‘FLOOR’,
+‘FOLLOW_PATH’, ‘PIVOT’, ‘SHRINKWRAP’</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Constraint:
+    &#39;&#39;&#39;Class representing a constraint for an object&#39;&#39;&#39;
     
     def __init__(self, parent=None, constraint_type=&#39;FOLLOW_PATH&#39;, **kwargs):
+        &#39;&#39;&#39;: creates a new constraint and link it to an Object
+        
+        Parameters:
+            parent: an Object
+            
+            constraint_type: the type of Constraint. Can be ‘CAMERA_SOLVER’,
+            ‘FOLLOW_TRACK’, ‘OBJECT_SOLVER’, ‘COPY_LOCATION’, ‘COPY_ROTATION’,
+            ‘COPY_SCALE’, ‘COPY_TRANSFORMS’, ‘LIMIT_DISTANCE’,
+            ‘LIMIT_LOCATION’, ‘LIMIT_ROTATION’, ‘LIMIT_SCALE’,
+            ‘MAINTAIN_VOLUME’, ‘TRANSFORM’, ‘TRANSFORM_CACHE’, ‘CLAMP_TO’,
+            ‘DAMPED_TRACK’, ‘IK’, ‘LOCKED_TRACK’, ‘SPLINE_IK’, ‘STRETCH_TO’,
+            ‘TRACK_TO’, ‘ACTION’, ‘ARMATURE’, ‘CHILD_OF’, ‘FLOOR’,
+            ‘FOLLOW_PATH’, ‘PIVOT’, ‘SHRINKWRAP’
+        &#39;&#39;&#39;
         kwargs[&#39;constraint_type&#39;]=constraint_type
         kwargs[&#39;parent_name&#39;]=parent
         self.parent_name=parent
@@ -1559,24 +1898,28 @@ def send(message, **kwargs):
                                       func=&#39;constraint_property&#39;)
     
     def insert_keyframe(self, key, frame=&#39;current&#39;):
+        &#39;&#39;&#39;insert a keyframe for this constraint for the parameter &#39;key&#39; at
+        the frame &#39;frame&#39; &#39;&#39;&#39;
         Communication.ask(&#39;insert_keyframe_constraint&#39;, key=key, frame=frame,
                           name_obj=self.parent_name, name=self.name)
     
     @property
     def properties(self):
+        &#39;&#39;&#39;PropertyDict to get and set the properties of this constaint &#39;&#39;&#39;
         return self._properties</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
 <dt id="BlenderPy.sending_data.Constraint.properties"><code class="name">var <span class="ident">properties</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>PropertyDict to get and set the properties of this constaint</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def properties(self):
+    &#39;&#39;&#39;PropertyDict to get and set the properties of this constaint &#39;&#39;&#39;
     return self._properties</code></pre>
 </details>
 </dd>
@@ -1587,12 +1930,15 @@ def properties(self):
 <span>def <span class="ident">insert_keyframe</span></span>(<span>self, key, frame='current')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>insert a keyframe for this constraint for the parameter 'key' at
+the frame 'frame'</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def insert_keyframe(self, key, frame=&#39;current&#39;):
+    &#39;&#39;&#39;insert a keyframe for this constraint for the parameter &#39;key&#39; at
+    the frame &#39;frame&#39; &#39;&#39;&#39;
     Communication.ask(&#39;insert_keyframe_constraint&#39;, key=key, frame=frame,
                       name_obj=self.parent_name, name=self.name)</code></pre>
 </details>
@@ -1604,7 +1950,15 @@ def properties(self):
 <span>(</span><span>points, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class representing an Object</p>
+<h2 id="parameters">Parameters</h2>
+<p>name_obj: the name of the object</p>
+<p>filepath: if given, a json file location containing properties to
+set to the object</p>
+<p>location: if given, the location of the desired object</p>
+<p>scale: if given, the scale of the desired object</p>
+<p>material: if given, the material of the desired object</p>
+<p>rotation: if given, the rotation of the desired object</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1652,20 +2006,54 @@ def points(self):
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.sending_data.Object" href="#BlenderPy.sending_data.Object">Object</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.sending_data.Object.assign_constraint" href="#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.assign_material" href="#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.curve_modifier" href="#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.duplicate" href="#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.follow_path" href="#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.insert_keyframe" href="#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.load" href="#BlenderPy.sending_data.Object.load">load</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="BlenderPy.sending_data.EmissionMaterial"><code class="flex name class">
 <span>class <span class="ident">EmissionMaterial</span></span>
 <span>(</span><span>color='#AF2020', expression=None, strength=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>class representing an Emission volume material</p>
+<p>initialize.</p>
+<h2 id="parameters">Parameters</h2>
+<p>color: the color of the emission</p>
+<p>expression: if not None, an expression to specify the strength of
+the emission. See coordinate_expression for Material</p>
+<p>strength: if no expression is provided, this fixed float will be
+set to the strength of the emission</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class EmissionMaterial(Material):
+    &#39;&#39;&#39;class representing an Emission volume material&#39;&#39;&#39;
     
     def __init__(self, color=&#39;#AF2020&#39;, expression=None, strength=None, **kwargs):
+         &#39;&#39;&#39;initialize.
+         
+         Parameters:
+             color: the color of the emission
+             
+             expression: if not None, an expression to specify the strength of
+             the emission. See coordinate_expression for Material
+             
+             strength: if no expression is provided, this fixed float will be
+             set to the strength of the emission
+         &#39;&#39;&#39;
+         
          super().__init__(**kwargs)
          emission=self.add_shader(&#39;Emission&#39;)
          emission.inputs[&#39;Color&#39;]=self.convert_color(color)
@@ -1694,27 +2082,71 @@ def points(self):
 <ul class="hlist">
 <li><a title="BlenderPy.sending_data.GaussianLaserMaterial" href="#BlenderPy.sending_data.GaussianLaserMaterial">GaussianLaserMaterial</a></li>
 </ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.sending_data.Material" href="#BlenderPy.sending_data.Material">Material</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.sending_data.Material.add_shader" href="#BlenderPy.sending_data.Material.add_shader">add_shader</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.coordinate_expression" href="#BlenderPy.sending_data.Material.coordinate_expression">coordinate_expression</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.get_shader" href="#BlenderPy.sending_data.Material.get_shader">get_shader</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.glowing" href="#BlenderPy.sending_data.Material.glowing">glowing</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.surface_noise" href="#BlenderPy.sending_data.Material.surface_noise">surface_noise</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.z_dependant_color" href="#BlenderPy.sending_data.Material.z_dependant_color">z_dependant_color</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="BlenderPy.sending_data.GaussianLaserMaterial"><code class="flex name class">
 <span>class <span class="ident">GaussianLaserMaterial</span></span>
 <span>(</span><span>alpha=0.001, waist=0.1, strength=3, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>EmissionMaterial with a Geussian profile.
+The Generated coordinate is used</p>
+<p>Initialize</p>
+<h2 id="parameters">Parameters</h2>
+<p>alpha: the divergence length of the gaussian beam</p>
+<p>waist: the waist of the beam</p>
+<p>strength: the strength of the emission</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class GaussianLaserMaterial(EmissionMaterial):
+    &#39;&#39;&#39;EmissionMaterial with a Geussian profile.
+    The Generated coordinate is used&#39;&#39;&#39;
     
     def __init__(self, alpha=0.001, waist=0.1, strength=3, **kwargs):
-        expression=&#39;{:}*e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))&#39;.format(strength, alpha, waist**2)
+        &#39;&#39;&#39;Initialize
+        
+        Parameters:
+            alpha: the divergence length of the gaussian beam
+            
+            waist: the waist of the beam
+            
+            strength: the strength of the emission
+        &#39;&#39;&#39;
+        expression=&#39;{:}*e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))&#39;\
+                        .format(strength, alpha, waist**2)
         super().__init__(expression=expression, **kwargs) </code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="BlenderPy.sending_data.EmissionMaterial" href="#BlenderPy.sending_data.EmissionMaterial">EmissionMaterial</a></li>
 <li><a title="BlenderPy.sending_data.Material" href="#BlenderPy.sending_data.Material">Material</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.sending_data.EmissionMaterial" href="#BlenderPy.sending_data.EmissionMaterial">EmissionMaterial</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.sending_data.EmissionMaterial.add_shader" href="#BlenderPy.sending_data.Material.add_shader">add_shader</a></code></li>
+<li><code><a title="BlenderPy.sending_data.EmissionMaterial.coordinate_expression" href="#BlenderPy.sending_data.Material.coordinate_expression">coordinate_expression</a></code></li>
+<li><code><a title="BlenderPy.sending_data.EmissionMaterial.get_shader" href="#BlenderPy.sending_data.Material.get_shader">get_shader</a></code></li>
+<li><code><a title="BlenderPy.sending_data.EmissionMaterial.glowing" href="#BlenderPy.sending_data.Material.glowing">glowing</a></code></li>
+<li><code><a title="BlenderPy.sending_data.EmissionMaterial.surface_noise" href="#BlenderPy.sending_data.Material.surface_noise">surface_noise</a></code></li>
+<li><code><a title="BlenderPy.sending_data.EmissionMaterial.z_dependant_color" href="#BlenderPy.sending_data.Material.z_dependant_color">z_dependant_color</a></code></li>
+</ul>
+</li>
 </ul>
 </dd>
 <dt id="BlenderPy.sending_data.GeometricEntity"><code class="flex name class">
@@ -2072,49 +2504,20 @@ position will have this point as a new origin</p>
 </dd>
 </dl>
 </dd>
-<dt id="BlenderPy.sending_data.Image"><code class="flex name class">
-<span>class <span class="ident">Image</span></span>
-<span>(</span><span>path)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class Image:
-    
-    def __init__(self, path):
-        self.path=path
-    
-    def to_dict(self, **kwargs):
-        kwargs.update(dict({&#39;path&#39;:self.path}))
-        return kwargs</code></pre>
-</details>
-<h3>Methods</h3>
-<dl>
-<dt id="BlenderPy.sending_data.Image.to_dict"><code class="name flex">
-<span>def <span class="ident">to_dict</span></span>(<span>self, **kwargs)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def to_dict(self, **kwargs):
-    kwargs.update(dict({&#39;path&#39;:self.path}))
-    return kwargs</code></pre>
-</details>
-</dd>
-</dl>
-</dd>
 <dt id="BlenderPy.sending_data.Light"><code class="flex name class">
 <span>class <span class="ident">Light</span></span>
 <span>(</span><span>name='light', power=2, radius=0.25, light_type='POINT', filepath=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class representing an Object</p>
+<h2 id="parameters">Parameters</h2>
+<p>name_obj: the name of the object</p>
+<p>filepath: if given, a json file location containing properties to
+set to the object</p>
+<p>location: if given, the location of the desired object</p>
+<p>scale: if given, the scale of the desired object</p>
+<p>material: if given, the material of the desired object</p>
+<p>rotation: if given, the rotation of the desired object</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2213,18 +2616,38 @@ def light_properties(self):
 </details>
 </dd>
 </dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.sending_data.Object" href="#BlenderPy.sending_data.Object">Object</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.sending_data.Object.assign_constraint" href="#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.assign_material" href="#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.curve_modifier" href="#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.duplicate" href="#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.follow_path" href="#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.insert_keyframe" href="#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.load" href="#BlenderPy.sending_data.Object.load">load</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="BlenderPy.sending_data.Material"><code class="flex name class">
 <span>class <span class="ident">Material</span></span>
 <span>(</span><span>name='material', color='#FFFFFF', alpha=1.0, transmission=0, use_screen_refraction=False, refraction_depth=0.0, blend_method='OPAQUE', blend_method_shadow='OPAQUE', use_backface_culling=False, create_new=True, metallic=0.0, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class representing a Material.</p>
+<h2 id="parameters">Parameters</h2>
+<p>name: the name of the material</p>
+<p>create_new: create a new material. If False, try to get an existing</p>
+<p>material with the same name, and if it fails, create a new one</p>
+<p>other arguments: properties of the Principled BSDF shader</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Material:
+    &#39;&#39;&#39;Class representing a Material.&#39;&#39;&#39;
     
     def __init__(self, name=&#39;material&#39;, color=&#39;#FFFFFF&#39;, alpha=1., transmission=0,
                  use_screen_refraction=False, refraction_depth=0.,
@@ -2232,6 +2655,17 @@ def light_properties(self):
                  use_backface_culling=False, create_new=True,
                  metallic=0.,
                  **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            name: the name of the material
+            
+            create_new: create a new material. If False, try to get an existing
+            
+            material with the same name, and if it fails, create a new one
+            
+            other arguments: properties of the Principled BSDF shader
+        &#39;&#39;&#39;
+    
         if not create_new:
             names = self.get_material_names()
             if name in names:
@@ -2265,8 +2699,9 @@ def light_properties(self):
         names=[&#39;Principled BSDF&#39;, &#39;Material Output&#39;]
         self.shadernodes_dimensions=dict()
         for name in names:
-            self.shadernodes_dimensions[name]=ShaderNode(name=name, parent=self.material_object,
-                                                shader_type=name).properties[&#39;location&#39;]
+            self.shadernodes_dimensions[name]=ShaderNode(name=name,
+                                       parent=self.material_object,
+                                       shader_type=name).properties[&#39;location&#39;]
     
     @property
     def xmax_shadernode_dimensions(self):
@@ -2293,6 +2728,14 @@ def light_properties(self):
         return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions
     
     def add_shader(self, shader_type):
+        &#39;&#39;&#39;Add a ShaderNode to this Material.
+        
+        Parameters:
+            shader_type: the type of this shader. See ShaderNode
+        
+        Returns:
+            the created ShaderNode
+        &#39;&#39;&#39;
         dx, dy=200, 200
         i,j=0,0
         while [i*dx, j*dy] in list(self.shadernodes_dimensions.values()):
@@ -2311,6 +2754,15 @@ def light_properties(self):
         return res
     
     def get_shader(self, name=None, find_math_operation=None):
+        &#39;&#39;&#39;Get an existing ShaderNode from his name.
+        
+        Parameters:
+            name: the name of the shader
+            
+            find_math_operation: if not None, find the first 
+            
+            Math ShaderNode to have this operation
+        &#39;&#39;&#39;
         if find_math_operation is not None:
             for node_name in self.shadernodes_dimensions.keys():
                 if &#39;Math&#39; in node_name:
@@ -2322,15 +2774,30 @@ def light_properties(self):
         else:
             return ShaderNode(parent=self.material_object, name=name)
     
-    def coordinate_expression(self, exp, input_shader=None, special_keys=None):
+    def coordinate_expression(self, exp, special_keys=None):
+        &#39;&#39;&#39;Construct a tree of Math ShaderNodes representing the math operation
+        exp.
+        
+        Parameters:
+            exp: String representing the math operation. Can use +,-,/,*,||,
+            sqrt, ^, e, sin, cos
+            
+            special_keys: a dict linking the keys representing the input of
+            this expression to ShaderSockets. for example:
+                dict({&#39;x&#39;:separation_shader.outputs[&#39;X&#39;]})
+        
+        Returns:
+            the last ShaderNode, whose outputs[&#39;Value&#39;] can be linked to
+            another ShaderNode
+        &#39;&#39;&#39;
         e=Expression(content=exp, tokens=[])
         if not e.is_leaf():
             tree=e.get_tree()
             tree[&#39;parent&#39;]=None
-            return self.distribute_shaders(tree,input_shader=input_shader,
+            return self.distribute_shaders(tree,
                                            special_keys=special_keys)
     
-    def distribute_shaders(self, tree, input_shader=None, special_keys=None):
+    def distribute_shaders(self, tree, special_keys=None):
         return_shader=None
         if isinstance(tree, dict):
             operation=list(tree.keys())[0]
@@ -2342,7 +2809,7 @@ def light_properties(self):
             for node in subtree:
                 if isinstance(node, dict):
                     node[&#39;parent&#39;]=tree[&#39;shader&#39;]
-                self.distribute_shaders(node, input_shader=input_shader,
+                self.distribute_shaders(node, 
                                         special_keys=special_keys)
             for i, node in enumerate(subtree):
                 if isinstance(node, dict):
@@ -2365,6 +2832,19 @@ def light_properties(self):
         
     def z_dependant_color(self, colors=None, positions=None,
                           coordinate=&#39;Generated&#39;):
+        &#39;&#39;&#39;add a color ramp based on the Z texture coordinate
+        
+        Parameters:
+           colors: a list of colors to use in the color ramp
+           
+           positions: a list of float positions to use in the color ramp 
+           
+           coordinate: which texture coordinate should be considered.
+           
+        Returns:
+            None
+        &#39;&#39;&#39;
+        
         coord=self.add_shader(&#39;Texture_coordinates&#39;)
         sep=self.add_shader(&#39;Separate_XYZ&#39;)
         sep.inputs[&#39;Vector&#39;]=coord.outputs[coordinate]
@@ -2378,6 +2858,26 @@ def light_properties(self):
     def surface_noise(self, scale=3, detail=2, roughness=0.5,
                       dimension=&#39;2D&#39;,
                       orientation=&#39;Z&#39;, origin=&#39;Generated&#39;):
+        &#39;&#39;&#39;add a displacement noise
+        
+        Parameters:
+           scale: the scale of the noise Texture
+           
+           detail: the detail of the noise Texture
+           
+           roughness: the roughness of the noise Texture
+           
+           dimensions: either &#39;2D&#39; or &#39;3D&#39;. If &#39;3D&#39;, apply the noise to all
+           faces, if &#39;2D&#39;, apply the noise only to a given direction
+           
+           orientation: either &#39;X&#39;, &#39;Y&#39;, or &#39;Z&#39;. The normal to use in case 
+           dimensions is &#39;2D&#39;
+           
+           origin: which Texture coordinates to use for the noise
+           
+        Returns:
+            None
+        &#39;&#39;&#39;
         noise=self.add_shader(&#39;Noise&#39;)
         coord=self.add_shader(&#39;Texture_coordinates&#39;)
         output=self.get_shader(&#39;Material Output&#39;)
@@ -2386,8 +2886,9 @@ def light_properties(self):
             sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
             sepxyz2=self.add_shader(&#39;Separate_XYZ&#39;)
             combine=self.add_shader(&#39;Combine_XYZ&#39;)
-            combine.inputs[&#39;X&#39;]=sepxyz2.outputs[&#39;X&#39;]
-            combine.inputs[&#39;Y&#39;]=sepxyz2.outputs[&#39;Y&#39;]
+            for direction in [&#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;]:
+                if orientation!=direction:
+                    combine.inputs[direction]=sepxyz2.outputs[direction]
             sepxyz.inputs[&#39;Vector&#39;]=coord.outputs[&#39;Normal&#39;]
             sup=self.add_shader(&#39;Math&#39;)
             sup.properties[&#39;operation&#39;]=self.operations[&#39;&gt;&#39;]
@@ -2407,6 +2908,17 @@ def light_properties(self):
         noise.inputs[&#39;Roughness&#39;]=roughness
     
     def glowing(self, color=&#39;#FFFFFF&#39;, strength=10, **kwargs):
+        &#39;&#39;&#39;add a glowing emission to a Material
+        
+        Parameters:
+           color: the color of the glowing
+           
+           strength: the strength of the glowing
+           
+        Returns:
+            None
+        &#39;&#39;&#39;
+        
         emission=self.add_shader(&#39;Emission&#39;)
         emission.inputs[&#39;Color&#39;]=self.convert_color(color)
         emission.inputs[&#39;Strength&#39;]=strength
@@ -2528,12 +3040,24 @@ def ymin_shadernode_dimensions(self):
 <span>def <span class="ident">add_shader</span></span>(<span>self, shader_type)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Add a ShaderNode to this Material.</p>
+<h2 id="parameters">Parameters</h2>
+<p>shader_type: the type of this shader. See ShaderNode</p>
+<h2 id="returns">Returns</h2>
+<p>the created ShaderNode</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def add_shader(self, shader_type):
+    &#39;&#39;&#39;Add a ShaderNode to this Material.
+    
+    Parameters:
+        shader_type: the type of this shader. See ShaderNode
+    
+    Returns:
+        the created ShaderNode
+    &#39;&#39;&#39;
     dx, dy=200, 200
     i,j=0,0
     while [i*dx, j*dy] in list(self.shadernodes_dimensions.values()):
@@ -2578,20 +3102,45 @@ def ymin_shadernode_dimensions(self):
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Material.coordinate_expression"><code class="name flex">
-<span>def <span class="ident">coordinate_expression</span></span>(<span>self, exp, input_shader=None, special_keys=None)</span>
+<span>def <span class="ident">coordinate_expression</span></span>(<span>self, exp, special_keys=None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Construct a tree of Math ShaderNodes representing the math operation
+exp.</p>
+<h2 id="parameters">Parameters</h2>
+<p>exp: String representing the math operation. Can use +,-,/,*,||,
+sqrt, ^, e, sin, cos</p>
+<p>special_keys: a dict linking the keys representing the input of
+this expression to ShaderSockets. for example:
+dict({'x':separation_shader.outputs['X']})</p>
+<h2 id="returns">Returns</h2>
+<p>the last ShaderNode, whose outputs['Value'] can be linked to
+another ShaderNode</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def coordinate_expression(self, exp, input_shader=None, special_keys=None):
+<pre><code class="python">def coordinate_expression(self, exp, special_keys=None):
+    &#39;&#39;&#39;Construct a tree of Math ShaderNodes representing the math operation
+    exp.
+    
+    Parameters:
+        exp: String representing the math operation. Can use +,-,/,*,||,
+        sqrt, ^, e, sin, cos
+        
+        special_keys: a dict linking the keys representing the input of
+        this expression to ShaderSockets. for example:
+            dict({&#39;x&#39;:separation_shader.outputs[&#39;X&#39;]})
+    
+    Returns:
+        the last ShaderNode, whose outputs[&#39;Value&#39;] can be linked to
+        another ShaderNode
+    &#39;&#39;&#39;
     e=Expression(content=exp, tokens=[])
     if not e.is_leaf():
         tree=e.get_tree()
         tree[&#39;parent&#39;]=None
-        return self.distribute_shaders(tree,input_shader=input_shader,
+        return self.distribute_shaders(tree,
                                        special_keys=special_keys)</code></pre>
 </details>
 </dd>
@@ -2609,7 +3158,7 @@ def ymin_shadernode_dimensions(self):
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Material.distribute_shaders"><code class="name flex">
-<span>def <span class="ident">distribute_shaders</span></span>(<span>self, tree, input_shader=None, special_keys=None)</span>
+<span>def <span class="ident">distribute_shaders</span></span>(<span>self, tree, special_keys=None)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -2617,7 +3166,7 @@ def ymin_shadernode_dimensions(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def distribute_shaders(self, tree, input_shader=None, special_keys=None):
+<pre><code class="python">def distribute_shaders(self, tree, special_keys=None):
     return_shader=None
     if isinstance(tree, dict):
         operation=list(tree.keys())[0]
@@ -2629,7 +3178,7 @@ def ymin_shadernode_dimensions(self):
         for node in subtree:
             if isinstance(node, dict):
                 node[&#39;parent&#39;]=tree[&#39;shader&#39;]
-            self.distribute_shaders(node, input_shader=input_shader,
+            self.distribute_shaders(node, 
                                     special_keys=special_keys)
         for i, node in enumerate(subtree):
             if isinstance(node, dict):
@@ -2678,12 +3227,25 @@ def ymin_shadernode_dimensions(self):
 <span>def <span class="ident">get_shader</span></span>(<span>self, name=None, find_math_operation=None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Get an existing ShaderNode from his name.</p>
+<h2 id="parameters">Parameters</h2>
+<p>name: the name of the shader</p>
+<p>find_math_operation: if not None, find the first </p>
+<p>Math ShaderNode to have this operation</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_shader(self, name=None, find_math_operation=None):
+    &#39;&#39;&#39;Get an existing ShaderNode from his name.
+    
+    Parameters:
+        name: the name of the shader
+        
+        find_math_operation: if not None, find the first 
+        
+        Math ShaderNode to have this operation
+    &#39;&#39;&#39;
     if find_math_operation is not None:
         for node_name in self.shadernodes_dimensions.keys():
             if &#39;Math&#39; in node_name:
@@ -2700,12 +3262,28 @@ def ymin_shadernode_dimensions(self):
 <span>def <span class="ident">glowing</span></span>(<span>self, color='#FFFFFF', strength=10, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>add a glowing emission to a Material</p>
+<h2 id="parameters">Parameters</h2>
+<p>color: the color of the glowing</p>
+<p>strength: the strength of the glowing</p>
+<h2 id="returns">Returns</h2>
+<p>None</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def glowing(self, color=&#39;#FFFFFF&#39;, strength=10, **kwargs):
+    &#39;&#39;&#39;add a glowing emission to a Material
+    
+    Parameters:
+       color: the color of the glowing
+       
+       strength: the strength of the glowing
+       
+    Returns:
+        None
+    &#39;&#39;&#39;
+    
     emission=self.add_shader(&#39;Emission&#39;)
     emission.inputs[&#39;Color&#39;]=self.convert_color(color)
     emission.inputs[&#39;Strength&#39;]=strength
@@ -2720,7 +3298,18 @@ def ymin_shadernode_dimensions(self):
 <span>def <span class="ident">surface_noise</span></span>(<span>self, scale=3, detail=2, roughness=0.5, dimension='2D', orientation='Z', origin='Generated')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>add a displacement noise</p>
+<h2 id="parameters">Parameters</h2>
+<p>scale: the scale of the noise Texture</p>
+<p>detail: the detail of the noise Texture</p>
+<p>roughness: the roughness of the noise Texture</p>
+<p>dimensions: either '2D' or '3D'. If '3D', apply the noise to all
+faces, if '2D', apply the noise only to a given direction</p>
+<p>orientation: either 'X', 'Y', or 'Z'. The normal to use in case
+dimensions is '2D'</p>
+<p>origin: which Texture coordinates to use for the noise</p>
+<h2 id="returns">Returns</h2>
+<p>None</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2728,6 +3317,26 @@ def ymin_shadernode_dimensions(self):
 <pre><code class="python">def surface_noise(self, scale=3, detail=2, roughness=0.5,
                   dimension=&#39;2D&#39;,
                   orientation=&#39;Z&#39;, origin=&#39;Generated&#39;):
+    &#39;&#39;&#39;add a displacement noise
+    
+    Parameters:
+       scale: the scale of the noise Texture
+       
+       detail: the detail of the noise Texture
+       
+       roughness: the roughness of the noise Texture
+       
+       dimensions: either &#39;2D&#39; or &#39;3D&#39;. If &#39;3D&#39;, apply the noise to all
+       faces, if &#39;2D&#39;, apply the noise only to a given direction
+       
+       orientation: either &#39;X&#39;, &#39;Y&#39;, or &#39;Z&#39;. The normal to use in case 
+       dimensions is &#39;2D&#39;
+       
+       origin: which Texture coordinates to use for the noise
+       
+    Returns:
+        None
+    &#39;&#39;&#39;
     noise=self.add_shader(&#39;Noise&#39;)
     coord=self.add_shader(&#39;Texture_coordinates&#39;)
     output=self.get_shader(&#39;Material Output&#39;)
@@ -2736,8 +3345,9 @@ def ymin_shadernode_dimensions(self):
         sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
         sepxyz2=self.add_shader(&#39;Separate_XYZ&#39;)
         combine=self.add_shader(&#39;Combine_XYZ&#39;)
-        combine.inputs[&#39;X&#39;]=sepxyz2.outputs[&#39;X&#39;]
-        combine.inputs[&#39;Y&#39;]=sepxyz2.outputs[&#39;Y&#39;]
+        for direction in [&#39;X&#39;, &#39;Y&#39;, &#39;Z&#39;]:
+            if orientation!=direction:
+                combine.inputs[direction]=sepxyz2.outputs[direction]
         sepxyz.inputs[&#39;Vector&#39;]=coord.outputs[&#39;Normal&#39;]
         sup=self.add_shader(&#39;Math&#39;)
         sup.properties[&#39;operation&#39;]=self.operations[&#39;&gt;&#39;]
@@ -2761,13 +3371,32 @@ def ymin_shadernode_dimensions(self):
 <span>def <span class="ident">z_dependant_color</span></span>(<span>self, colors=None, positions=None, coordinate='Generated')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>add a color ramp based on the Z texture coordinate</p>
+<h2 id="parameters">Parameters</h2>
+<p>colors: a list of colors to use in the color ramp</p>
+<p>positions: a list of float positions to use in the color ramp </p>
+<p>coordinate: which texture coordinate should be considered.</p>
+<h2 id="returns">Returns</h2>
+<p>None</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def z_dependant_color(self, colors=None, positions=None,
                       coordinate=&#39;Generated&#39;):
+    &#39;&#39;&#39;add a color ramp based on the Z texture coordinate
+    
+    Parameters:
+       colors: a list of colors to use in the color ramp
+       
+       positions: a list of float positions to use in the color ramp 
+       
+       coordinate: which texture coordinate should be considered.
+       
+    Returns:
+        None
+    &#39;&#39;&#39;
+    
     coord=self.add_shader(&#39;Texture_coordinates&#39;)
     sep=self.add_shader(&#39;Separate_XYZ&#39;)
     sep.inputs[&#39;Vector&#39;]=coord.outputs[coordinate]
@@ -2786,8 +3415,15 @@ def ymin_shadernode_dimensions(self):
 <span>(</span><span>mesh=None, cells=None, points=None, thickness=None, name='mesh', subdivide=1, material=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>a class encompassing the geometric absolute positioning
-of vertices of meshes</p></div>
+<div class="desc"><p>Class representing an Object</p>
+<h2 id="parameters">Parameters</h2>
+<p>name_obj: the name of the object</p>
+<p>filepath: if given, a json file location containing properties to
+set to the object</p>
+<p>location: if given, the location of the desired object</p>
+<p>scale: if given, the scale of the desired object</p>
+<p>material: if given, the material of the desired object</p>
+<p>rotation: if given, the rotation of the desired object</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -3063,6 +3699,17 @@ def vertices(self):
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
+<li><code><b><a title="BlenderPy.sending_data.Object" href="#BlenderPy.sending_data.Object">Object</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.sending_data.Object.assign_constraint" href="#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.assign_material" href="#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.curve_modifier" href="#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.duplicate" href="#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.follow_path" href="#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.insert_keyframe" href="#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.load" href="#BlenderPy.sending_data.Object.load">load</a></code></li>
+</ul>
+</li>
 <li><code><b><a title="BlenderPy.sending_data.GeometricEntity" href="#BlenderPy.sending_data.GeometricEntity">GeometricEntity</a></b></code>:
 <ul class="hlist">
 <li><code><a title="BlenderPy.sending_data.GeometricEntity.center" href="#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
@@ -3086,16 +3733,44 @@ def vertices(self):
 <span>(</span><span>name='metal', color='#DCC811', randomness=1, detail=10, roughness=0.5, orientation='Z', origin='Generated', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class representing a Mettalic Material made of a glossy BDSF shader
+with a surface noise</p>
+<p>Parameters:
+name: the desired name of the material</p>
+<p>color: the desired color of the material</p>
+<p>randomness: the scale of the Texture noise</p>
+<p>detail: the detail of the Texture noise</p>
+<p>roughness: the roughness of the Texture noise</p>
+<p>orientation: see surface_noise for the Material class</p>
+<p>origin:
+see surface_noise for the Material class</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class MetallicMaterial(Material):
+    &#39;&#39;&#39;Class representing a Mettalic Material made of a glossy BDSF shader
+    with a surface noise&#39;&#39;&#39;
 
     def __init__(self, name=&#39;metal&#39;, color=&#39;#DCC811&#39;, randomness=1, detail=10,
                  roughness=0.5, orientation=&#39;Z&#39;, origin=&#39;Generated&#39;,
                  **kwargs):
+        &#39;&#39;&#39;Parameters:
+            name: the desired name of the material
+            
+            color: the desired color of the material
+            
+            randomness: the scale of the Texture noise
+            
+            detail: the detail of the Texture noise
+            
+            roughness: the roughness of the Texture noise
+            
+            orientation: see surface_noise for the Material class
+            
+            origin:  see surface_noise for the Material class
+        &#39;&#39;&#39;
+        
         super().__init__(name, color, **kwargs) 
         output=self.get_shader(&#39;Material Output&#39;)
         glossy=self.add_shader(&#39;Glossy&#39;)
@@ -3125,20 +3800,67 @@ def vertices(self):
 <ul class="hlist">
 <li><a title="BlenderPy.sending_data.Material" href="#BlenderPy.sending_data.Material">Material</a></li>
 </ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.sending_data.Material" href="#BlenderPy.sending_data.Material">Material</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.sending_data.Material.add_shader" href="#BlenderPy.sending_data.Material.add_shader">add_shader</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.coordinate_expression" href="#BlenderPy.sending_data.Material.coordinate_expression">coordinate_expression</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.get_shader" href="#BlenderPy.sending_data.Material.get_shader">get_shader</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.glowing" href="#BlenderPy.sending_data.Material.glowing">glowing</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.surface_noise" href="#BlenderPy.sending_data.Material.surface_noise">surface_noise</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.z_dependant_color" href="#BlenderPy.sending_data.Material.z_dependant_color">z_dependant_color</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="BlenderPy.sending_data.Modifier"><code class="flex name class">
 <span>class <span class="ident">Modifier</span></span>
 <span>(</span><span>parent=None, modifier_type='CURVE', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class representing a modifier for an object</p>
+<h2 id="parameters">Parameters</h2>
+<p>parent: an Object</p>
+<p>modifier_type: the type of Modifier. Can be ‘DATA_TRANSFER’,
+‘MESH_CACHE’, ‘MESH_SEQUENCE_CACHE’, ‘NORMAL_EDIT’,
+‘WEIGHTED_NORMAL’, ‘UV_PROJECT’, ‘UV_WARP’, ‘VERTEX_WEIGHT_EDIT’,
+‘VERTEX_WEIGHT_MIX’, ‘VERTEX_WEIGHT_PROXIMITY’, ‘ARRAY’, ‘BEVEL’,
+‘BOOLEAN’, ‘BUILD’, ‘DECIMATE’, ‘EDGE_SPLIT’, ‘NODES’, ‘MASK’,
+‘MIRROR’, ‘MESH_TO_VOLUME’, ‘MULTIRES’, ‘REMESH’, ‘SCREW’, ‘SKIN’,
+‘SOLIDIFY’, ‘SUBSURF’, ‘TRIANGULATE’, ‘VOLUME_TO_MESH’, ‘WELD’,
+‘WIREFRAME’, ‘ARMATURE’, ‘CAST’, ‘CURVE’, ‘DISPLACE’, ‘HOOK’,
+‘LAPLACIANDEFORM’, ‘LATTICE’, ‘MESH_DEFORM’, ‘SHRINKWRAP’,
+‘SIMPLE_DEFORM’, ‘SMOOTH’, ‘CORRECTIVE_SMOOTH’, ‘LAPLACIANSMOOTH’,
+‘SURFACE_DEFORM’, ‘WARP’, ‘WAVE’, ‘VOLUME_DISPLACE’, ‘CLOTH’,
+‘COLLISION’, ‘DYNAMIC_PAINT’, ‘EXPLODE’, ‘FLUID’, ‘OCEAN’,
+‘PARTICLE_INSTANCE’, ‘PARTICLE_SYSTEM’, ‘SOFT_BODY’, ‘SURFACE’</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Modifier:
+    &#39;&#39;&#39;Class representing a modifier for an object&#39;&#39;&#39;
     
     def __init__(self, parent=None, modifier_type=&#39;CURVE&#39;, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            parent: an Object
+            
+            modifier_type: the type of Modifier. Can be ‘DATA_TRANSFER’,
+            ‘MESH_CACHE’, ‘MESH_SEQUENCE_CACHE’, ‘NORMAL_EDIT’,
+            ‘WEIGHTED_NORMAL’, ‘UV_PROJECT’, ‘UV_WARP’, ‘VERTEX_WEIGHT_EDIT’,
+            ‘VERTEX_WEIGHT_MIX’, ‘VERTEX_WEIGHT_PROXIMITY’, ‘ARRAY’, ‘BEVEL’,
+            ‘BOOLEAN’, ‘BUILD’, ‘DECIMATE’, ‘EDGE_SPLIT’, ‘NODES’, ‘MASK’,
+            ‘MIRROR’, ‘MESH_TO_VOLUME’, ‘MULTIRES’, ‘REMESH’, ‘SCREW’, ‘SKIN’,
+            ‘SOLIDIFY’, ‘SUBSURF’, ‘TRIANGULATE’, ‘VOLUME_TO_MESH’, ‘WELD’,
+            ‘WIREFRAME’, ‘ARMATURE’, ‘CAST’, ‘CURVE’, ‘DISPLACE’, ‘HOOK’, 
+            ‘LAPLACIANDEFORM’, ‘LATTICE’, ‘MESH_DEFORM’, ‘SHRINKWRAP’,
+            ‘SIMPLE_DEFORM’, ‘SMOOTH’, ‘CORRECTIVE_SMOOTH’, ‘LAPLACIANSMOOTH’,
+            ‘SURFACE_DEFORM’, ‘WARP’, ‘WAVE’, ‘VOLUME_DISPLACE’, ‘CLOTH’, 
+            ‘COLLISION’, ‘DYNAMIC_PAINT’, ‘EXPLODE’, ‘FLUID’, ‘OCEAN’,
+            ‘PARTICLE_INSTANCE’, ‘PARTICLE_SYSTEM’, ‘SOFT_BODY’, ‘SURFACE’
+        &#39;&#39;&#39;
         kwargs[&#39;modifier_type&#39;]=modifier_type
         kwargs[&#39;parent_name&#39;]=parent
         self.parent_name=parent
@@ -3148,9 +3870,11 @@ def vertices(self):
     
     @property
     def properties(self):
+        &#39;&#39;&#39;PropertyDict to get and set the properties of this Modifier &#39;&#39;&#39;
         return self._properties
     
     def apply(self):
+        &#39;&#39;&#39;apply the modifier&#39;&#39;&#39;
         if self.properties[&#39;type&#39;]==&#39;BOOLEAN&#39;:
             kwargs=dict({&#39;name&#39;:self.name,
                          &#39;name_obj&#39;:self.parent_name})
@@ -3161,13 +3885,14 @@ def vertices(self):
 <dl>
 <dt id="BlenderPy.sending_data.Modifier.properties"><code class="name">var <span class="ident">properties</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>PropertyDict to get and set the properties of this Modifier</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def properties(self):
+    &#39;&#39;&#39;PropertyDict to get and set the properties of this Modifier &#39;&#39;&#39;
     return self._properties</code></pre>
 </details>
 </dd>
@@ -3178,12 +3903,13 @@ def properties(self):
 <span>def <span class="ident">apply</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>apply the modifier</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def apply(self):
+    &#39;&#39;&#39;apply the modifier&#39;&#39;&#39;
     if self.properties[&#39;type&#39;]==&#39;BOOLEAN&#39;:
         kwargs=dict({&#39;name&#39;:self.name,
                      &#39;name_obj&#39;:self.parent_name})
@@ -3198,17 +3924,42 @@ def properties(self):
 <span>(</span><span>name_obj=None, filepath=None, location=None, scale=None, material=None, rotation=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class representing an Object</p>
+<h2 id="parameters">Parameters</h2>
+<p>name_obj: the name of the object</p>
+<p>filepath: if given, a json file location containing properties to
+set to the object</p>
+<p>location: if given, the location of the desired object</p>
+<p>scale: if given, the scale of the desired object</p>
+<p>material: if given, the material of the desired object</p>
+<p>rotation: if given, the rotation of the desired object</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Object:
+    &#39;&#39;&#39;Class representing an Object&#39;&#39;&#39;
     
     def __init__(self, name_obj=None, filepath=None,
                  location=None, scale=None,
                  material=None, rotation=None,
                  **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            name_obj: the name of the object
+            
+            filepath: if given, a json file location containing properties to 
+            set to the object
+            
+            location: if given, the location of the desired object
+            
+            scale: if given, the scale of the desired object
+            
+            material: if given, the material of the desired object
+            
+            rotation: if given, the rotation of the desired object
+        &#39;&#39;&#39;    
+        
         if name_obj is not None:
             self.name_obj=name_obj
         self._properties=PropertyDict(&#39;&#39;, self.name_obj, func=&#39;object_property&#39;)
@@ -3226,6 +3977,12 @@ def properties(self):
             self.assign_material(material)
     
     def assign_material(self, material):
+        &#39;&#39;&#39;Assign a material to the object
+        
+        Parameters:
+            material: a Material instance
+        &#39;&#39;&#39;
+        
         if isinstance(material, list):
             kwargs = dict({&#39;name_obj&#39;:self.name_obj,
                            &#39;name_mat&#39;:[mat.material_object for mat in material]})
@@ -3235,17 +3992,37 @@ def properties(self):
         Communication.send(&#39;assign_material&#39;, **kwargs)
     
     def load(self, filepath):
+        &#39;&#39;&#39;Load a Json file with properties to set
+        
+        Parameters;
+            filepath: path the Json file
+        &#39;&#39;&#39;
+        
         with open(filepath, &#39;r&#39;) as f:
             data=json.load(f)
         for k, v in data.items():
             self.properties[k]=v
     
     def duplicate(self):
+        &#39;&#39;&#39;Duplicate the object
+        
+        Returns:
+            the new object
+        &#39;&#39;&#39;
+        
         return Object(name_obj=Communication.ask(&#39;duplicate&#39;,
                                                  name_obj=self.name_obj))
     
     def follow_path(self, target=None, use_curve_follow=True,
                     forward_axis=&#39;FORWARD_X&#39;):
+        &#39;&#39;&#39;Add a Follow path constraint to the object
+        
+        Parameters:
+            target: the object to follow
+            
+            use_curve_follow and forward_axis: property of the constraint
+        &#39;&#39;&#39;
+        
         constraint=self.assign_constraint(constraint_type=&#39;FOLLOW_PATH&#39;)
         constraint.properties[&#39;target&#39;]=target
         constraint.properties[&#39;use_curve_follow&#39;]=use_curve_follow
@@ -3254,16 +4031,37 @@ def properties(self):
         return constraint
     
     def insert_keyframe(self, key, frame=&#39;current&#39;):
+        &#39;&#39;&#39;Keyframe a property of the object
+        
+        Parameters:
+            key: the property to keyframe
+            frame: the frame at which the keyframe should be set
+        &#39;&#39;&#39;
+        
         Communication.ask(&#39;insert_keyframe_object&#39;,
                           key=key, frame=frame,
                           name_obj=self.name_obj)
         
     def assign_constraint(self, constraint_type=&#39;FOLLOW_PATH&#39;, **kwargs):
+        &#39;&#39;&#39;Assign a constraint to the object
+        
+        Parameters:
+            constraint_type: type of the constraint. see Constraint
+        &#39;&#39;&#39;
+        
         return Constraint(parent=self.name_obj,
                                    constraint_type=constraint_type,
                                    **kwargs)
     
     def curve_modifier(self, target=None, deform_axis=&#39;POS_X&#39;):
+        &#39;&#39;&#39;Apply a Curve modifier to the object
+        
+        Parameters:
+            target: the Curve object
+            
+            deform_axis: property of the constraint
+        &#39;&#39;&#39;
+        
         modifier=self.assign_modifier(modifier_type=&#39;CURVE&#39;)
         modifier.properties[&#39;object&#39;]=target
         modifier.properties[&#39;deform_axis&#39;]=deform_axis
@@ -3458,12 +4256,20 @@ def z(self):
 <span>def <span class="ident">assign_constraint</span></span>(<span>self, constraint_type='FOLLOW_PATH', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Assign a constraint to the object</p>
+<h2 id="parameters">Parameters</h2>
+<p>constraint_type: type of the constraint. see Constraint</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def assign_constraint(self, constraint_type=&#39;FOLLOW_PATH&#39;, **kwargs):
+    &#39;&#39;&#39;Assign a constraint to the object
+    
+    Parameters:
+        constraint_type: type of the constraint. see Constraint
+    &#39;&#39;&#39;
+    
     return Constraint(parent=self.name_obj,
                                constraint_type=constraint_type,
                                **kwargs)</code></pre>
@@ -3473,12 +4279,20 @@ def z(self):
 <span>def <span class="ident">assign_material</span></span>(<span>self, material)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Assign a material to the object</p>
+<h2 id="parameters">Parameters</h2>
+<p>material: a Material instance</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def assign_material(self, material):
+    &#39;&#39;&#39;Assign a material to the object
+    
+    Parameters:
+        material: a Material instance
+    &#39;&#39;&#39;
+    
     if isinstance(material, list):
         kwargs = dict({&#39;name_obj&#39;:self.name_obj,
                        &#39;name_mat&#39;:[mat.material_object for mat in material]})
@@ -3521,12 +4335,23 @@ def z(self):
 <span>def <span class="ident">curve_modifier</span></span>(<span>self, target=None, deform_axis='POS_X')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Apply a Curve modifier to the object</p>
+<h2 id="parameters">Parameters</h2>
+<p>target: the Curve object</p>
+<p>deform_axis: property of the constraint</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def curve_modifier(self, target=None, deform_axis=&#39;POS_X&#39;):
+    &#39;&#39;&#39;Apply a Curve modifier to the object
+    
+    Parameters:
+        target: the Curve object
+        
+        deform_axis: property of the constraint
+    &#39;&#39;&#39;
+    
     modifier=self.assign_modifier(modifier_type=&#39;CURVE&#39;)
     modifier.properties[&#39;object&#39;]=target
     modifier.properties[&#39;deform_axis&#39;]=deform_axis
@@ -3537,12 +4362,20 @@ def z(self):
 <span>def <span class="ident">duplicate</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Duplicate the object</p>
+<h2 id="returns">Returns</h2>
+<p>the new object</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def duplicate(self):
+    &#39;&#39;&#39;Duplicate the object
+    
+    Returns:
+        the new object
+    &#39;&#39;&#39;
+    
     return Object(name_obj=Communication.ask(&#39;duplicate&#39;,
                                              name_obj=self.name_obj))</code></pre>
 </details>
@@ -3551,13 +4384,24 @@ def z(self):
 <span>def <span class="ident">follow_path</span></span>(<span>self, target=None, use_curve_follow=True, forward_axis='FORWARD_X')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Add a Follow path constraint to the object</p>
+<h2 id="parameters">Parameters</h2>
+<p>target: the object to follow</p>
+<p>use_curve_follow and forward_axis: property of the constraint</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def follow_path(self, target=None, use_curve_follow=True,
                 forward_axis=&#39;FORWARD_X&#39;):
+    &#39;&#39;&#39;Add a Follow path constraint to the object
+    
+    Parameters:
+        target: the object to follow
+        
+        use_curve_follow and forward_axis: property of the constraint
+    &#39;&#39;&#39;
+    
     constraint=self.assign_constraint(constraint_type=&#39;FOLLOW_PATH&#39;)
     constraint.properties[&#39;target&#39;]=target
     constraint.properties[&#39;use_curve_follow&#39;]=use_curve_follow
@@ -3570,12 +4414,22 @@ def z(self):
 <span>def <span class="ident">insert_keyframe</span></span>(<span>self, key, frame='current')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Keyframe a property of the object</p>
+<h2 id="parameters">Parameters</h2>
+<p>key: the property to keyframe
+frame: the frame at which the keyframe should be set</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def insert_keyframe(self, key, frame=&#39;current&#39;):
+    &#39;&#39;&#39;Keyframe a property of the object
+    
+    Parameters:
+        key: the property to keyframe
+        frame: the frame at which the keyframe should be set
+    &#39;&#39;&#39;
+    
     Communication.ask(&#39;insert_keyframe_object&#39;,
                       key=key, frame=frame,
                       name_obj=self.name_obj)</code></pre>
@@ -3585,12 +4439,20 @@ def z(self):
 <span>def <span class="ident">load</span></span>(<span>self, filepath)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Load a Json file with properties to set</p>
+<p>Parameters;
+filepath: path the Json file</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def load(self, filepath):
+    &#39;&#39;&#39;Load a Json file with properties to set
+    
+    Parameters;
+        filepath: path the Json file
+    &#39;&#39;&#39;
+    
     with open(filepath, &#39;r&#39;) as f:
         data=json.load(f)
     for k, v in data.items():
@@ -3646,18 +4508,43 @@ def z(self):
 <span>(</span><span>expression, colors=None, positions=None, coordinate='Generated', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>class representing an surface color depending on the position through
+an expression</p>
+<p>Initialize</p>
+<h2 id="parameters">Parameters</h2>
+<p>expression: the expression to enter the color ramp.
+See coordinate_expression for Material</p>
+<p>colors: a list of colors to put in the color ramp</p>
+<p>positions: a list of float positions to put in the color ramp</p>
+<p>coordinate: which Texture coordinate to use for the input
+of the expression</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class PositionDependantMaterial(Material):
+    &#39;&#39;&#39;class representing an surface color depending on the position through
+    an expression&#39;&#39;&#39;
     
     def __init__(self, expression, 
                  colors=None,
                  positions=None,
                  coordinate=&#39;Generated&#39;,
                  **kwargs):
+        &#39;&#39;&#39;Initialize
+        
+        Parameters:
+            expression: the expression to enter the color ramp. 
+            See coordinate_expression for Material
+            
+            colors: a list of colors to put in the color ramp
+            
+            positions: a list of float positions to put in the color ramp
+            
+            coordinate: which Texture coordinate to use for the input
+            of the expression
+        &#39;&#39;&#39;
+        
         super().__init__(**kwargs)
         coord=self.add_shader(&#39;Texture_coordinates&#39;)
         sepxyz=self.add_shader(&#39;Separate_XYZ&#39;)
@@ -3684,28 +4571,36 @@ def z(self):
 <ul class="hlist">
 <li><a title="BlenderPy.sending_data.ZColorRampMaterial" href="#BlenderPy.sending_data.ZColorRampMaterial">ZColorRampMaterial</a></li>
 </ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.sending_data.Material" href="#BlenderPy.sending_data.Material">Material</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.sending_data.Material.add_shader" href="#BlenderPy.sending_data.Material.add_shader">add_shader</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.coordinate_expression" href="#BlenderPy.sending_data.Material.coordinate_expression">coordinate_expression</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.get_shader" href="#BlenderPy.sending_data.Material.get_shader">get_shader</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.glowing" href="#BlenderPy.sending_data.Material.glowing">glowing</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.surface_noise" href="#BlenderPy.sending_data.Material.surface_noise">surface_noise</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Material.z_dependant_color" href="#BlenderPy.sending_data.Material.z_dependant_color">z_dependant_color</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="BlenderPy.sending_data.PropertyDict"><code class="flex name class">
 <span>class <span class="ident">PropertyDict</span></span>
 <span>(</span><span>name=None, name_obj=None, func=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>dict() -&gt; new empty dictionary
-dict(mapping) -&gt; new dictionary initialized from a mapping object's
-(key, value) pairs
-dict(iterable) -&gt; new dictionary initialized as if via:
-d = {}
-for k, v in iterable:
-d[k] = v
-dict(**kwargs) -&gt; new dictionary initialized with the name=value pairs
-in the keyword argument list.
-For example:
-dict(one=1, two=2)</p></div>
+<div class="desc"><p>Class representing an object properties. It rewrites the setter
+and getter of the dict class to use the properties as a dictionary
+with the server</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class PropertyDict(dict):
+    &#39;&#39;&#39;Class representing an object properties. It rewrites the setter
+    and getter of the dict class to use the properties as a dictionary 
+    with the server&#39;&#39;&#39;
     
     def __init__(self, name=None, name_obj=None, func=None, **kwargs):
         super().__init__()
@@ -3957,15 +4852,34 @@ with the server</p></div>
 <span>(</span><span>parent=None, shader_type='Emission', name=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class representing a ShaderNode of a Material</p>
+<h2 id="parameters">Parameters</h2>
+<p>parent: a Material object</p>
+<p>shader_type: the type of ShaderNode. Can be 'Emission',
+'Add', 'Math', 'Texture_coordinates', 'Separate_XYZ',
+'Combine_XYZ', 'Principled BSDF', 'Material Output',
+'Image', 'Glossy', 'Noise', 'Color_Ramp'</p>
+<p>name: the name the ShaderNode will receive</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ShaderNode:
+    &#39;&#39;&#39;Class representing a ShaderNode of a Material&#39;&#39;&#39;
     
     def __init__(self, parent=None, shader_type=&#39;Emission&#39;,
                  name=None, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            parent: a Material object
+            
+            shader_type: the type of ShaderNode. Can be &#39;Emission&#39;,
+            &#39;Add&#39;, &#39;Math&#39;, &#39;Texture_coordinates&#39;, &#39;Separate_XYZ&#39;,
+            &#39;Combine_XYZ&#39;, &#39;Principled BSDF&#39;, &#39;Material Output&#39;,
+            &#39;Image&#39;, &#39;Glossy&#39;, &#39;Noise&#39;, &#39;Color_Ramp&#39;
+            
+            name: the name the ShaderNode will receive
+        &#39;&#39;&#39;
         self.shader_type=shader_type
         assert parent is not None
         self._shadertype_dict=dict({&#39;Emission&#39;:&#39;ShaderNodeEmission&#39;,
@@ -3988,11 +4902,16 @@ with the server</p></div>
         else:
             self.parent_name=parent
             self.name=name
-        self._inputs=ShaderDict(self.name, self.parent_name, &#39;shadernode_input&#39;)
-        self._outputs=ShaderDict(self.name, self.parent_name, &#39;shadernode_output&#39;)
-        self._properties=ShaderDict(self.name, self.parent_name, &#39;shadernode_property&#39;)
+        self._inputs=ShaderDict(self.name, self.parent_name,
+                                &#39;shadernode_input&#39;)
+        self._outputs=ShaderDict(self.name, self.parent_name,
+                                 &#39;shadernode_output&#39;)
+        self._properties=ShaderDict(self.name, self.parent_name,
+                                    &#39;shadernode_property&#39;)
     
     def to_dict(self, **kwargs):
+        &#39;&#39;&#39;returns a dictionnary representing the ShaderNode
+        and extra parameters with kwargs&#39;&#39;&#39;
         params=dict({&#39;parent_name&#39;:self.parent_name,
                      &#39;name&#39;:self.name})
         params.update(kwargs)
@@ -4003,55 +4922,68 @@ with the server</p></div>
         return self._shadertype_dict[key]
     
     def remove(self):
+        &#39;&#39;&#39;remove the ShaderNode from the material&#39;&#39;&#39;
         Communication.send(&#39;remove_shader&#39;, **self.to_dict())
     
     @property
     def inputs(self):
+        &#39;&#39;&#39;ShaderDict to access the input ShaderSockets. The setter will
+        create a link to another ShaderSocket output&#39;&#39;&#39;
         return self._inputs
     
     @property
     def outputs(self):
+        &#39;&#39;&#39;ShaderDict to access the output ShaderSockets. The setter will
+        create a link to another ShaderSocket input&#39;&#39;&#39;
         return self._outputs
     
     @property
     def properties(self):
+        &#39;&#39;&#39;a PropertyDict to get and set properties of this ShaderNode&#39;&#39;&#39;
         return self._properties</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
 <dt id="BlenderPy.sending_data.ShaderNode.inputs"><code class="name">var <span class="ident">inputs</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>ShaderDict to access the input ShaderSockets. The setter will
+create a link to another ShaderSocket output</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def inputs(self):
+    &#39;&#39;&#39;ShaderDict to access the input ShaderSockets. The setter will
+    create a link to another ShaderSocket output&#39;&#39;&#39;
     return self._inputs</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.ShaderNode.outputs"><code class="name">var <span class="ident">outputs</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>ShaderDict to access the output ShaderSockets. The setter will
+create a link to another ShaderSocket input</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def outputs(self):
+    &#39;&#39;&#39;ShaderDict to access the output ShaderSockets. The setter will
+    create a link to another ShaderSocket input&#39;&#39;&#39;
     return self._outputs</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.ShaderNode.properties"><code class="name">var <span class="ident">properties</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>a PropertyDict to get and set properties of this ShaderNode</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def properties(self):
+    &#39;&#39;&#39;a PropertyDict to get and set properties of this ShaderNode&#39;&#39;&#39;
     return self._properties</code></pre>
 </details>
 </dd>
@@ -4062,12 +4994,13 @@ def properties(self):
 <span>def <span class="ident">remove</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>remove the ShaderNode from the material</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def remove(self):
+    &#39;&#39;&#39;remove the ShaderNode from the material&#39;&#39;&#39;
     Communication.send(&#39;remove_shader&#39;, **self.to_dict())</code></pre>
 </details>
 </dd>
@@ -4075,12 +5008,15 @@ def properties(self):
 <span>def <span class="ident">to_dict</span></span>(<span>self, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>returns a dictionnary representing the ShaderNode
+and extra parameters with kwargs</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_dict(self, **kwargs):
+    &#39;&#39;&#39;returns a dictionnary representing the ShaderNode
+    and extra parameters with kwargs&#39;&#39;&#39;
     params=dict({&#39;parent_name&#39;:self.parent_name,
                  &#39;name&#39;:self.name})
     params.update(kwargs)
@@ -4094,7 +5030,13 @@ def properties(self):
 <span>(</span><span>material_parent=None, shader_socket_type='input', parent=None, key=None, value=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing the ShaderSocket of a ShaderNode</p></div>
+<div class="desc"><p>Class representing the ShaderSocket of a ShaderNode</p>
+<h2 id="parameters">Parameters</h2>
+<p>material_parent: a Material object</p>
+<p>shader_socket_type: either 'input' or 'output'</p>
+<p>parent: the ShaderNode this socket belongs to</p>
+<p>key: the key of the socket</p>
+<p>value: the value of the socket</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -4104,6 +5046,19 @@ def properties(self):
     
     def __init__(self, material_parent=None, shader_socket_type=&#39;input&#39;,
                  parent=None, key=None, value=None, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            material_parent: a Material object
+            
+            shader_socket_type: either &#39;input&#39; or &#39;output&#39;
+            
+            parent: the ShaderNode this socket belongs to
+            
+            key: the key of the socket
+            
+            value: the value of the socket
+        &#39;&#39;&#39;
+            
         assert isinstance(parent, ShaderNode)
         self.material_parent=material_parent
         self.parent=parent
@@ -4126,25 +5081,29 @@ def properties(self):
         return params
     
     def insert_keyframe(self, key, frame=&#39;current&#39;):
+        &#39;&#39;&#39;insert a keyframe for this socket for the parameter &#39;key&#39; at
+        the frame &#39;frame&#39; &#39;&#39;&#39;
         Communication.ask(&#39;insert_keyframe_shadersocket&#39;,
                    **self.to_dict(key_to_keyframe=key, 
                                   frame=frame))
     
     @property
     def properties(self):
+        &#39;&#39;&#39;a PropertyDict to get and set properties of this ShaderSocket&#39;&#39;&#39;
         return self._properties</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
 <dt id="BlenderPy.sending_data.ShaderSocket.properties"><code class="name">var <span class="ident">properties</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>a PropertyDict to get and set properties of this ShaderSocket</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def properties(self):
+    &#39;&#39;&#39;a PropertyDict to get and set properties of this ShaderSocket&#39;&#39;&#39;
     return self._properties</code></pre>
 </details>
 </dd>
@@ -4155,12 +5114,15 @@ def properties(self):
 <span>def <span class="ident">insert_keyframe</span></span>(<span>self, key, frame='current')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>insert a keyframe for this socket for the parameter 'key' at
+the frame 'frame'</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def insert_keyframe(self, key, frame=&#39;current&#39;):
+    &#39;&#39;&#39;insert a keyframe for this socket for the parameter &#39;key&#39; at
+    the frame &#39;frame&#39; &#39;&#39;&#39;
     Communication.ask(&#39;insert_keyframe_shadersocket&#39;,
                **self.to_dict(key_to_keyframe=key, 
                               frame=frame))</code></pre>
@@ -4195,13 +5157,23 @@ and extra parameters with kwargs</p></div>
 <span>(</span><span>colors=None, positions=None, coordinate='Generated', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>PositionDependantMaterial with the expresion 'Z'</p>
+<p>Initialize</p>
+<h2 id="parameters">Parameters</h2>
+<p>expression: the expression to enter the color ramp.
+See coordinate_expression for Material</p>
+<p>colors: a list of colors to put in the color ramp</p>
+<p>positions: a list of float positions to put in the color ramp</p>
+<p>coordinate: which Texture coordinate to use for the input
+of the expression</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class ZColorRampMaterial(PositionDependantMaterial):
-    
+    &#39;&#39;&#39;PositionDependantMaterial with the expresion &#39;Z&#39;
+    &#39;&#39;&#39;
+        
     def __init__(self, colors=None, positions=None,
                           coordinate=&#39;Generated&#39;, **kwargs):
         super().__init__(&#39;Z&#39;, colors=colors,
@@ -4213,6 +5185,19 @@ and extra parameters with kwargs</p></div>
 <ul class="hlist">
 <li><a title="BlenderPy.sending_data.PositionDependantMaterial" href="#BlenderPy.sending_data.PositionDependantMaterial">PositionDependantMaterial</a></li>
 <li><a title="BlenderPy.sending_data.Material" href="#BlenderPy.sending_data.Material">Material</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.sending_data.PositionDependantMaterial" href="#BlenderPy.sending_data.PositionDependantMaterial">PositionDependantMaterial</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.sending_data.PositionDependantMaterial.add_shader" href="#BlenderPy.sending_data.Material.add_shader">add_shader</a></code></li>
+<li><code><a title="BlenderPy.sending_data.PositionDependantMaterial.coordinate_expression" href="#BlenderPy.sending_data.Material.coordinate_expression">coordinate_expression</a></code></li>
+<li><code><a title="BlenderPy.sending_data.PositionDependantMaterial.get_shader" href="#BlenderPy.sending_data.Material.get_shader">get_shader</a></code></li>
+<li><code><a title="BlenderPy.sending_data.PositionDependantMaterial.glowing" href="#BlenderPy.sending_data.Material.glowing">glowing</a></code></li>
+<li><code><a title="BlenderPy.sending_data.PositionDependantMaterial.surface_noise" href="#BlenderPy.sending_data.Material.surface_noise">surface_noise</a></code></li>
+<li><code><a title="BlenderPy.sending_data.PositionDependantMaterial.z_dependant_color" href="#BlenderPy.sending_data.Material.z_dependant_color">z_dependant_color</a></code></li>
+</ul>
+</li>
 </ul>
 </dd>
 </dl>
@@ -4286,12 +5271,6 @@ and extra parameters with kwargs</p></div>
 <li><code><a title="BlenderPy.sending_data.GeometricEntity.ymin" href="#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
 <li><code><a title="BlenderPy.sending_data.GeometricEntity.zmax" href="#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
 <li><code><a title="BlenderPy.sending_data.GeometricEntity.zmin" href="#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="BlenderPy.sending_data.Image" href="#BlenderPy.sending_data.Image">Image</a></code></h4>
-<ul class="">
-<li><code><a title="BlenderPy.sending_data.Image.to_dict" href="#BlenderPy.sending_data.Image.to_dict">to_dict</a></code></li>
 </ul>
 </li>
 <li>

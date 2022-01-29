@@ -356,6 +356,19 @@ class ShaderSocket:
     
     def __init__(self, material_parent=None, shader_socket_type='input',
                  parent=None, key=None, value=None, **kwargs):
+        '''
+        Parameters:
+            material_parent: a Material object
+            
+            shader_socket_type: either 'input' or 'output'
+            
+            parent: the ShaderNode this socket belongs to
+            
+            key: the key of the socket
+            
+            value: the value of the socket
+        '''
+            
         assert isinstance(parent, ShaderNode)
         self.material_parent=material_parent
         self.parent=parent
@@ -378,27 +391,33 @@ class ShaderSocket:
         return params
     
     def insert_keyframe(self, key, frame='current'):
+        '''insert a keyframe for this socket for the parameter 'key' at
+        the frame 'frame' '''
         Communication.ask('insert_keyframe_shadersocket',
                    **self.to_dict(key_to_keyframe=key, 
                                   frame=frame))
     
     @property
     def properties(self):
+        '''a PropertyDict to get and set properties of this ShaderSocket'''
         return self._properties
-
-class Image:
-    
-    def __init__(self, path):
-        self.path=path
-    
-    def to_dict(self, **kwargs):
-        kwargs.update(dict({'path':self.path}))
-        return kwargs
         
 class ShaderNode:
+    '''Class representing a ShaderNode of a Material'''
     
     def __init__(self, parent=None, shader_type='Emission',
                  name=None, **kwargs):
+        '''
+        Parameters:
+            parent: a Material object
+            
+            shader_type: the type of ShaderNode. Can be 'Emission',
+            'Add', 'Math', 'Texture_coordinates', 'Separate_XYZ',
+            'Combine_XYZ', 'Principled BSDF', 'Material Output',
+            'Image', 'Glossy', 'Noise', 'Color_Ramp'
+            
+            name: the name the ShaderNode will receive
+        '''
         self.shader_type=shader_type
         assert parent is not None
         self._shadertype_dict=dict({'Emission':'ShaderNodeEmission',
@@ -421,11 +440,16 @@ class ShaderNode:
         else:
             self.parent_name=parent
             self.name=name
-        self._inputs=ShaderDict(self.name, self.parent_name, 'shadernode_input')
-        self._outputs=ShaderDict(self.name, self.parent_name, 'shadernode_output')
-        self._properties=ShaderDict(self.name, self.parent_name, 'shadernode_property')
+        self._inputs=ShaderDict(self.name, self.parent_name,
+                                'shadernode_input')
+        self._outputs=ShaderDict(self.name, self.parent_name,
+                                 'shadernode_output')
+        self._properties=ShaderDict(self.name, self.parent_name,
+                                    'shadernode_property')
     
     def to_dict(self, **kwargs):
+        '''returns a dictionnary representing the ShaderNode
+        and extra parameters with kwargs'''
         params=dict({'parent_name':self.parent_name,
                      'name':self.name})
         params.update(kwargs)
@@ -436,24 +460,45 @@ class ShaderNode:
         return self._shadertype_dict[key]
     
     def remove(self):
+        '''remove the ShaderNode from the material'''
         Communication.send('remove_shader', **self.to_dict())
     
     @property
     def inputs(self):
+        '''ShaderDict to access the input ShaderSockets. The setter will
+        create a link to another ShaderSocket output'''
         return self._inputs
     
     @property
     def outputs(self):
+        '''ShaderDict to access the output ShaderSockets. The setter will
+        create a link to another ShaderSocket input'''
         return self._outputs
     
     @property
     def properties(self):
+        '''a PropertyDict to get and set properties of this ShaderNode'''
         return self._properties
 
 
 class Constraint:
+    '''Class representing a constraint for an object'''
     
     def __init__(self, parent=None, constraint_type='FOLLOW_PATH', **kwargs):
+        ''': creates a new constraint and link it to an Object
+        
+        Parameters:
+            parent: an Object
+            
+            constraint_type: the type of Constraint. Can be ‘CAMERA_SOLVER’,
+            ‘FOLLOW_TRACK’, ‘OBJECT_SOLVER’, ‘COPY_LOCATION’, ‘COPY_ROTATION’,
+            ‘COPY_SCALE’, ‘COPY_TRANSFORMS’, ‘LIMIT_DISTANCE’,
+            ‘LIMIT_LOCATION’, ‘LIMIT_ROTATION’, ‘LIMIT_SCALE’,
+            ‘MAINTAIN_VOLUME’, ‘TRANSFORM’, ‘TRANSFORM_CACHE’, ‘CLAMP_TO’,
+            ‘DAMPED_TRACK’, ‘IK’, ‘LOCKED_TRACK’, ‘SPLINE_IK’, ‘STRETCH_TO’,
+            ‘TRACK_TO’, ‘ACTION’, ‘ARMATURE’, ‘CHILD_OF’, ‘FLOOR’,
+            ‘FOLLOW_PATH’, ‘PIVOT’, ‘SHRINKWRAP’
+        '''
         kwargs['constraint_type']=constraint_type
         kwargs['parent_name']=parent
         self.parent_name=parent
@@ -462,14 +507,20 @@ class Constraint:
                                       func='constraint_property')
     
     def insert_keyframe(self, key, frame='current'):
+        '''insert a keyframe for this constraint for the parameter 'key' at
+        the frame 'frame' '''
         Communication.ask('insert_keyframe_constraint', key=key, frame=frame,
                           name_obj=self.parent_name, name=self.name)
     
     @property
     def properties(self):
+        '''PropertyDict to get and set the properties of this constaint '''
         return self._properties
     
 class PropertyDict(dict):
+    '''Class representing an object properties. It rewrites the setter
+    and getter of the dict class to use the properties as a dictionary 
+    with the server'''
     
     def __init__(self, name=None, name_obj=None, func=None, **kwargs):
         super().__init__()
@@ -501,8 +552,27 @@ class PropertyDict(dict):
             return res
 
 class Modifier:
+    '''Class representing a modifier for an object'''
     
     def __init__(self, parent=None, modifier_type='CURVE', **kwargs):
+        '''
+        Parameters:
+            parent: an Object
+            
+            modifier_type: the type of Modifier. Can be ‘DATA_TRANSFER’,
+            ‘MESH_CACHE’, ‘MESH_SEQUENCE_CACHE’, ‘NORMAL_EDIT’,
+            ‘WEIGHTED_NORMAL’, ‘UV_PROJECT’, ‘UV_WARP’, ‘VERTEX_WEIGHT_EDIT’,
+            ‘VERTEX_WEIGHT_MIX’, ‘VERTEX_WEIGHT_PROXIMITY’, ‘ARRAY’, ‘BEVEL’,
+            ‘BOOLEAN’, ‘BUILD’, ‘DECIMATE’, ‘EDGE_SPLIT’, ‘NODES’, ‘MASK’,
+            ‘MIRROR’, ‘MESH_TO_VOLUME’, ‘MULTIRES’, ‘REMESH’, ‘SCREW’, ‘SKIN’,
+            ‘SOLIDIFY’, ‘SUBSURF’, ‘TRIANGULATE’, ‘VOLUME_TO_MESH’, ‘WELD’,
+            ‘WIREFRAME’, ‘ARMATURE’, ‘CAST’, ‘CURVE’, ‘DISPLACE’, ‘HOOK’, 
+            ‘LAPLACIANDEFORM’, ‘LATTICE’, ‘MESH_DEFORM’, ‘SHRINKWRAP’,
+            ‘SIMPLE_DEFORM’, ‘SMOOTH’, ‘CORRECTIVE_SMOOTH’, ‘LAPLACIANSMOOTH’,
+            ‘SURFACE_DEFORM’, ‘WARP’, ‘WAVE’, ‘VOLUME_DISPLACE’, ‘CLOTH’, 
+            ‘COLLISION’, ‘DYNAMIC_PAINT’, ‘EXPLODE’, ‘FLUID’, ‘OCEAN’,
+            ‘PARTICLE_INSTANCE’, ‘PARTICLE_SYSTEM’, ‘SOFT_BODY’, ‘SURFACE’
+        '''
         kwargs['modifier_type']=modifier_type
         kwargs['parent_name']=parent
         self.parent_name=parent
@@ -512,9 +582,11 @@ class Modifier:
     
     @property
     def properties(self):
+        '''PropertyDict to get and set the properties of this Modifier '''
         return self._properties
     
     def apply(self):
+        '''apply the modifier'''
         if self.properties['type']=='BOOLEAN':
             kwargs=dict({'name':self.name,
                          'name_obj':self.parent_name})
@@ -523,6 +595,7 @@ class Modifier:
         
     
 class Material:
+    '''Class representing a Material.'''
     
     def __init__(self, name='material', color='#FFFFFF', alpha=1., transmission=0,
                  use_screen_refraction=False, refraction_depth=0.,
@@ -530,6 +603,17 @@ class Material:
                  use_backface_culling=False, create_new=True,
                  metallic=0.,
                  **kwargs):
+        '''
+        Parameters:
+            name: the name of the material
+            
+            create_new: create a new material. If False, try to get an existing
+            
+            material with the same name, and if it fails, create a new one
+            
+            other arguments: properties of the Principled BSDF shader
+        '''
+    
         if not create_new:
             names = self.get_material_names()
             if name in names:
@@ -563,8 +647,9 @@ class Material:
         names=['Principled BSDF', 'Material Output']
         self.shadernodes_dimensions=dict()
         for name in names:
-            self.shadernodes_dimensions[name]=ShaderNode(name=name, parent=self.material_object,
-                                                shader_type=name).properties['location']
+            self.shadernodes_dimensions[name]=ShaderNode(name=name,
+                                       parent=self.material_object,
+                                       shader_type=name).properties['location']
     
     @property
     def xmax_shadernode_dimensions(self):
@@ -591,6 +676,14 @@ class Material:
         return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions
     
     def add_shader(self, shader_type):
+        '''Add a ShaderNode to this Material.
+        
+        Parameters:
+            shader_type: the type of this shader. See ShaderNode
+        
+        Returns:
+            the created ShaderNode
+        '''
         dx, dy=200, 200
         i,j=0,0
         while [i*dx, j*dy] in list(self.shadernodes_dimensions.values()):
@@ -609,6 +702,15 @@ class Material:
         return res
     
     def get_shader(self, name=None, find_math_operation=None):
+        '''Get an existing ShaderNode from his name.
+        
+        Parameters:
+            name: the name of the shader
+            
+            find_math_operation: if not None, find the first 
+            
+            Math ShaderNode to have this operation
+        '''
         if find_math_operation is not None:
             for node_name in self.shadernodes_dimensions.keys():
                 if 'Math' in node_name:
@@ -620,15 +722,30 @@ class Material:
         else:
             return ShaderNode(parent=self.material_object, name=name)
     
-    def coordinate_expression(self, exp, input_shader=None, special_keys=None):
+    def coordinate_expression(self, exp, special_keys=None):
+        '''Construct a tree of Math ShaderNodes representing the math operation
+        exp.
+        
+        Parameters:
+            exp: String representing the math operation. Can use +,-,/,*,||,
+            sqrt, ^, e, sin, cos
+            
+            special_keys: a dict linking the keys representing the input of
+            this expression to ShaderSockets. for example:
+                dict({'x':separation_shader.outputs['X']})
+        
+        Returns:
+            the last ShaderNode, whose outputs['Value'] can be linked to
+            another ShaderNode
+        '''
         e=Expression(content=exp, tokens=[])
         if not e.is_leaf():
             tree=e.get_tree()
             tree['parent']=None
-            return self.distribute_shaders(tree,input_shader=input_shader,
+            return self.distribute_shaders(tree,
                                            special_keys=special_keys)
     
-    def distribute_shaders(self, tree, input_shader=None, special_keys=None):
+    def distribute_shaders(self, tree, special_keys=None):
         return_shader=None
         if isinstance(tree, dict):
             operation=list(tree.keys())[0]
@@ -640,7 +757,7 @@ class Material:
             for node in subtree:
                 if isinstance(node, dict):
                     node['parent']=tree['shader']
-                self.distribute_shaders(node, input_shader=input_shader,
+                self.distribute_shaders(node, 
                                         special_keys=special_keys)
             for i, node in enumerate(subtree):
                 if isinstance(node, dict):
@@ -663,6 +780,19 @@ class Material:
         
     def z_dependant_color(self, colors=None, positions=None,
                           coordinate='Generated'):
+        '''add a color ramp based on the Z texture coordinate
+        
+        Parameters:
+           colors: a list of colors to use in the color ramp
+           
+           positions: a list of float positions to use in the color ramp 
+           
+           coordinate: which texture coordinate should be considered.
+           
+        Returns:
+            None
+        '''
+        
         coord=self.add_shader('Texture_coordinates')
         sep=self.add_shader('Separate_XYZ')
         sep.inputs['Vector']=coord.outputs[coordinate]
@@ -676,6 +806,26 @@ class Material:
     def surface_noise(self, scale=3, detail=2, roughness=0.5,
                       dimension='2D',
                       orientation='Z', origin='Generated'):
+        '''add a displacement noise
+        
+        Parameters:
+           scale: the scale of the noise Texture
+           
+           detail: the detail of the noise Texture
+           
+           roughness: the roughness of the noise Texture
+           
+           dimensions: either '2D' or '3D'. If '3D', apply the noise to all
+           faces, if '2D', apply the noise only to a given direction
+           
+           orientation: either 'X', 'Y', or 'Z'. The normal to use in case 
+           dimensions is '2D'
+           
+           origin: which Texture coordinates to use for the noise
+           
+        Returns:
+            None
+        '''
         noise=self.add_shader('Noise')
         coord=self.add_shader('Texture_coordinates')
         output=self.get_shader('Material Output')
@@ -684,8 +834,9 @@ class Material:
             sepxyz=self.add_shader('Separate_XYZ')
             sepxyz2=self.add_shader('Separate_XYZ')
             combine=self.add_shader('Combine_XYZ')
-            combine.inputs['X']=sepxyz2.outputs['X']
-            combine.inputs['Y']=sepxyz2.outputs['Y']
+            for direction in ['X', 'Y', 'Z']:
+                if orientation!=direction:
+                    combine.inputs[direction]=sepxyz2.outputs[direction]
             sepxyz.inputs['Vector']=coord.outputs['Normal']
             sup=self.add_shader('Math')
             sup.properties['operation']=self.operations['>']
@@ -705,6 +856,17 @@ class Material:
         noise.inputs['Roughness']=roughness
     
     def glowing(self, color='#FFFFFF', strength=10, **kwargs):
+        '''add a glowing emission to a Material
+        
+        Parameters:
+           color: the color of the glowing
+           
+           strength: the strength of the glowing
+           
+        Returns:
+            None
+        '''
+        
         emission=self.add_shader('Emission')
         emission.inputs['Color']=self.convert_color(color)
         emission.inputs['Strength']=strength
@@ -740,10 +902,28 @@ class Material:
             return [int(color[i:i+2], 16)/256. for i in [1,3,5]] +[alpha]
  
 class MetallicMaterial(Material):
+    '''Class representing a Mettalic Material made of a glossy BDSF shader
+    with a surface noise'''
 
     def __init__(self, name='metal', color='#DCC811', randomness=1, detail=10,
                  roughness=0.5, orientation='Z', origin='Generated',
                  **kwargs):
+        '''Parameters:
+            name: the desired name of the material
+            
+            color: the desired color of the material
+            
+            randomness: the scale of the Texture noise
+            
+            detail: the detail of the Texture noise
+            
+            roughness: the roughness of the Texture noise
+            
+            orientation: see surface_noise for the Material class
+            
+            origin:  see surface_noise for the Material class
+        '''
+        
         super().__init__(name, color, **kwargs) 
         output=self.get_shader('Material Output')
         glossy=self.add_shader('Glossy')
@@ -770,8 +950,21 @@ class MetallicMaterial(Material):
         output.inputs['Displacement']=mult.outputs['Value']
 
 class EmissionMaterial(Material):
+    '''class representing an Emission volume material'''
     
     def __init__(self, color='#AF2020', expression=None, strength=None, **kwargs):
+         '''initialize.
+         
+         Parameters:
+             color: the color of the emission
+             
+             expression: if not None, an expression to specify the strength of
+             the emission. See coordinate_expression for Material
+             
+             strength: if no expression is provided, this fixed float will be
+             set to the strength of the emission
+         '''
+         
          super().__init__(**kwargs)
          emission=self.add_shader('Emission')
          emission.inputs['Color']=self.convert_color(color)
@@ -793,12 +986,28 @@ class EmissionMaterial(Material):
              emission.inputs['Strength']=strength
 
 class PositionDependantMaterial(Material):
+    '''class representing an surface color depending on the position through
+    an expression'''
     
     def __init__(self, expression, 
                  colors=None,
                  positions=None,
                  coordinate='Generated',
                  **kwargs):
+        '''Initialize
+        
+        Parameters:
+            expression: the expression to enter the color ramp. 
+            See coordinate_expression for Material
+            
+            colors: a list of colors to put in the color ramp
+            
+            positions: a list of float positions to put in the color ramp
+            
+            coordinate: which Texture coordinate to use for the input
+            of the expression
+        '''
+        
         super().__init__(**kwargs)
         coord=self.add_shader('Texture_coordinates')
         sepxyz=self.add_shader('Separate_XYZ')
@@ -818,7 +1027,9 @@ class PositionDependantMaterial(Material):
         principled.inputs['Base Color']=color_ramp.outputs['Color']
         
 class ZColorRampMaterial(PositionDependantMaterial):
-    
+    '''PositionDependantMaterial with the expresion 'Z'
+    '''
+        
     def __init__(self, colors=None, positions=None,
                           coordinate='Generated', **kwargs):
         super().__init__('Z', colors=colors,
@@ -828,17 +1039,46 @@ class ZColorRampMaterial(PositionDependantMaterial):
 
             
 class GaussianLaserMaterial(EmissionMaterial):
+    '''EmissionMaterial with a Geussian profile.
+    The Generated coordinate is used'''
     
     def __init__(self, alpha=0.001, waist=0.1, strength=3, **kwargs):
-        expression='{:}*e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))'.format(strength, alpha, waist**2)
+        '''Initialize
+        
+        Parameters:
+            alpha: the divergence length of the gaussian beam
+            
+            waist: the waist of the beam
+            
+            strength: the strength of the emission
+        '''
+        expression='{:}*e^(-((x-0.5)^2+(y-0.5)^2)/{:}/(1+(z-0.5)^2/{:}))'\
+                        .format(strength, alpha, waist**2)
         super().__init__(expression=expression, **kwargs) 
     
 class Object:
+    '''Class representing an Object'''
     
     def __init__(self, name_obj=None, filepath=None,
                  location=None, scale=None,
                  material=None, rotation=None,
                  **kwargs):
+        '''
+        Parameters:
+            name_obj: the name of the object
+            
+            filepath: if given, a json file location containing properties to 
+            set to the object
+            
+            location: if given, the location of the desired object
+            
+            scale: if given, the scale of the desired object
+            
+            material: if given, the material of the desired object
+            
+            rotation: if given, the rotation of the desired object
+        '''    
+        
         if name_obj is not None:
             self.name_obj=name_obj
         self._properties=PropertyDict('', self.name_obj, func='object_property')
@@ -856,6 +1096,12 @@ class Object:
             self.assign_material(material)
     
     def assign_material(self, material):
+        '''Assign a material to the object
+        
+        Parameters:
+            material: a Material instance
+        '''
+        
         if isinstance(material, list):
             kwargs = dict({'name_obj':self.name_obj,
                            'name_mat':[mat.material_object for mat in material]})
@@ -865,17 +1111,37 @@ class Object:
         Communication.send('assign_material', **kwargs)
     
     def load(self, filepath):
+        '''Load a Json file with properties to set
+        
+        Parameters;
+            filepath: path the Json file
+        '''
+        
         with open(filepath, 'r') as f:
             data=json.load(f)
         for k, v in data.items():
             self.properties[k]=v
     
     def duplicate(self):
+        '''Duplicate the object
+        
+        Returns:
+            the new object
+        '''
+        
         return Object(name_obj=Communication.ask('duplicate',
                                                  name_obj=self.name_obj))
     
     def follow_path(self, target=None, use_curve_follow=True,
                     forward_axis='FORWARD_X'):
+        '''Add a Follow path constraint to the object
+        
+        Parameters:
+            target: the object to follow
+            
+            use_curve_follow and forward_axis: property of the constraint
+        '''
+        
         constraint=self.assign_constraint(constraint_type='FOLLOW_PATH')
         constraint.properties['target']=target
         constraint.properties['use_curve_follow']=use_curve_follow
@@ -884,16 +1150,37 @@ class Object:
         return constraint
     
     def insert_keyframe(self, key, frame='current'):
+        '''Keyframe a property of the object
+        
+        Parameters:
+            key: the property to keyframe
+            frame: the frame at which the keyframe should be set
+        '''
+        
         Communication.ask('insert_keyframe_object',
                           key=key, frame=frame,
                           name_obj=self.name_obj)
         
     def assign_constraint(self, constraint_type='FOLLOW_PATH', **kwargs):
+        '''Assign a constraint to the object
+        
+        Parameters:
+            constraint_type: type of the constraint. see Constraint
+        '''
+        
         return Constraint(parent=self.name_obj,
                                    constraint_type=constraint_type,
                                    **kwargs)
     
     def curve_modifier(self, target=None, deform_axis='POS_X'):
+        '''Apply a Curve modifier to the object
+        
+        Parameters:
+            target: the Curve object
+            
+            deform_axis: property of the constraint
+        '''
+        
         modifier=self.assign_modifier(modifier_type='CURVE')
         modifier.properties['object']=target
         modifier.properties['deform_axis']=deform_axis
