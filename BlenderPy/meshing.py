@@ -12,6 +12,7 @@ from BlenderPy.sending_data import (Mesh, GeometricEntity)
 from abc import abstractmethod
 
 class Vector:
+    '''Class representing a Vector, of 2 or 3 dimensions.'''
     
     def __init__(self, *args):
         if len(args)==2:

@@ -7,7 +7,6 @@ Created on Wed Aug 26 09:56:27 2020
 
 import socket
 import json
-import os
 import time
 from BlenderPy.parsing import Expression
 import numpy as np
@@ -622,7 +621,7 @@ class Material:
                 self.material_object = self.create_material(name)
         else:
             self.material_object = self.create_material(name)
-        self.color=self.convert_color(color)
+        self.color=Material.convert_color(color)
         params=dict({'name':self.material_object, 'color':self.color,
                      'alpha':alpha, 'transmission':transmission,
                      'use_screen_refraction':use_screen_refraction,
@@ -645,34 +644,34 @@ class Material:
                          'cos':'COSINE',
                          'sin':'SINE'})
         names=['Principled BSDF', 'Material Output']
-        self.shadernodes_dimensions=dict()
+        self._shadernodes_dimensions=dict()
         for name in names:
-            self.shadernodes_dimensions[name]=ShaderNode(name=name,
+            self._shadernodes_dimensions[name]=ShaderNode(name=name,
                                        parent=self.material_object,
                                        shader_type=name).properties['location']
     
     @property
-    def xmax_shadernode_dimensions(self):
+    def _xmax_shadernode_dimensions(self):
         return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,0])
     
     @property
-    def ymax_shadernode_dimensions(self):
+    def _ymax_shadernode_dimensions(self):
         return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,1])
     
     @property
-    def xmin_shadernode_dimensions(self):
+    def _xmin_shadernode_dimensions(self):
         return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,0])
     
     @property
-    def ymin_shadernode_dimensions(self):
+    def _ymin_shadernode_dimensions(self):
         return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,1])
     
     @property
-    def height_shadernode_dimensions(self):
+    def _height_shadernode_dimensions(self):
         return self.ymax_shadernode_dimensions-self.ymin_shadernode_dimensions
     
     @property
-    def width_shadernode_dimensions(self):
+    def _width_shadernode_dimensions(self):
         return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions
     
     def add_shader(self, shader_type):
@@ -686,19 +685,19 @@ class Material:
         '''
         dx, dy=200, 200
         i,j=0,0
-        while [i*dx, j*dy] in list(self.shadernodes_dimensions.values()):
+        while [i*dx, j*dy] in list(self._shadernodes_dimensions.values()):
             i+=1
-            if i*dx>self.width_shadernode_dimensions:
+            if i*dx>self._width_shadernode_dimensions:
                 i=0
                 j+=1
-                if j*dy>self.height_shadernode_dimensions:
+                if j*dy>self._height_shadernode_dimensions:
                     j=0
-                    i=int(self.width_shadernode_dimensions)/dx+1
+                    i=int(self._width_shadernode_dimensions)/dx+1
                     break
         res= ShaderNode(shader_type=shader_type,
                           parent=self.material_object)
         res.properties['location']=[i*dx, j*dy]
-        self.shadernodes_dimensions[res.name]=[i*dx, j*dy]
+        self._shadernodes_dimensions[res.name]=[i*dx, j*dy]
         return res
     
     def get_shader(self, name=None, find_math_operation=None):
@@ -742,10 +741,10 @@ class Material:
         if not e.is_leaf():
             tree=e.get_tree()
             tree['parent']=None
-            return self.distribute_shaders(tree,
+            return self._distribute_shaders(tree,
                                            special_keys=special_keys)
     
-    def distribute_shaders(self, tree, special_keys=None):
+    def _distribute_shaders(self, tree, special_keys=None):
         return_shader=None
         if isinstance(tree, dict):
             operation=list(tree.keys())[0]
@@ -799,7 +798,7 @@ class Material:
         color_ramp=self.add_shader('Color_Ramp')
         color_ramp.inputs['Fac']=sep.outputs['Z']
         color_ramp.properties['color_ramp']=dict({'positions':positions,
-                             'colors':[self.convert_color(color) for color in colors]})
+                             'colors':[Material.convert_color(color) for color in colors]})
         principled=self.get_shader('Principled BSDF')
         principled.inputs['Base Color']=color_ramp.outputs['Color']
     
@@ -868,7 +867,7 @@ class Material:
         '''
         
         emission=self.add_shader('Emission')
-        emission.inputs['Color']=self.convert_color(color)
+        emission.inputs['Color']=Material.convert_color(color)
         emission.inputs['Strength']=strength
         output=self.get_shader('Material Output')
         add_shader=self.add_shader('Add')
@@ -886,7 +885,8 @@ class Material:
     def get_material_names(self):
         return Communication.ask('get_material_names')
     
-    def convert_color(self, color, alpha=1):
+    @staticmethod
+    def convert_color(color, alpha=1):
         if len(color)==3:
             if alpha is None:
                 alpha=1.0
@@ -929,7 +929,7 @@ class MetallicMaterial(Material):
         glossy=self.add_shader('Glossy')
         coord=self.add_shader('Texture_coordinates')
         output.inputs['Surface']=glossy.outputs['BSDF']
-        glossy.inputs['Color']=self.convert_color(color)
+        glossy.inputs['Color']=Material.convert_color(color)
         noise=self.add_shader('Noise')
         coord=self.add_shader('Texture_coordinates')
         noise.inputs['Vector']=coord.outputs[origin]
@@ -967,7 +967,7 @@ class EmissionMaterial(Material):
          
          super().__init__(**kwargs)
          emission=self.add_shader('Emission')
-         emission.inputs['Color']=self.convert_color(color)
+         emission.inputs['Color']=Material.convert_color(color)
          output=self.get_shader('Material Output')
          output.inputs['Volume']=emission.outputs['Emission']
          Principled=self.get_shader('Principled BSDF')
@@ -1022,7 +1022,7 @@ class PositionDependantMaterial(Material):
                                                          'z':sepxyz.outputs['Z']}))
             color_ramp.inputs['Fac']=shader.outputs['Value']
         color_ramp.properties['color_ramp']=dict({'positions':positions,
-                             'colors':[self.convert_color(color) for color in colors]})
+                             'colors':[Material.convert_color(color) for color in colors]})
         principled=self.get_shader('Principled BSDF')
         principled.inputs['Base Color']=color_ramp.outputs['Color']
         
@@ -1173,7 +1173,7 @@ class Object:
                                    **kwargs)
     
     def curve_modifier(self, target=None, deform_axis='POS_X'):
-        '''Apply a Curve modifier to the object
+        '''Assign a Curve modifier to the object
         
         Parameters:
             target: the Curve object
@@ -1187,32 +1187,76 @@ class Object:
         self.modifiers.append(modifier)
     
     def assign_modifier(self, modifier_type='CURVE', **kwargs):
+        '''Assign a modifier to the object
+        
+        Parameters:
+            modifier_type: the type of modifier. See Modifier
+        
+        Returns:
+            the created Modifier
+        '''
         return Modifier(parent=self.name_obj,
                                    modifier_type=modifier_type,
                                    **kwargs)
     
     def subtract(self, target):
+        '''Assign and apply a Boolean Modifier for subtraction between
+        self and another Object.
+        
+        Parameters:
+            target: Object to subtract
+        
+        Returns:
+            None
+        '''
         boolean=self.assign_modifier(modifier_type='BOOLEAN')
         boolean.properties['object']=target
         boolean.apply()
     
     def copy_location(self, target=None):
+        '''Apply a COPY_LOCATION constraint to the object
+        
+        Parameters:
+            target: the Object whose location should be copied from
+        
+        Returns:
+            None
+        '''
+        
         self.assign_constraint(constraint_type='COPY_LOCATION')
         self.constraint.properties['target']=target
     
     def to_dict(self, **kwargs):
+        '''Returns a dictionary representing the object
+        
+        Parameters:
+            kwargs: some keyword arguments to add to the base dictionary,
+            which is only the name of the object
+        
+        Returns:
+            the generated dictionary
+        '''
+        
         kwargs.update(dict({'name_obj':self.name_obj}))
         return kwargs
     
     def remove(self):
+        '''Delete the Object
+        '''
         Communication.send('remove_object', **self.to_dict())
         
     @property
     def properties(self):
+        '''PropertyDict to get and set the Object properties
+        '''
+        
         return self._properties
     
     @property
     def scale(self):
+        '''Scale of the Object. Expect and returns a list of 3 scalings,
+        for x,y and z respectively
+        '''
         return self.properties['scale']
     
     @scale.setter
@@ -1221,6 +1265,8 @@ class Object:
     
     @property
     def location(self):
+        '''Location of the Object. Expect and returns a list of 3 coordinates
+        '''
         return self.properties['location']
     
     @location.setter
@@ -1229,6 +1275,10 @@ class Object:
     
     @property
     def rotation(self):
+        '''Rotation of the Object. Expect and returns a list of 3 rotations
+        in radians around the x,y and z axis, following the Euler angles
+        convention
+        '''
         return self.properties['rotation_euler']
     
     @rotation.setter
@@ -1237,14 +1287,20 @@ class Object:
     
     @property
     def x(self):
+        '''x coordinate of the location
+        '''
         return self.location[0]
     
     @property
     def y(self):
+        '''y coordinate of the location
+        '''
         return self.location[1]
     
     @property
     def z(self):
+        '''z coordinate of the location
+        '''
         return self.location[2]
     
     @x.setter
@@ -1264,25 +1320,44 @@ class Object:
         return np.array(self.properties['matrix_world'])
 
 class Camera(Object):
+    '''Class Representing a camera
+    '''
+    
     
     def __init__(self, name='camera',
                  **kwargs):
-        self.add_camera(name)
+        '''
+        Parameters:
+            name: the name of the camera
+            kwargs: Object properties
+        '''
+        
+        self._add_camera(name)
         super().__init__(**kwargs)
         self._cam_properties=PropertyDict(self.name, '',
                                           func='camera_property')
     
-    def add_camera(self, name):
+    def _add_camera(self, name):
         self.name, self.name_obj=Communication.ask('create_camera',
                                                    name=name)
     
     @property
     def cam_properties(self):
+        '''
+        PropertyDict to get and set Camera properties
+        '''
         return self._cam_properties
 
 class Curve(Object):
+    '''Class representing a Curve
+    '''
     
     def __init__(self, points, **kwargs):
+        '''Parameters:
+            points: a list of 3D coordinates for the points of the curve
+            kwargs: Object properties
+        '''
+        
         self.name, self.name_obj=Communication.ask('create_curve',
                                                    points=points,
                                                    **kwargs) 
@@ -1290,6 +1365,8 @@ class Curve(Object):
     
     @property
     def points(self):
+        '''a numpy array of the points of the curve
+        '''
         return np.array(Communication.ask('get_curve_points',
                                           name=self.name,
                                           name_obj=self.name_obj))
@@ -1303,22 +1380,36 @@ class Curve(Object):
                            points=val)
         
 class Light(Object):
+    '''Class representing a light'''
     
-    def __init__(self, name='light',
+    def __init__(self, name='light', color='#FFFFFF',
                  power=2, radius=0.25, light_type='POINT',
                  filepath=None, **kwargs):
-        self.add_light(name, light_type=light_type)
+        '''Parameters:
+            name: the name of the Light object
+            color: color of the light. Default to white. Expect a string
+            starting with a '#' and then the hexadecimal values of red, green
+            and blue.
+            power: the power of the light in Watts
+            radius: the radius of the light
+            light_type: which type of light. Can be 'POINT', 'SUN', 'SPOT' or
+            'AREA'
+            filepath: the path to a JSON file with some properties to load in
+            this light
+        '''
+        self._add_light(name, light_type=light_type)
         super().__init__(**kwargs)
         self._light_properties=PropertyDict(self.name,
                                            self.name_obj,
                                            func='light_property')
-        self.light_properties['energy']=power
-        self.light_properties['shadow_soft_size']=radius
+        self.power=power
+        self.radius=radius
+        self.color=color
         if filepath is not None:
             self.load(filepath)
-            self.load_light(filepath)
+            self._load_light(filepath)
         
-    def add_light(self, name, light_type='POINT'):
+    def _add_light(self, name, light_type='POINT'):
         res=dict()
         kwargs = dict()
         kwargs['light_type']=light_type
@@ -1328,50 +1419,82 @@ class Light(Object):
         self.name, self.name_obj=Communication.ask('create_light',
                                                    light_type=light_type)
     
-    def load_light(self, filepath):
+    def _load_light(self, filepath):
         with open(filepath, 'r') as f:
             data=json.load(f)
         for k, v in data.items():
             self.light_properties[k]=v
     
     @property
+    def power(self):
+        '''Power of the light in Watts'''
+        return self.light_properties['energy']
+    
+    @power.setter
+    def power(self, val):
+        self.light_properties['energy']=float(val)
+    
+    @property
+    def color(self):
+        '''Color of the light. Returns a list of float, but expect a String'''
+        return self.light_properties['color']
+    
+    @color.setter
+    def color(self, val):
+        self.light_properties['color']=Material.convert_color(val)
+    
+    @property
+    def radius(self):
+        '''Radius of the light in meters'''
+        return self.light_properties['shadow_soft_size']
+    
+    @radius.setter
+    def radius(self, val):
+        self.light_properties['shadow_soft_size']=float(val)
+    
+    @property
     def light_properties(self):
+        '''PropertyDict for getting and setting the light properties.
+        Typical properties are 'energy' for power, 'shadow_soft_size' for
+        radius, and 'color'
+        '''
         return self._light_properties
         
 
 class Mesh(Object, GeometricEntity):
+    '''Class representing a Mesh'''
     
-    def __init__(self, mesh=None, cells=None, points=None,
+    def __init__(self, cells=None, points=None,
                  thickness=None, name='mesh', subdivide=1,
-                 material=None, **kwargs):
+                 **kwargs):
+        '''Parameters:
+            cells: a list of cells consisting in a list of integer point
+            indices
+            points: a list of points consisting in a list 
+            of the x, y and z coordinates
+            thickness: the thickness of the desired extruded 2D shape. Can be
+            None, which means no extrusion
+            name: the desired name for the Mesh
+            subdivide: the number of division in the extrusion
+            kwargs: Object properties
+        '''
+        
         self.subdivide=subdivide
         self.thickness=thickness
         self.cells=cells
         self.points=points
-        self.mesh=mesh
-        self.name_obj, self.name_msh = self.send_mesh(self.mesh, 
-                                                      thickness=self.thickness,
+        self.name_obj, self.name_msh = self._send_mesh(thickness=self.thickness,
                                                       name=name)
         super().__init__(**kwargs)
-        if material is not None:
-            self.assign_material(material)
         
-    def send_mesh(self, mesh, thickness=None, name='mesh'):
-        if self.mesh is not None:
-            points=[[float(coord) for coord in p] for p in self.points]
-            cells=[]
-            for celltype in self.cells:
-                if celltype.type=='triangle':
-                    cells+=[[int(ind) for ind in cell] for cell in celltype.data]
-            
-        else:
-            cells=[]
-            points=[[coord for coord in p] for p in self.points]
-            for celltype in self.cells:
-                if not isinstance(celltype[0], str):
-                    cells+=[[int(ind) for ind in celltype]]
-                elif celltype[0]=='triangle':
-                    cells+=[[int(ind) for ind in cell] for cell in celltype[1]]
+    def _send_mesh(self, thickness=None, name='mesh'):
+        cells=[]
+        points=[[coord for coord in p] for p in self.points]
+        for celltype in self.cells:
+            if not isinstance(celltype[0], str):
+                cells+=[[int(ind) for ind in celltype]]
+            elif celltype[0]=='triangle':
+                cells+=[[int(ind) for ind in cell] for cell in celltype[1]]
         return Communication.ask('create_mesh',
                                  name=name,
                                  thickness=thickness,
@@ -1381,20 +1504,57 @@ class Mesh(Object, GeometricEntity):
     
     def insert_mesh_keyframe(self, frame='current',
                              waiting_time_between_points=0.01):
-         Communication.ask('insert_keyframe_mesh',
+        '''
+        Insert a keyframe on the position of each vertices of the mesh
+        
+        Parameters:
+            frame: the frame where the keyframes should be placed. Default to
+            'current', which means the current frame. Otherwise should be an
+            integer
+            waiting_time_between_points: number of seconds to wait between the
+            keyframing of each point. Should be adjusted to maximise speed
+            while not crashing Blender when keyframing a large number of
+            points.
+        '''
+        Communication.ask('insert_keyframe_mesh',
                            name_msh=self.name_msh,
                            frame=frame,
                            waiting_time_between_points=waiting_time_between_points)
         
     def cut_mesh(self, plane_points, plane_normals):
+        '''
+        Cut the mesh along a list of planes to subdivide it. 
+        
+        Parameters:
+            plane_points: a list of points that belong the plane cuts. Each 
+            point is a 3D list of coordinates
+            plane_normals: a list of 3D vectors that are normal to the plane
+            cuts. Each vector is a 3D list of coordinates
+        '''
+        
         Communication.send('cut_mesh', name_msh=self.name_msh,
                            planes_co=plane_points,
                            planes_no=plane_normals)
     
     def smooth(self):
+        '''
+        Use the smooth option
+        '''
+        
         Communication.ask('smooth', name_msh=self.name_msh)
     
     def divide(self, Nx=None, Ny=None, Nz=None):
+        '''Use the cut_mesh method for planes regularly spaced
+        in X, Y and Z, and oriented along thos axis
+        
+        Parameters:
+            Nx: an integer that represents the number of cuts along the X axis.
+            Default to None which means no cut
+            Ny: an integer that represents the number of cuts along the Y axis.
+            Default to None which means no cut
+            Nz: an integer that represents the number of cuts along the Z axis.
+            Default to None which means no cut
+        '''
         if Nx is not None:
             xs=np.linspace(self.xmin, self.xmax, Nx)
             self.cut_mesh([[x,0,0] for x in xs],
@@ -1410,6 +1570,7 @@ class Mesh(Object, GeometricEntity):
     
     @property
     def use_auto_smooth(self):
+        '''Use the auto_smooth property. Expects a boolean'''
         return self._properties[['data', 'use_auto_smooth']]
     
     @use_auto_smooth.setter
@@ -1418,6 +1579,7 @@ class Mesh(Object, GeometricEntity):
     
     @property
     def auto_smooth_angle(self):
+        '''Define the auto_smooth angle. Expects a float'''
         return self._properties[['data', 'auto_smooth_angle']]
     
     @auto_smooth_angle.setter
@@ -1426,10 +1588,12 @@ class Mesh(Object, GeometricEntity):
 
     @property
     def parent(self):
+        '''Get the Object associated with this Mesh'''
         return Object(self.name_obj)
 
     @property
     def vertices(self):
+        '''Get the (local) vertices of this mesh as a numpy array'''
         return np.array(Communication.ask('get_vertices',
                                           name_msh=self.name_msh))
     

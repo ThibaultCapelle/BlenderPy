@@ -47,7 +47,7 @@ class VTULoader:
             self.points[i][2]=self.data[i]
             
     def load(self):
-        return Mesh(mesh=None, cells=[['triangle',self.cells]],
+        return Mesh(cells=[['triangle',self.cells]],
                     points=list(self.points), **self.kwargs) 
 
 class STLLoader:
@@ -79,7 +79,7 @@ class STLLoader:
         self.new_dict_points={v:struct.unpack('fff',k) for k, v in dict_points.items()}
     
     def load(self):
-        return Mesh(mesh=None, cells=[['triangle',self.cells]],
+        return Mesh(cells=[['triangle',self.cells]],
           points=list(self.new_dict_points.values()), **self.kwargs) 
 
 
