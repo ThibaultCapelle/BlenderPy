@@ -77,7 +77,7 @@ class VTULoader:
             self.points[i][2]=self.data[i]
             
     def load(self):
-        return Mesh(mesh=None, cells=[[&#39;triangle&#39;,self.cells]],
+        return Mesh(cells=[[&#39;triangle&#39;,self.cells]],
                     points=list(self.points), **self.kwargs) 
 
 class STLLoader:
@@ -109,7 +109,7 @@ class STLLoader:
         self.new_dict_points={v:struct.unpack(&#39;fff&#39;,k) for k, v in dict_points.items()}
     
     def load(self):
-        return Mesh(mesh=None, cells=[[&#39;triangle&#39;,self.cells]],
+        return Mesh(cells=[[&#39;triangle&#39;,self.cells]],
           points=list(self.new_dict_points.values()), **self.kwargs) 
 
 
@@ -366,7 +366,7 @@ if __name__==&#39;__main__&#39;:
         self.new_dict_points={v:struct.unpack(&#39;fff&#39;,k) for k, v in dict_points.items()}
     
     def load(self):
-        return Mesh(mesh=None, cells=[[&#39;triangle&#39;,self.cells]],
+        return Mesh(cells=[[&#39;triangle&#39;,self.cells]],
           points=list(self.new_dict_points.values()), **self.kwargs) </code></pre>
 </details>
 <h3>Methods</h3>
@@ -381,7 +381,7 @@ if __name__==&#39;__main__&#39;:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def load(self):
-    return Mesh(mesh=None, cells=[[&#39;triangle&#39;,self.cells]],
+    return Mesh(cells=[[&#39;triangle&#39;,self.cells]],
       points=list(self.new_dict_points.values()), **self.kwargs) </code></pre>
 </details>
 </dd>
@@ -433,7 +433,7 @@ if __name__==&#39;__main__&#39;:
             self.points[i][2]=self.data[i]
             
     def load(self):
-        return Mesh(mesh=None, cells=[[&#39;triangle&#39;,self.cells]],
+        return Mesh(cells=[[&#39;triangle&#39;,self.cells]],
                     points=list(self.points), **self.kwargs) </code></pre>
 </details>
 <h3>Methods</h3>
@@ -448,7 +448,7 @@ if __name__==&#39;__main__&#39;:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def load(self):
-    return Mesh(mesh=None, cells=[[&#39;triangle&#39;,self.cells]],
+    return Mesh(cells=[[&#39;triangle&#39;,self.cells]],
                 points=list(self.points), **self.kwargs) </code></pre>
 </details>
 </dd>

@@ -42,6 +42,7 @@ from BlenderPy.sending_data import (Mesh, GeometricEntity)
 from abc import abstractmethod
 
 class Vector:
+    &#39;&#39;&#39;Class representing a Vector, of 2 or 3 dimensions.&#39;&#39;&#39;
     
     def __init__(self, *args):
         if len(args)==2:
@@ -728,15 +729,17 @@ if __name__==&#39;__main__&#39;:
 <span>(</span><span>head_width=0.1, head_length=0.2, length=1, width=0.05, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing an Object</p>
-<h2 id="parameters">Parameters</h2>
-<p>name_obj: the name of the object</p>
-<p>filepath: if given, a json file location containing properties to
-set to the object</p>
-<p>location: if given, the location of the desired object</p>
-<p>scale: if given, the scale of the desired object</p>
-<p>material: if given, the material of the desired object</p>
-<p>rotation: if given, the rotation of the desired object</p></div>
+<div class="desc"><p>Class representing a Mesh</p>
+<p>Parameters:
+cells: a list of cells consisting in a list of integer point
+indices
+points: a list of points consisting in a list
+of the x, y and z coordinates
+thickness: the thickness of the desired extruded 2D shape. Can be
+None, which means no extrusion
+name: the desired name for the Mesh
+subdivide: the number of division in the extrusion
+kwargs: Object properties</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -774,21 +777,41 @@ set to the object</p>
 <ul class="hlist">
 <li><code><a title="BlenderPy.meshing.PlaneGeom.assign_constraint" href="sending_data.html#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.assign_material" href="sending_data.html#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.assign_modifier" href="sending_data.html#BlenderPy.sending_data.Object.assign_modifier">assign_modifier</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.auto_smooth_angle" href="sending_data.html#BlenderPy.sending_data.Mesh.auto_smooth_angle">auto_smooth_angle</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.copy_location" href="sending_data.html#BlenderPy.sending_data.Object.copy_location">copy_location</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.curve_modifier" href="sending_data.html#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.cut_mesh" href="sending_data.html#BlenderPy.sending_data.Mesh.cut_mesh">cut_mesh</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.divide" href="sending_data.html#BlenderPy.sending_data.Mesh.divide">divide</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.duplicate" href="sending_data.html#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.follow_path" href="sending_data.html#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.insert_keyframe" href="sending_data.html#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.insert_mesh_keyframe" href="sending_data.html#BlenderPy.sending_data.Mesh.insert_mesh_keyframe">insert_mesh_keyframe</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.load" href="sending_data.html#BlenderPy.sending_data.Object.load">load</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.location" href="sending_data.html#BlenderPy.sending_data.Object.location">location</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.parent" href="sending_data.html#BlenderPy.sending_data.Mesh.parent">parent</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.properties" href="sending_data.html#BlenderPy.sending_data.Object.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.remove" href="sending_data.html#BlenderPy.sending_data.Object.remove">remove</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.rotation" href="sending_data.html#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.scale" href="sending_data.html#BlenderPy.sending_data.Object.scale">scale</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.smooth">smooth</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.subtract" href="sending_data.html#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.to_dict" href="sending_data.html#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.use_auto_smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.use_auto_smooth">use_auto_smooth</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.vertices" href="sending_data.html#BlenderPy.sending_data.Mesh.vertices">vertices</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.x" href="sending_data.html#BlenderPy.sending_data.Object.x">x</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.y" href="sending_data.html#BlenderPy.sending_data.Object.y">y</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.z" href="sending_data.html#BlenderPy.sending_data.Object.z">z</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
 </ul>
@@ -800,15 +823,17 @@ set to the object</p>
 <span>(</span><span>name='Box', Lx=1, Ly=1, Lz=1, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing an Object</p>
-<h2 id="parameters">Parameters</h2>
-<p>name_obj: the name of the object</p>
-<p>filepath: if given, a json file location containing properties to
-set to the object</p>
-<p>location: if given, the location of the desired object</p>
-<p>scale: if given, the scale of the desired object</p>
-<p>material: if given, the material of the desired object</p>
-<p>rotation: if given, the rotation of the desired object</p></div>
+<div class="desc"><p>Class representing a Mesh</p>
+<p>Parameters:
+cells: a list of cells consisting in a list of integer point
+indices
+points: a list of points consisting in a list
+of the x, y and z coordinates
+thickness: the thickness of the desired extruded 2D shape. Can be
+None, which means no extrusion
+name: the desired name for the Mesh
+subdivide: the number of division in the extrusion
+kwargs: Object properties</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -841,21 +866,41 @@ set to the object</p>
 <ul class="hlist">
 <li><code><a title="BlenderPy.meshing.PlaneGeom.assign_constraint" href="sending_data.html#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.assign_material" href="sending_data.html#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.assign_modifier" href="sending_data.html#BlenderPy.sending_data.Object.assign_modifier">assign_modifier</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.auto_smooth_angle" href="sending_data.html#BlenderPy.sending_data.Mesh.auto_smooth_angle">auto_smooth_angle</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.copy_location" href="sending_data.html#BlenderPy.sending_data.Object.copy_location">copy_location</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.curve_modifier" href="sending_data.html#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.cut_mesh" href="sending_data.html#BlenderPy.sending_data.Mesh.cut_mesh">cut_mesh</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.divide" href="sending_data.html#BlenderPy.sending_data.Mesh.divide">divide</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.duplicate" href="sending_data.html#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.follow_path" href="sending_data.html#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.insert_keyframe" href="sending_data.html#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.insert_mesh_keyframe" href="sending_data.html#BlenderPy.sending_data.Mesh.insert_mesh_keyframe">insert_mesh_keyframe</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.load" href="sending_data.html#BlenderPy.sending_data.Object.load">load</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.location" href="sending_data.html#BlenderPy.sending_data.Object.location">location</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.parent" href="sending_data.html#BlenderPy.sending_data.Mesh.parent">parent</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.properties" href="sending_data.html#BlenderPy.sending_data.Object.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.remove" href="sending_data.html#BlenderPy.sending_data.Object.remove">remove</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.rotation" href="sending_data.html#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.scale" href="sending_data.html#BlenderPy.sending_data.Object.scale">scale</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.smooth">smooth</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.subtract" href="sending_data.html#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.to_dict" href="sending_data.html#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.use_auto_smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.use_auto_smooth">use_auto_smooth</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.vertices" href="sending_data.html#BlenderPy.sending_data.Mesh.vertices">vertices</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.x" href="sending_data.html#BlenderPy.sending_data.Object.x">x</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.y" href="sending_data.html#BlenderPy.sending_data.Object.y">y</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.z" href="sending_data.html#BlenderPy.sending_data.Object.z">z</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
 </ul>
@@ -890,15 +935,17 @@ set to the object</p>
 <span>(</span><span>name='Cylinder', radius=1, height=1, N_points=32, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing an Object</p>
-<h2 id="parameters">Parameters</h2>
-<p>name_obj: the name of the object</p>
-<p>filepath: if given, a json file location containing properties to
-set to the object</p>
-<p>location: if given, the location of the desired object</p>
-<p>scale: if given, the scale of the desired object</p>
-<p>material: if given, the material of the desired object</p>
-<p>rotation: if given, the rotation of the desired object</p></div>
+<div class="desc"><p>Class representing a Mesh</p>
+<p>Parameters:
+cells: a list of cells consisting in a list of integer point
+indices
+points: a list of points consisting in a list
+of the x, y and z coordinates
+thickness: the thickness of the desired extruded 2D shape. Can be
+None, which means no extrusion
+name: the desired name for the Mesh
+subdivide: the number of division in the extrusion
+kwargs: Object properties</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -926,21 +973,41 @@ set to the object</p>
 <ul class="hlist">
 <li><code><a title="BlenderPy.meshing.PlaneGeom.assign_constraint" href="sending_data.html#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.assign_material" href="sending_data.html#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.assign_modifier" href="sending_data.html#BlenderPy.sending_data.Object.assign_modifier">assign_modifier</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.auto_smooth_angle" href="sending_data.html#BlenderPy.sending_data.Mesh.auto_smooth_angle">auto_smooth_angle</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.copy_location" href="sending_data.html#BlenderPy.sending_data.Object.copy_location">copy_location</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.curve_modifier" href="sending_data.html#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.cut_mesh" href="sending_data.html#BlenderPy.sending_data.Mesh.cut_mesh">cut_mesh</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.divide" href="sending_data.html#BlenderPy.sending_data.Mesh.divide">divide</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.duplicate" href="sending_data.html#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.follow_path" href="sending_data.html#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.insert_keyframe" href="sending_data.html#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.insert_mesh_keyframe" href="sending_data.html#BlenderPy.sending_data.Mesh.insert_mesh_keyframe">insert_mesh_keyframe</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.load" href="sending_data.html#BlenderPy.sending_data.Object.load">load</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.location" href="sending_data.html#BlenderPy.sending_data.Object.location">location</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.parent" href="sending_data.html#BlenderPy.sending_data.Mesh.parent">parent</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.properties" href="sending_data.html#BlenderPy.sending_data.Object.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.remove" href="sending_data.html#BlenderPy.sending_data.Object.remove">remove</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.rotation" href="sending_data.html#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.scale" href="sending_data.html#BlenderPy.sending_data.Object.scale">scale</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.smooth">smooth</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.subtract" href="sending_data.html#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.to_dict" href="sending_data.html#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.use_auto_smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.use_auto_smooth">use_auto_smooth</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.vertices" href="sending_data.html#BlenderPy.sending_data.Mesh.vertices">vertices</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.x" href="sending_data.html#BlenderPy.sending_data.Object.x">x</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.y" href="sending_data.html#BlenderPy.sending_data.Object.y">y</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.z" href="sending_data.html#BlenderPy.sending_data.Object.z">z</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
 </ul>
@@ -1251,15 +1318,17 @@ def width(self):
 <span>(</span><span>points, width, cap_style='flat', join_style='round', resolution=16, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing an Object</p>
-<h2 id="parameters">Parameters</h2>
-<p>name_obj: the name of the object</p>
-<p>filepath: if given, a json file location containing properties to
-set to the object</p>
-<p>location: if given, the location of the desired object</p>
-<p>scale: if given, the scale of the desired object</p>
-<p>material: if given, the material of the desired object</p>
-<p>rotation: if given, the rotation of the desired object</p></div>
+<div class="desc"><p>Class representing a Mesh</p>
+<p>Parameters:
+cells: a list of cells consisting in a list of integer point
+indices
+points: a list of points consisting in a list
+of the x, y and z coordinates
+thickness: the thickness of the desired extruded 2D shape. Can be
+None, which means no extrusion
+name: the desired name for the Mesh
+subdivide: the number of division in the extrusion
+kwargs: Object properties</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1324,21 +1393,41 @@ set to the object</p>
 <ul class="hlist">
 <li><code><a title="BlenderPy.meshing.PlaneGeom.assign_constraint" href="sending_data.html#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.assign_material" href="sending_data.html#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.assign_modifier" href="sending_data.html#BlenderPy.sending_data.Object.assign_modifier">assign_modifier</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.auto_smooth_angle" href="sending_data.html#BlenderPy.sending_data.Mesh.auto_smooth_angle">auto_smooth_angle</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.copy_location" href="sending_data.html#BlenderPy.sending_data.Object.copy_location">copy_location</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.curve_modifier" href="sending_data.html#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.cut_mesh" href="sending_data.html#BlenderPy.sending_data.Mesh.cut_mesh">cut_mesh</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.divide" href="sending_data.html#BlenderPy.sending_data.Mesh.divide">divide</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.duplicate" href="sending_data.html#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.follow_path" href="sending_data.html#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.insert_keyframe" href="sending_data.html#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.insert_mesh_keyframe" href="sending_data.html#BlenderPy.sending_data.Mesh.insert_mesh_keyframe">insert_mesh_keyframe</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.load" href="sending_data.html#BlenderPy.sending_data.Object.load">load</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.location" href="sending_data.html#BlenderPy.sending_data.Object.location">location</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.parent" href="sending_data.html#BlenderPy.sending_data.Mesh.parent">parent</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.properties" href="sending_data.html#BlenderPy.sending_data.Object.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.remove" href="sending_data.html#BlenderPy.sending_data.Object.remove">remove</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.rotation" href="sending_data.html#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.scale" href="sending_data.html#BlenderPy.sending_data.Object.scale">scale</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.smooth">smooth</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.subtract" href="sending_data.html#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.to_dict" href="sending_data.html#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.use_auto_smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.use_auto_smooth">use_auto_smooth</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.vertices" href="sending_data.html#BlenderPy.sending_data.Mesh.vertices">vertices</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.x" href="sending_data.html#BlenderPy.sending_data.Object.x">x</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.y" href="sending_data.html#BlenderPy.sending_data.Object.y">y</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.meshing.PlaneGeom.z" href="sending_data.html#BlenderPy.sending_data.Object.z">z</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
 <li><code><a title="BlenderPy.meshing.PlaneGeom.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
 </ul>
@@ -1350,15 +1439,17 @@ set to the object</p>
 <span>(</span><span>name='plane', size=10, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing an Object</p>
-<h2 id="parameters">Parameters</h2>
-<p>name_obj: the name of the object</p>
-<p>filepath: if given, a json file location containing properties to
-set to the object</p>
-<p>location: if given, the location of the desired object</p>
-<p>scale: if given, the scale of the desired object</p>
-<p>material: if given, the material of the desired object</p>
-<p>rotation: if given, the rotation of the desired object</p></div>
+<div class="desc"><p>Class representing a Mesh</p>
+<p>Parameters:
+cells: a list of cells consisting in a list of integer point
+indices
+points: a list of points consisting in a list
+of the x, y and z coordinates
+thickness: the thickness of the desired extruded 2D shape. Can be
+None, which means no extrusion
+name: the desired name for the Mesh
+subdivide: the number of division in the extrusion
+kwargs: Object properties</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1383,21 +1474,41 @@ set to the object</p>
 <ul class="hlist">
 <li><code><a title="BlenderPy.meshing.Box.assign_constraint" href="sending_data.html#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.assign_material" href="sending_data.html#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.assign_modifier" href="sending_data.html#BlenderPy.sending_data.Object.assign_modifier">assign_modifier</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.auto_smooth_angle" href="sending_data.html#BlenderPy.sending_data.Mesh.auto_smooth_angle">auto_smooth_angle</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.copy_location" href="sending_data.html#BlenderPy.sending_data.Object.copy_location">copy_location</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.curve_modifier" href="sending_data.html#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.cut_mesh" href="sending_data.html#BlenderPy.sending_data.Mesh.cut_mesh">cut_mesh</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.divide" href="sending_data.html#BlenderPy.sending_data.Mesh.divide">divide</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.duplicate" href="sending_data.html#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.follow_path" href="sending_data.html#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.insert_keyframe" href="sending_data.html#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.insert_mesh_keyframe" href="sending_data.html#BlenderPy.sending_data.Mesh.insert_mesh_keyframe">insert_mesh_keyframe</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.load" href="sending_data.html#BlenderPy.sending_data.Object.load">load</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.location" href="sending_data.html#BlenderPy.sending_data.Object.location">location</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.parent" href="sending_data.html#BlenderPy.sending_data.Mesh.parent">parent</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.properties" href="sending_data.html#BlenderPy.sending_data.Object.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.remove" href="sending_data.html#BlenderPy.sending_data.Object.remove">remove</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.rotation" href="sending_data.html#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.scale" href="sending_data.html#BlenderPy.sending_data.Object.scale">scale</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.smooth">smooth</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.subtract" href="sending_data.html#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.to_dict" href="sending_data.html#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.use_auto_smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.use_auto_smooth">use_auto_smooth</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.vertices" href="sending_data.html#BlenderPy.sending_data.Mesh.vertices">vertices</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.x" href="sending_data.html#BlenderPy.sending_data.Object.x">x</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.y" href="sending_data.html#BlenderPy.sending_data.Object.y">y</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.meshing.Box.z" href="sending_data.html#BlenderPy.sending_data.Object.z">z</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
 <li><code><a title="BlenderPy.meshing.Box.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
 </ul>
@@ -1409,15 +1520,17 @@ set to the object</p>
 <span>(</span><span>polygon=None, name='', refine=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing an Object</p>
-<h2 id="parameters">Parameters</h2>
-<p>name_obj: the name of the object</p>
-<p>filepath: if given, a json file location containing properties to
-set to the object</p>
-<p>location: if given, the location of the desired object</p>
-<p>scale: if given, the scale of the desired object</p>
-<p>material: if given, the material of the desired object</p>
-<p>rotation: if given, the rotation of the desired object</p></div>
+<div class="desc"><p>Class representing a Mesh</p>
+<p>Parameters:
+cells: a list of cells consisting in a list of integer point
+indices
+points: a list of points consisting in a list
+of the x, y and z coordinates
+thickness: the thickness of the desired extruded 2D shape. Can be
+None, which means no extrusion
+name: the desired name for the Mesh
+subdivide: the number of division in the extrusion
+kwargs: Object properties</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1610,21 +1723,41 @@ set to the object</p>
 <ul class="hlist">
 <li><code><a title="BlenderPy.sending_data.Mesh.assign_constraint" href="sending_data.html#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.assign_material" href="sending_data.html#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.assign_modifier" href="sending_data.html#BlenderPy.sending_data.Object.assign_modifier">assign_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.auto_smooth_angle" href="sending_data.html#BlenderPy.sending_data.Mesh.auto_smooth_angle">auto_smooth_angle</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.copy_location" href="sending_data.html#BlenderPy.sending_data.Object.copy_location">copy_location</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.curve_modifier" href="sending_data.html#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.cut_mesh" href="sending_data.html#BlenderPy.sending_data.Mesh.cut_mesh">cut_mesh</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.divide" href="sending_data.html#BlenderPy.sending_data.Mesh.divide">divide</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.duplicate" href="sending_data.html#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.follow_path" href="sending_data.html#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.insert_keyframe" href="sending_data.html#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.insert_mesh_keyframe" href="sending_data.html#BlenderPy.sending_data.Mesh.insert_mesh_keyframe">insert_mesh_keyframe</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.load" href="sending_data.html#BlenderPy.sending_data.Object.load">load</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.location" href="sending_data.html#BlenderPy.sending_data.Object.location">location</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.parent" href="sending_data.html#BlenderPy.sending_data.Mesh.parent">parent</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.properties" href="sending_data.html#BlenderPy.sending_data.Object.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.remove" href="sending_data.html#BlenderPy.sending_data.Object.remove">remove</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.rotation" href="sending_data.html#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.scale" href="sending_data.html#BlenderPy.sending_data.Object.scale">scale</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.smooth">smooth</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.subtract" href="sending_data.html#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.to_dict" href="sending_data.html#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.use_auto_smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.use_auto_smooth">use_auto_smooth</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.vertices" href="sending_data.html#BlenderPy.sending_data.Mesh.vertices">vertices</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.x" href="sending_data.html#BlenderPy.sending_data.Object.x">x</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.y" href="sending_data.html#BlenderPy.sending_data.Object.y">y</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.z" href="sending_data.html#BlenderPy.sending_data.Object.z">z</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
 </ul>
@@ -2070,15 +2203,17 @@ def width(self):
 <span>(</span><span>radius=1, refine=0, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing an Object</p>
-<h2 id="parameters">Parameters</h2>
-<p>name_obj: the name of the object</p>
-<p>filepath: if given, a json file location containing properties to
-set to the object</p>
-<p>location: if given, the location of the desired object</p>
-<p>scale: if given, the scale of the desired object</p>
-<p>material: if given, the material of the desired object</p>
-<p>rotation: if given, the rotation of the desired object</p></div>
+<div class="desc"><p>Class representing a Mesh</p>
+<p>Parameters:
+cells: a list of cells consisting in a list of integer point
+indices
+points: a list of points consisting in a list
+of the x, y and z coordinates
+thickness: the thickness of the desired extruded 2D shape. Can be
+None, which means no extrusion
+name: the desired name for the Mesh
+subdivide: the number of division in the extrusion
+kwargs: Object properties</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2325,21 +2460,41 @@ set to the object</p>
 <ul class="hlist">
 <li><code><a title="BlenderPy.sending_data.Mesh.assign_constraint" href="sending_data.html#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.assign_material" href="sending_data.html#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.assign_modifier" href="sending_data.html#BlenderPy.sending_data.Object.assign_modifier">assign_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.auto_smooth_angle" href="sending_data.html#BlenderPy.sending_data.Mesh.auto_smooth_angle">auto_smooth_angle</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.center" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.center">center</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.copy_location" href="sending_data.html#BlenderPy.sending_data.Object.copy_location">copy_location</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.curve_modifier" href="sending_data.html#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.cut_mesh" href="sending_data.html#BlenderPy.sending_data.Mesh.cut_mesh">cut_mesh</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.divide" href="sending_data.html#BlenderPy.sending_data.Mesh.divide">divide</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.duplicate" href="sending_data.html#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.dx" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dx">dx</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.dy" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dy">dy</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.dz" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.dz">dz</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.follow_path" href="sending_data.html#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.insert_keyframe" href="sending_data.html#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.insert_mesh_keyframe" href="sending_data.html#BlenderPy.sending_data.Mesh.insert_mesh_keyframe">insert_mesh_keyframe</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.load" href="sending_data.html#BlenderPy.sending_data.Object.load">load</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.location" href="sending_data.html#BlenderPy.sending_data.Object.location">location</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.parent" href="sending_data.html#BlenderPy.sending_data.Mesh.parent">parent</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.properties" href="sending_data.html#BlenderPy.sending_data.Object.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.remove" href="sending_data.html#BlenderPy.sending_data.Object.remove">remove</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.rotation" href="sending_data.html#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.scale" href="sending_data.html#BlenderPy.sending_data.Object.scale">scale</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.set_origin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.set_origin">set_origin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.smooth">smooth</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.subtract" href="sending_data.html#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.to_dict" href="sending_data.html#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.use_auto_smooth" href="sending_data.html#BlenderPy.sending_data.Mesh.use_auto_smooth">use_auto_smooth</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.vertices" href="sending_data.html#BlenderPy.sending_data.Mesh.vertices">vertices</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.vertices_absolute" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.vertices_absolute">vertices_absolute</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.x" href="sending_data.html#BlenderPy.sending_data.Object.x">x</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.xmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmax">xmax</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.xmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.xmin">xmin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.y" href="sending_data.html#BlenderPy.sending_data.Object.y">y</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.ymax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymax">ymax</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.ymin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.ymin">ymin</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Mesh.z" href="sending_data.html#BlenderPy.sending_data.Object.z">z</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.zmax" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmax">zmax</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.zmin" href="sending_data.html#BlenderPy.sending_data.GeometricEntity.zmin">zmin</a></code></li>
 </ul>
@@ -2466,12 +2621,13 @@ def triangulate(points, holes):
 <span>(</span><span>*args)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class representing a Vector, of 2 or 3 dimensions.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Vector:
+    &#39;&#39;&#39;Class representing a Vector, of 2 or 3 dimensions.&#39;&#39;&#39;
     
     def __init__(self, *args):
         if len(args)==2:

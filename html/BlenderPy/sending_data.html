@@ -37,7 +37,6 @@ Created on Wed Aug 26 09:56:27 2020
 
 import socket
 import json
-import os
 import time
 from BlenderPy.parsing import Expression
 import numpy as np
@@ -652,7 +651,7 @@ class Material:
                 self.material_object = self.create_material(name)
         else:
             self.material_object = self.create_material(name)
-        self.color=self.convert_color(color)
+        self.color=Material.convert_color(color)
         params=dict({&#39;name&#39;:self.material_object, &#39;color&#39;:self.color,
                      &#39;alpha&#39;:alpha, &#39;transmission&#39;:transmission,
                      &#39;use_screen_refraction&#39;:use_screen_refraction,
@@ -675,34 +674,34 @@ class Material:
                          &#39;cos&#39;:&#39;COSINE&#39;,
                          &#39;sin&#39;:&#39;SINE&#39;})
         names=[&#39;Principled BSDF&#39;, &#39;Material Output&#39;]
-        self.shadernodes_dimensions=dict()
+        self._shadernodes_dimensions=dict()
         for name in names:
-            self.shadernodes_dimensions[name]=ShaderNode(name=name,
+            self._shadernodes_dimensions[name]=ShaderNode(name=name,
                                        parent=self.material_object,
                                        shader_type=name).properties[&#39;location&#39;]
     
     @property
-    def xmax_shadernode_dimensions(self):
+    def _xmax_shadernode_dimensions(self):
         return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,0])
     
     @property
-    def ymax_shadernode_dimensions(self):
+    def _ymax_shadernode_dimensions(self):
         return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,1])
     
     @property
-    def xmin_shadernode_dimensions(self):
+    def _xmin_shadernode_dimensions(self):
         return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,0])
     
     @property
-    def ymin_shadernode_dimensions(self):
+    def _ymin_shadernode_dimensions(self):
         return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,1])
     
     @property
-    def height_shadernode_dimensions(self):
+    def _height_shadernode_dimensions(self):
         return self.ymax_shadernode_dimensions-self.ymin_shadernode_dimensions
     
     @property
-    def width_shadernode_dimensions(self):
+    def _width_shadernode_dimensions(self):
         return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions
     
     def add_shader(self, shader_type):
@@ -716,19 +715,19 @@ class Material:
         &#39;&#39;&#39;
         dx, dy=200, 200
         i,j=0,0
-        while [i*dx, j*dy] in list(self.shadernodes_dimensions.values()):
+        while [i*dx, j*dy] in list(self._shadernodes_dimensions.values()):
             i+=1
-            if i*dx&gt;self.width_shadernode_dimensions:
+            if i*dx&gt;self._width_shadernode_dimensions:
                 i=0
                 j+=1
-                if j*dy&gt;self.height_shadernode_dimensions:
+                if j*dy&gt;self._height_shadernode_dimensions:
                     j=0
-                    i=int(self.width_shadernode_dimensions)/dx+1
+                    i=int(self._width_shadernode_dimensions)/dx+1
                     break
         res= ShaderNode(shader_type=shader_type,
                           parent=self.material_object)
         res.properties[&#39;location&#39;]=[i*dx, j*dy]
-        self.shadernodes_dimensions[res.name]=[i*dx, j*dy]
+        self._shadernodes_dimensions[res.name]=[i*dx, j*dy]
         return res
     
     def get_shader(self, name=None, find_math_operation=None):
@@ -772,10 +771,10 @@ class Material:
         if not e.is_leaf():
             tree=e.get_tree()
             tree[&#39;parent&#39;]=None
-            return self.distribute_shaders(tree,
+            return self._distribute_shaders(tree,
                                            special_keys=special_keys)
     
-    def distribute_shaders(self, tree, special_keys=None):
+    def _distribute_shaders(self, tree, special_keys=None):
         return_shader=None
         if isinstance(tree, dict):
             operation=list(tree.keys())[0]
@@ -829,7 +828,7 @@ class Material:
         color_ramp=self.add_shader(&#39;Color_Ramp&#39;)
         color_ramp.inputs[&#39;Fac&#39;]=sep.outputs[&#39;Z&#39;]
         color_ramp.properties[&#39;color_ramp&#39;]=dict({&#39;positions&#39;:positions,
-                             &#39;colors&#39;:[self.convert_color(color) for color in colors]})
+                             &#39;colors&#39;:[Material.convert_color(color) for color in colors]})
         principled=self.get_shader(&#39;Principled BSDF&#39;)
         principled.inputs[&#39;Base Color&#39;]=color_ramp.outputs[&#39;Color&#39;]
     
@@ -898,7 +897,7 @@ class Material:
         &#39;&#39;&#39;
         
         emission=self.add_shader(&#39;Emission&#39;)
-        emission.inputs[&#39;Color&#39;]=self.convert_color(color)
+        emission.inputs[&#39;Color&#39;]=Material.convert_color(color)
         emission.inputs[&#39;Strength&#39;]=strength
         output=self.get_shader(&#39;Material Output&#39;)
         add_shader=self.add_shader(&#39;Add&#39;)
@@ -916,7 +915,8 @@ class Material:
     def get_material_names(self):
         return Communication.ask(&#39;get_material_names&#39;)
     
-    def convert_color(self, color, alpha=1):
+    @staticmethod
+    def convert_color(color, alpha=1):
         if len(color)==3:
             if alpha is None:
                 alpha=1.0
@@ -959,7 +959,7 @@ class MetallicMaterial(Material):
         glossy=self.add_shader(&#39;Glossy&#39;)
         coord=self.add_shader(&#39;Texture_coordinates&#39;)
         output.inputs[&#39;Surface&#39;]=glossy.outputs[&#39;BSDF&#39;]
-        glossy.inputs[&#39;Color&#39;]=self.convert_color(color)
+        glossy.inputs[&#39;Color&#39;]=Material.convert_color(color)
         noise=self.add_shader(&#39;Noise&#39;)
         coord=self.add_shader(&#39;Texture_coordinates&#39;)
         noise.inputs[&#39;Vector&#39;]=coord.outputs[origin]
@@ -997,7 +997,7 @@ class EmissionMaterial(Material):
          
          super().__init__(**kwargs)
          emission=self.add_shader(&#39;Emission&#39;)
-         emission.inputs[&#39;Color&#39;]=self.convert_color(color)
+         emission.inputs[&#39;Color&#39;]=Material.convert_color(color)
          output=self.get_shader(&#39;Material Output&#39;)
          output.inputs[&#39;Volume&#39;]=emission.outputs[&#39;Emission&#39;]
          Principled=self.get_shader(&#39;Principled BSDF&#39;)
@@ -1052,7 +1052,7 @@ class PositionDependantMaterial(Material):
                                                          &#39;z&#39;:sepxyz.outputs[&#39;Z&#39;]}))
             color_ramp.inputs[&#39;Fac&#39;]=shader.outputs[&#39;Value&#39;]
         color_ramp.properties[&#39;color_ramp&#39;]=dict({&#39;positions&#39;:positions,
-                             &#39;colors&#39;:[self.convert_color(color) for color in colors]})
+                             &#39;colors&#39;:[Material.convert_color(color) for color in colors]})
         principled=self.get_shader(&#39;Principled BSDF&#39;)
         principled.inputs[&#39;Base Color&#39;]=color_ramp.outputs[&#39;Color&#39;]
         
@@ -1203,7 +1203,7 @@ class Object:
                                    **kwargs)
     
     def curve_modifier(self, target=None, deform_axis=&#39;POS_X&#39;):
-        &#39;&#39;&#39;Apply a Curve modifier to the object
+        &#39;&#39;&#39;Assign a Curve modifier to the object
         
         Parameters:
             target: the Curve object
@@ -1217,32 +1217,76 @@ class Object:
         self.modifiers.append(modifier)
     
     def assign_modifier(self, modifier_type=&#39;CURVE&#39;, **kwargs):
+        &#39;&#39;&#39;Assign a modifier to the object
+        
+        Parameters:
+            modifier_type: the type of modifier. See Modifier
+        
+        Returns:
+            the created Modifier
+        &#39;&#39;&#39;
         return Modifier(parent=self.name_obj,
                                    modifier_type=modifier_type,
                                    **kwargs)
     
     def subtract(self, target):
+        &#39;&#39;&#39;Assign and apply a Boolean Modifier for subtraction between
+        self and another Object.
+        
+        Parameters:
+            target: Object to subtract
+        
+        Returns:
+            None
+        &#39;&#39;&#39;
         boolean=self.assign_modifier(modifier_type=&#39;BOOLEAN&#39;)
         boolean.properties[&#39;object&#39;]=target
         boolean.apply()
     
     def copy_location(self, target=None):
+        &#39;&#39;&#39;Apply a COPY_LOCATION constraint to the object
+        
+        Parameters:
+            target: the Object whose location should be copied from
+        
+        Returns:
+            None
+        &#39;&#39;&#39;
+        
         self.assign_constraint(constraint_type=&#39;COPY_LOCATION&#39;)
         self.constraint.properties[&#39;target&#39;]=target
     
     def to_dict(self, **kwargs):
+        &#39;&#39;&#39;Returns a dictionary representing the object
+        
+        Parameters:
+            kwargs: some keyword arguments to add to the base dictionary,
+            which is only the name of the object
+        
+        Returns:
+            the generated dictionary
+        &#39;&#39;&#39;
+        
         kwargs.update(dict({&#39;name_obj&#39;:self.name_obj}))
         return kwargs
     
     def remove(self):
+        &#39;&#39;&#39;Delete the Object
+        &#39;&#39;&#39;
         Communication.send(&#39;remove_object&#39;, **self.to_dict())
         
     @property
     def properties(self):
+        &#39;&#39;&#39;PropertyDict to get and set the Object properties
+        &#39;&#39;&#39;
+        
         return self._properties
     
     @property
     def scale(self):
+        &#39;&#39;&#39;Scale of the Object. Expect and returns a list of 3 scalings,
+        for x,y and z respectively
+        &#39;&#39;&#39;
         return self.properties[&#39;scale&#39;]
     
     @scale.setter
@@ -1251,6 +1295,8 @@ class Object:
     
     @property
     def location(self):
+        &#39;&#39;&#39;Location of the Object. Expect and returns a list of 3 coordinates
+        &#39;&#39;&#39;
         return self.properties[&#39;location&#39;]
     
     @location.setter
@@ -1259,6 +1305,10 @@ class Object:
     
     @property
     def rotation(self):
+        &#39;&#39;&#39;Rotation of the Object. Expect and returns a list of 3 rotations
+        in radians around the x,y and z axis, following the Euler angles
+        convention
+        &#39;&#39;&#39;
         return self.properties[&#39;rotation_euler&#39;]
     
     @rotation.setter
@@ -1267,14 +1317,20 @@ class Object:
     
     @property
     def x(self):
+        &#39;&#39;&#39;x coordinate of the location
+        &#39;&#39;&#39;
         return self.location[0]
     
     @property
     def y(self):
+        &#39;&#39;&#39;y coordinate of the location
+        &#39;&#39;&#39;
         return self.location[1]
     
     @property
     def z(self):
+        &#39;&#39;&#39;z coordinate of the location
+        &#39;&#39;&#39;
         return self.location[2]
     
     @x.setter
@@ -1294,25 +1350,44 @@ class Object:
         return np.array(self.properties[&#39;matrix_world&#39;])
 
 class Camera(Object):
+    &#39;&#39;&#39;Class Representing a camera
+    &#39;&#39;&#39;
+    
     
     def __init__(self, name=&#39;camera&#39;,
                  **kwargs):
-        self.add_camera(name)
+        &#39;&#39;&#39;
+        Parameters:
+            name: the name of the camera
+            kwargs: Object properties
+        &#39;&#39;&#39;
+        
+        self._add_camera(name)
         super().__init__(**kwargs)
         self._cam_properties=PropertyDict(self.name, &#39;&#39;,
                                           func=&#39;camera_property&#39;)
     
-    def add_camera(self, name):
+    def _add_camera(self, name):
         self.name, self.name_obj=Communication.ask(&#39;create_camera&#39;,
                                                    name=name)
     
     @property
     def cam_properties(self):
+        &#39;&#39;&#39;
+        PropertyDict to get and set Camera properties
+        &#39;&#39;&#39;
         return self._cam_properties
 
 class Curve(Object):
+    &#39;&#39;&#39;Class representing a Curve
+    &#39;&#39;&#39;
     
     def __init__(self, points, **kwargs):
+        &#39;&#39;&#39;Parameters:
+            points: a list of 3D coordinates for the points of the curve
+            kwargs: Object properties
+        &#39;&#39;&#39;
+        
         self.name, self.name_obj=Communication.ask(&#39;create_curve&#39;,
                                                    points=points,
                                                    **kwargs) 
@@ -1320,6 +1395,8 @@ class Curve(Object):
     
     @property
     def points(self):
+        &#39;&#39;&#39;a numpy array of the points of the curve
+        &#39;&#39;&#39;
         return np.array(Communication.ask(&#39;get_curve_points&#39;,
                                           name=self.name,
                                           name_obj=self.name_obj))
@@ -1333,22 +1410,36 @@ class Curve(Object):
                            points=val)
         
 class Light(Object):
+    &#39;&#39;&#39;Class representing a light&#39;&#39;&#39;
     
-    def __init__(self, name=&#39;light&#39;,
+    def __init__(self, name=&#39;light&#39;, color=&#39;#FFFFFF&#39;,
                  power=2, radius=0.25, light_type=&#39;POINT&#39;,
                  filepath=None, **kwargs):
-        self.add_light(name, light_type=light_type)
+        &#39;&#39;&#39;Parameters:
+            name: the name of the Light object
+            color: color of the light. Default to white. Expect a string
+            starting with a &#39;#&#39; and then the hexadecimal values of red, green
+            and blue.
+            power: the power of the light in Watts
+            radius: the radius of the light
+            light_type: which type of light. Can be &#39;POINT&#39;, &#39;SUN&#39;, &#39;SPOT&#39; or
+            &#39;AREA&#39;
+            filepath: the path to a JSON file with some properties to load in
+            this light
+        &#39;&#39;&#39;
+        self._add_light(name, light_type=light_type)
         super().__init__(**kwargs)
         self._light_properties=PropertyDict(self.name,
                                            self.name_obj,
                                            func=&#39;light_property&#39;)
-        self.light_properties[&#39;energy&#39;]=power
-        self.light_properties[&#39;shadow_soft_size&#39;]=radius
+        self.power=power
+        self.radius=radius
+        self.color=color
         if filepath is not None:
             self.load(filepath)
-            self.load_light(filepath)
+            self._load_light(filepath)
         
-    def add_light(self, name, light_type=&#39;POINT&#39;):
+    def _add_light(self, name, light_type=&#39;POINT&#39;):
         res=dict()
         kwargs = dict()
         kwargs[&#39;light_type&#39;]=light_type
@@ -1358,50 +1449,82 @@ class Light(Object):
         self.name, self.name_obj=Communication.ask(&#39;create_light&#39;,
                                                    light_type=light_type)
     
-    def load_light(self, filepath):
+    def _load_light(self, filepath):
         with open(filepath, &#39;r&#39;) as f:
             data=json.load(f)
         for k, v in data.items():
             self.light_properties[k]=v
     
     @property
+    def power(self):
+        &#39;&#39;&#39;Power of the light in Watts&#39;&#39;&#39;
+        return self.light_properties[&#39;energy&#39;]
+    
+    @power.setter
+    def power(self, val):
+        self.light_properties[&#39;energy&#39;]=float(val)
+    
+    @property
+    def color(self):
+        &#39;&#39;&#39;Color of the light. Returns a list of float, but expect a String&#39;&#39;&#39;
+        return self.light_properties[&#39;color&#39;]
+    
+    @color.setter
+    def color(self, val):
+        self.light_properties[&#39;color&#39;]=Material.convert_color(val)
+    
+    @property
+    def radius(self):
+        &#39;&#39;&#39;Radius of the light in meters&#39;&#39;&#39;
+        return self.light_properties[&#39;shadow_soft_size&#39;]
+    
+    @radius.setter
+    def radius(self, val):
+        self.light_properties[&#39;shadow_soft_size&#39;]=float(val)
+    
+    @property
     def light_properties(self):
+        &#39;&#39;&#39;PropertyDict for getting and setting the light properties.
+        Typical properties are &#39;energy&#39; for power, &#39;shadow_soft_size&#39; for
+        radius, and &#39;color&#39;
+        &#39;&#39;&#39;
         return self._light_properties
         
 
 class Mesh(Object, GeometricEntity):
+    &#39;&#39;&#39;Class representing a Mesh&#39;&#39;&#39;
     
-    def __init__(self, mesh=None, cells=None, points=None,
+    def __init__(self, cells=None, points=None,
                  thickness=None, name=&#39;mesh&#39;, subdivide=1,
-                 material=None, **kwargs):
+                 **kwargs):
+        &#39;&#39;&#39;Parameters:
+            cells: a list of cells consisting in a list of integer point
+            indices
+            points: a list of points consisting in a list 
+            of the x, y and z coordinates
+            thickness: the thickness of the desired extruded 2D shape. Can be
+            None, which means no extrusion
+            name: the desired name for the Mesh
+            subdivide: the number of division in the extrusion
+            kwargs: Object properties
+        &#39;&#39;&#39;
+        
         self.subdivide=subdivide
         self.thickness=thickness
         self.cells=cells
         self.points=points
-        self.mesh=mesh
-        self.name_obj, self.name_msh = self.send_mesh(self.mesh, 
-                                                      thickness=self.thickness,
+        self.name_obj, self.name_msh = self._send_mesh(thickness=self.thickness,
                                                       name=name)
         super().__init__(**kwargs)
-        if material is not None:
-            self.assign_material(material)
         
-    def send_mesh(self, mesh, thickness=None, name=&#39;mesh&#39;):
-        if self.mesh is not None:
-            points=[[float(coord) for coord in p] for p in self.points]
-            cells=[]
-            for celltype in self.cells:
-                if celltype.type==&#39;triangle&#39;:
-                    cells+=[[int(ind) for ind in cell] for cell in celltype.data]
-            
-        else:
-            cells=[]
-            points=[[coord for coord in p] for p in self.points]
-            for celltype in self.cells:
-                if not isinstance(celltype[0], str):
-                    cells+=[[int(ind) for ind in celltype]]
-                elif celltype[0]==&#39;triangle&#39;:
-                    cells+=[[int(ind) for ind in cell] for cell in celltype[1]]
+    def _send_mesh(self, thickness=None, name=&#39;mesh&#39;):
+        cells=[]
+        points=[[coord for coord in p] for p in self.points]
+        for celltype in self.cells:
+            if not isinstance(celltype[0], str):
+                cells+=[[int(ind) for ind in celltype]]
+            elif celltype[0]==&#39;triangle&#39;:
+                cells+=[[int(ind) for ind in cell] for cell in celltype[1]]
         return Communication.ask(&#39;create_mesh&#39;,
                                  name=name,
                                  thickness=thickness,
@@ -1411,20 +1534,57 @@ class Mesh(Object, GeometricEntity):
     
     def insert_mesh_keyframe(self, frame=&#39;current&#39;,
                              waiting_time_between_points=0.01):
-         Communication.ask(&#39;insert_keyframe_mesh&#39;,
+        &#39;&#39;&#39;
+        Insert a keyframe on the position of each vertices of the mesh
+        
+        Parameters:
+            frame: the frame where the keyframes should be placed. Default to
+            &#39;current&#39;, which means the current frame. Otherwise should be an
+            integer
+            waiting_time_between_points: number of seconds to wait between the
+            keyframing of each point. Should be adjusted to maximise speed
+            while not crashing Blender when keyframing a large number of
+            points.
+        &#39;&#39;&#39;
+        Communication.ask(&#39;insert_keyframe_mesh&#39;,
                            name_msh=self.name_msh,
                            frame=frame,
                            waiting_time_between_points=waiting_time_between_points)
         
     def cut_mesh(self, plane_points, plane_normals):
+        &#39;&#39;&#39;
+        Cut the mesh along a list of planes to subdivide it. 
+        
+        Parameters:
+            plane_points: a list of points that belong the plane cuts. Each 
+            point is a 3D list of coordinates
+            plane_normals: a list of 3D vectors that are normal to the plane
+            cuts. Each vector is a 3D list of coordinates
+        &#39;&#39;&#39;
+        
         Communication.send(&#39;cut_mesh&#39;, name_msh=self.name_msh,
                            planes_co=plane_points,
                            planes_no=plane_normals)
     
     def smooth(self):
+        &#39;&#39;&#39;
+        Use the smooth option
+        &#39;&#39;&#39;
+        
         Communication.ask(&#39;smooth&#39;, name_msh=self.name_msh)
     
     def divide(self, Nx=None, Ny=None, Nz=None):
+        &#39;&#39;&#39;Use the cut_mesh method for planes regularly spaced
+        in X, Y and Z, and oriented along thos axis
+        
+        Parameters:
+            Nx: an integer that represents the number of cuts along the X axis.
+            Default to None which means no cut
+            Ny: an integer that represents the number of cuts along the Y axis.
+            Default to None which means no cut
+            Nz: an integer that represents the number of cuts along the Z axis.
+            Default to None which means no cut
+        &#39;&#39;&#39;
         if Nx is not None:
             xs=np.linspace(self.xmin, self.xmax, Nx)
             self.cut_mesh([[x,0,0] for x in xs],
@@ -1440,6 +1600,7 @@ class Mesh(Object, GeometricEntity):
     
     @property
     def use_auto_smooth(self):
+        &#39;&#39;&#39;Use the auto_smooth property. Expects a boolean&#39;&#39;&#39;
         return self._properties[[&#39;data&#39;, &#39;use_auto_smooth&#39;]]
     
     @use_auto_smooth.setter
@@ -1448,6 +1609,7 @@ class Mesh(Object, GeometricEntity):
     
     @property
     def auto_smooth_angle(self):
+        &#39;&#39;&#39;Define the auto_smooth angle. Expects a float&#39;&#39;&#39;
         return self._properties[[&#39;data&#39;, &#39;auto_smooth_angle&#39;]]
     
     @auto_smooth_angle.setter
@@ -1456,10 +1618,12 @@ class Mesh(Object, GeometricEntity):
 
     @property
     def parent(self):
+        &#39;&#39;&#39;Get the Object associated with this Mesh&#39;&#39;&#39;
         return Object(self.name_obj)
 
     @property
     def vertices(self):
+        &#39;&#39;&#39;Get the (local) vertices of this mesh as a numpy array&#39;&#39;&#39;
         return np.array(Communication.ask(&#39;get_vertices&#39;,
                                           name_msh=self.name_msh))
     
@@ -1512,34 +1676,41 @@ if __name__==&#39;__main__&#39;:
 <span>(</span><span>name='camera', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing an Object</p>
+<div class="desc"><p>Class Representing a camera</p>
 <h2 id="parameters">Parameters</h2>
-<p>name_obj: the name of the object</p>
-<p>filepath: if given, a json file location containing properties to
-set to the object</p>
-<p>location: if given, the location of the desired object</p>
-<p>scale: if given, the scale of the desired object</p>
-<p>material: if given, the material of the desired object</p>
-<p>rotation: if given, the rotation of the desired object</p></div>
+<p>name: the name of the camera
+kwargs: Object properties</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Camera(Object):
+    &#39;&#39;&#39;Class Representing a camera
+    &#39;&#39;&#39;
+    
     
     def __init__(self, name=&#39;camera&#39;,
                  **kwargs):
-        self.add_camera(name)
+        &#39;&#39;&#39;
+        Parameters:
+            name: the name of the camera
+            kwargs: Object properties
+        &#39;&#39;&#39;
+        
+        self._add_camera(name)
         super().__init__(**kwargs)
         self._cam_properties=PropertyDict(self.name, &#39;&#39;,
                                           func=&#39;camera_property&#39;)
     
-    def add_camera(self, name):
+    def _add_camera(self, name):
         self.name, self.name_obj=Communication.ask(&#39;create_camera&#39;,
                                                    name=name)
     
     @property
     def cam_properties(self):
+        &#39;&#39;&#39;
+        PropertyDict to get and set Camera properties
+        &#39;&#39;&#39;
         return self._cam_properties</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -1550,31 +1721,17 @@ set to the object</p>
 <dl>
 <dt id="BlenderPy.sending_data.Camera.cam_properties"><code class="name">var <span class="ident">cam_properties</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>PropertyDict to get and set Camera properties</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def cam_properties(self):
+    &#39;&#39;&#39;
+    PropertyDict to get and set Camera properties
+    &#39;&#39;&#39;
     return self._cam_properties</code></pre>
-</details>
-</dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="BlenderPy.sending_data.Camera.add_camera"><code class="name flex">
-<span>def <span class="ident">add_camera</span></span>(<span>self, name)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def add_camera(self, name):
-    self.name, self.name_obj=Communication.ask(&#39;create_camera&#39;,
-                                               name=name)</code></pre>
 </details>
 </dd>
 </dl>
@@ -1584,11 +1741,23 @@ def cam_properties(self):
 <ul class="hlist">
 <li><code><a title="BlenderPy.sending_data.Object.assign_constraint" href="#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.assign_material" href="#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.assign_modifier" href="#BlenderPy.sending_data.Object.assign_modifier">assign_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.copy_location" href="#BlenderPy.sending_data.Object.copy_location">copy_location</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.curve_modifier" href="#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.duplicate" href="#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.follow_path" href="#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.insert_keyframe" href="#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.load" href="#BlenderPy.sending_data.Object.load">load</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.location" href="#BlenderPy.sending_data.Object.location">location</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.properties" href="#BlenderPy.sending_data.Object.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.remove" href="#BlenderPy.sending_data.Object.remove">remove</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.rotation" href="#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.scale" href="#BlenderPy.sending_data.Object.scale">scale</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.subtract" href="#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.to_dict" href="#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.x" href="#BlenderPy.sending_data.Object.x">x</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.y" href="#BlenderPy.sending_data.Object.y">y</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.z" href="#BlenderPy.sending_data.Object.z">z</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1950,22 +2119,24 @@ the frame 'frame'</p></div>
 <span>(</span><span>points, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing an Object</p>
-<h2 id="parameters">Parameters</h2>
-<p>name_obj: the name of the object</p>
-<p>filepath: if given, a json file location containing properties to
-set to the object</p>
-<p>location: if given, the location of the desired object</p>
-<p>scale: if given, the scale of the desired object</p>
-<p>material: if given, the material of the desired object</p>
-<p>rotation: if given, the rotation of the desired object</p></div>
+<div class="desc"><p>Class representing a Curve</p>
+<p>Parameters:
+points: a list of 3D coordinates for the points of the curve
+kwargs: Object properties</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Curve(Object):
+    &#39;&#39;&#39;Class representing a Curve
+    &#39;&#39;&#39;
     
     def __init__(self, points, **kwargs):
+        &#39;&#39;&#39;Parameters:
+            points: a list of 3D coordinates for the points of the curve
+            kwargs: Object properties
+        &#39;&#39;&#39;
+        
         self.name, self.name_obj=Communication.ask(&#39;create_curve&#39;,
                                                    points=points,
                                                    **kwargs) 
@@ -1973,6 +2144,8 @@ set to the object</p>
     
     @property
     def points(self):
+        &#39;&#39;&#39;a numpy array of the points of the curve
+        &#39;&#39;&#39;
         return np.array(Communication.ask(&#39;get_curve_points&#39;,
                                           name=self.name,
                                           name_obj=self.name_obj))
@@ -1993,13 +2166,15 @@ set to the object</p>
 <dl>
 <dt id="BlenderPy.sending_data.Curve.points"><code class="name">var <span class="ident">points</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>a numpy array of the points of the curve</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def points(self):
+    &#39;&#39;&#39;a numpy array of the points of the curve
+    &#39;&#39;&#39;
     return np.array(Communication.ask(&#39;get_curve_points&#39;,
                                       name=self.name,
                                       name_obj=self.name_obj))</code></pre>
@@ -2012,11 +2187,23 @@ def points(self):
 <ul class="hlist">
 <li><code><a title="BlenderPy.sending_data.Object.assign_constraint" href="#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.assign_material" href="#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.assign_modifier" href="#BlenderPy.sending_data.Object.assign_modifier">assign_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.copy_location" href="#BlenderPy.sending_data.Object.copy_location">copy_location</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.curve_modifier" href="#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.duplicate" href="#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.follow_path" href="#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.insert_keyframe" href="#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.load" href="#BlenderPy.sending_data.Object.load">load</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.location" href="#BlenderPy.sending_data.Object.location">location</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.properties" href="#BlenderPy.sending_data.Object.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.remove" href="#BlenderPy.sending_data.Object.remove">remove</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.rotation" href="#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.scale" href="#BlenderPy.sending_data.Object.scale">scale</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.subtract" href="#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.to_dict" href="#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.x" href="#BlenderPy.sending_data.Object.x">x</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.y" href="#BlenderPy.sending_data.Object.y">y</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.z" href="#BlenderPy.sending_data.Object.z">z</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2056,7 +2243,7 @@ set to the strength of the emission</p></div>
          
          super().__init__(**kwargs)
          emission=self.add_shader(&#39;Emission&#39;)
-         emission.inputs[&#39;Color&#39;]=self.convert_color(color)
+         emission.inputs[&#39;Color&#39;]=Material.convert_color(color)
          output=self.get_shader(&#39;Material Output&#39;)
          output.inputs[&#39;Volume&#39;]=emission.outputs[&#39;Emission&#39;]
          Principled=self.get_shader(&#39;Principled BSDF&#39;)
@@ -2506,39 +2693,56 @@ position will have this point as a new origin</p>
 </dd>
 <dt id="BlenderPy.sending_data.Light"><code class="flex name class">
 <span>class <span class="ident">Light</span></span>
-<span>(</span><span>name='light', power=2, radius=0.25, light_type='POINT', filepath=None, **kwargs)</span>
+<span>(</span><span>name='light', color='#FFFFFF', power=2, radius=0.25, light_type='POINT', filepath=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing an Object</p>
-<h2 id="parameters">Parameters</h2>
-<p>name_obj: the name of the object</p>
-<p>filepath: if given, a json file location containing properties to
-set to the object</p>
-<p>location: if given, the location of the desired object</p>
-<p>scale: if given, the scale of the desired object</p>
-<p>material: if given, the material of the desired object</p>
-<p>rotation: if given, the rotation of the desired object</p></div>
+<div class="desc"><p>Class representing a light</p>
+<p>Parameters:
+name: the name of the Light object
+color: color of the light. Default to white. Expect a string
+starting with a '#' and then the hexadecimal values of red, green
+and blue.
+power: the power of the light in Watts
+radius: the radius of the light
+light_type: which type of light. Can be 'POINT', 'SUN', 'SPOT' or
+'AREA'
+filepath: the path to a JSON file with some properties to load in
+this light</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Light(Object):
+    &#39;&#39;&#39;Class representing a light&#39;&#39;&#39;
     
-    def __init__(self, name=&#39;light&#39;,
+    def __init__(self, name=&#39;light&#39;, color=&#39;#FFFFFF&#39;,
                  power=2, radius=0.25, light_type=&#39;POINT&#39;,
                  filepath=None, **kwargs):
-        self.add_light(name, light_type=light_type)
+        &#39;&#39;&#39;Parameters:
+            name: the name of the Light object
+            color: color of the light. Default to white. Expect a string
+            starting with a &#39;#&#39; and then the hexadecimal values of red, green
+            and blue.
+            power: the power of the light in Watts
+            radius: the radius of the light
+            light_type: which type of light. Can be &#39;POINT&#39;, &#39;SUN&#39;, &#39;SPOT&#39; or
+            &#39;AREA&#39;
+            filepath: the path to a JSON file with some properties to load in
+            this light
+        &#39;&#39;&#39;
+        self._add_light(name, light_type=light_type)
         super().__init__(**kwargs)
         self._light_properties=PropertyDict(self.name,
                                            self.name_obj,
                                            func=&#39;light_property&#39;)
-        self.light_properties[&#39;energy&#39;]=power
-        self.light_properties[&#39;shadow_soft_size&#39;]=radius
+        self.power=power
+        self.radius=radius
+        self.color=color
         if filepath is not None:
             self.load(filepath)
-            self.load_light(filepath)
+            self._load_light(filepath)
         
-    def add_light(self, name, light_type=&#39;POINT&#39;):
+    def _add_light(self, name, light_type=&#39;POINT&#39;):
         res=dict()
         kwargs = dict()
         kwargs[&#39;light_type&#39;]=light_type
@@ -2548,14 +2752,45 @@ set to the object</p>
         self.name, self.name_obj=Communication.ask(&#39;create_light&#39;,
                                                    light_type=light_type)
     
-    def load_light(self, filepath):
+    def _load_light(self, filepath):
         with open(filepath, &#39;r&#39;) as f:
             data=json.load(f)
         for k, v in data.items():
             self.light_properties[k]=v
     
     @property
+    def power(self):
+        &#39;&#39;&#39;Power of the light in Watts&#39;&#39;&#39;
+        return self.light_properties[&#39;energy&#39;]
+    
+    @power.setter
+    def power(self, val):
+        self.light_properties[&#39;energy&#39;]=float(val)
+    
+    @property
+    def color(self):
+        &#39;&#39;&#39;Color of the light. Returns a list of float, but expect a String&#39;&#39;&#39;
+        return self.light_properties[&#39;color&#39;]
+    
+    @color.setter
+    def color(self, val):
+        self.light_properties[&#39;color&#39;]=Material.convert_color(val)
+    
+    @property
+    def radius(self):
+        &#39;&#39;&#39;Radius of the light in meters&#39;&#39;&#39;
+        return self.light_properties[&#39;shadow_soft_size&#39;]
+    
+    @radius.setter
+    def radius(self, val):
+        self.light_properties[&#39;shadow_soft_size&#39;]=float(val)
+    
+    @property
     def light_properties(self):
+        &#39;&#39;&#39;PropertyDict for getting and setting the light properties.
+        Typical properties are &#39;energy&#39; for power, &#39;shadow_soft_size&#39; for
+        radius, and &#39;color&#39;
+        &#39;&#39;&#39;
         return self._light_properties</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -2564,55 +2799,61 @@ set to the object</p>
 </ul>
 <h3>Instance variables</h3>
 <dl>
+<dt id="BlenderPy.sending_data.Light.color"><code class="name">var <span class="ident">color</span></code></dt>
+<dd>
+<div class="desc"><p>Color of the light. Returns a list of float, but expect a String</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def color(self):
+    &#39;&#39;&#39;Color of the light. Returns a list of float, but expect a String&#39;&#39;&#39;
+    return self.light_properties[&#39;color&#39;]</code></pre>
+</details>
+</dd>
 <dt id="BlenderPy.sending_data.Light.light_properties"><code class="name">var <span class="ident">light_properties</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>PropertyDict for getting and setting the light properties.
+Typical properties are 'energy' for power, 'shadow_soft_size' for
+radius, and 'color'</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def light_properties(self):
+    &#39;&#39;&#39;PropertyDict for getting and setting the light properties.
+    Typical properties are &#39;energy&#39; for power, &#39;shadow_soft_size&#39; for
+    radius, and &#39;color&#39;
+    &#39;&#39;&#39;
     return self._light_properties</code></pre>
 </details>
 </dd>
-</dl>
-<h3>Methods</h3>
-<dl>
-<dt id="BlenderPy.sending_data.Light.add_light"><code class="name flex">
-<span>def <span class="ident">add_light</span></span>(<span>self, name, light_type='POINT')</span>
-</code></dt>
+<dt id="BlenderPy.sending_data.Light.power"><code class="name">var <span class="ident">power</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Power of the light in Watts</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add_light(self, name, light_type=&#39;POINT&#39;):
-    res=dict()
-    kwargs = dict()
-    kwargs[&#39;light_type&#39;]=light_type
-    res[&#39;args&#39;]=[]
-    res[&#39;command&#39;]=&#39;create_light&#39;
-    res[&#39;kwargs&#39;]=kwargs
-    self.name, self.name_obj=Communication.ask(&#39;create_light&#39;,
-                                               light_type=light_type)</code></pre>
+<pre><code class="python">@property
+def power(self):
+    &#39;&#39;&#39;Power of the light in Watts&#39;&#39;&#39;
+    return self.light_properties[&#39;energy&#39;]</code></pre>
 </details>
 </dd>
-<dt id="BlenderPy.sending_data.Light.load_light"><code class="name flex">
-<span>def <span class="ident">load_light</span></span>(<span>self, filepath)</span>
-</code></dt>
+<dt id="BlenderPy.sending_data.Light.radius"><code class="name">var <span class="ident">radius</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Radius of the light in meters</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def load_light(self, filepath):
-    with open(filepath, &#39;r&#39;) as f:
-        data=json.load(f)
-    for k, v in data.items():
-        self.light_properties[k]=v</code></pre>
+<pre><code class="python">@property
+def radius(self):
+    &#39;&#39;&#39;Radius of the light in meters&#39;&#39;&#39;
+    return self.light_properties[&#39;shadow_soft_size&#39;]</code></pre>
 </details>
 </dd>
 </dl>
@@ -2622,11 +2863,23 @@ def light_properties(self):
 <ul class="hlist">
 <li><code><a title="BlenderPy.sending_data.Object.assign_constraint" href="#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.assign_material" href="#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.assign_modifier" href="#BlenderPy.sending_data.Object.assign_modifier">assign_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.copy_location" href="#BlenderPy.sending_data.Object.copy_location">copy_location</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.curve_modifier" href="#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.duplicate" href="#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.follow_path" href="#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.insert_keyframe" href="#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.load" href="#BlenderPy.sending_data.Object.load">load</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.location" href="#BlenderPy.sending_data.Object.location">location</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.properties" href="#BlenderPy.sending_data.Object.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.remove" href="#BlenderPy.sending_data.Object.remove">remove</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.rotation" href="#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.scale" href="#BlenderPy.sending_data.Object.scale">scale</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.subtract" href="#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.to_dict" href="#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.x" href="#BlenderPy.sending_data.Object.x">x</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.y" href="#BlenderPy.sending_data.Object.y">y</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.z" href="#BlenderPy.sending_data.Object.z">z</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2674,7 +2927,7 @@ def light_properties(self):
                 self.material_object = self.create_material(name)
         else:
             self.material_object = self.create_material(name)
-        self.color=self.convert_color(color)
+        self.color=Material.convert_color(color)
         params=dict({&#39;name&#39;:self.material_object, &#39;color&#39;:self.color,
                      &#39;alpha&#39;:alpha, &#39;transmission&#39;:transmission,
                      &#39;use_screen_refraction&#39;:use_screen_refraction,
@@ -2697,34 +2950,34 @@ def light_properties(self):
                          &#39;cos&#39;:&#39;COSINE&#39;,
                          &#39;sin&#39;:&#39;SINE&#39;})
         names=[&#39;Principled BSDF&#39;, &#39;Material Output&#39;]
-        self.shadernodes_dimensions=dict()
+        self._shadernodes_dimensions=dict()
         for name in names:
-            self.shadernodes_dimensions[name]=ShaderNode(name=name,
+            self._shadernodes_dimensions[name]=ShaderNode(name=name,
                                        parent=self.material_object,
                                        shader_type=name).properties[&#39;location&#39;]
     
     @property
-    def xmax_shadernode_dimensions(self):
+    def _xmax_shadernode_dimensions(self):
         return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,0])
     
     @property
-    def ymax_shadernode_dimensions(self):
+    def _ymax_shadernode_dimensions(self):
         return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,1])
     
     @property
-    def xmin_shadernode_dimensions(self):
+    def _xmin_shadernode_dimensions(self):
         return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,0])
     
     @property
-    def ymin_shadernode_dimensions(self):
+    def _ymin_shadernode_dimensions(self):
         return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,1])
     
     @property
-    def height_shadernode_dimensions(self):
+    def _height_shadernode_dimensions(self):
         return self.ymax_shadernode_dimensions-self.ymin_shadernode_dimensions
     
     @property
-    def width_shadernode_dimensions(self):
+    def _width_shadernode_dimensions(self):
         return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions
     
     def add_shader(self, shader_type):
@@ -2738,19 +2991,19 @@ def light_properties(self):
         &#39;&#39;&#39;
         dx, dy=200, 200
         i,j=0,0
-        while [i*dx, j*dy] in list(self.shadernodes_dimensions.values()):
+        while [i*dx, j*dy] in list(self._shadernodes_dimensions.values()):
             i+=1
-            if i*dx&gt;self.width_shadernode_dimensions:
+            if i*dx&gt;self._width_shadernode_dimensions:
                 i=0
                 j+=1
-                if j*dy&gt;self.height_shadernode_dimensions:
+                if j*dy&gt;self._height_shadernode_dimensions:
                     j=0
-                    i=int(self.width_shadernode_dimensions)/dx+1
+                    i=int(self._width_shadernode_dimensions)/dx+1
                     break
         res= ShaderNode(shader_type=shader_type,
                           parent=self.material_object)
         res.properties[&#39;location&#39;]=[i*dx, j*dy]
-        self.shadernodes_dimensions[res.name]=[i*dx, j*dy]
+        self._shadernodes_dimensions[res.name]=[i*dx, j*dy]
         return res
     
     def get_shader(self, name=None, find_math_operation=None):
@@ -2794,10 +3047,10 @@ def light_properties(self):
         if not e.is_leaf():
             tree=e.get_tree()
             tree[&#39;parent&#39;]=None
-            return self.distribute_shaders(tree,
+            return self._distribute_shaders(tree,
                                            special_keys=special_keys)
     
-    def distribute_shaders(self, tree, special_keys=None):
+    def _distribute_shaders(self, tree, special_keys=None):
         return_shader=None
         if isinstance(tree, dict):
             operation=list(tree.keys())[0]
@@ -2851,7 +3104,7 @@ def light_properties(self):
         color_ramp=self.add_shader(&#39;Color_Ramp&#39;)
         color_ramp.inputs[&#39;Fac&#39;]=sep.outputs[&#39;Z&#39;]
         color_ramp.properties[&#39;color_ramp&#39;]=dict({&#39;positions&#39;:positions,
-                             &#39;colors&#39;:[self.convert_color(color) for color in colors]})
+                             &#39;colors&#39;:[Material.convert_color(color) for color in colors]})
         principled=self.get_shader(&#39;Principled BSDF&#39;)
         principled.inputs[&#39;Base Color&#39;]=color_ramp.outputs[&#39;Color&#39;]
     
@@ -2920,7 +3173,7 @@ def light_properties(self):
         &#39;&#39;&#39;
         
         emission=self.add_shader(&#39;Emission&#39;)
-        emission.inputs[&#39;Color&#39;]=self.convert_color(color)
+        emission.inputs[&#39;Color&#39;]=Material.convert_color(color)
         emission.inputs[&#39;Strength&#39;]=strength
         output=self.get_shader(&#39;Material Output&#39;)
         add_shader=self.add_shader(&#39;Add&#39;)
@@ -2938,7 +3191,8 @@ def light_properties(self):
     def get_material_names(self):
         return Communication.ask(&#39;get_material_names&#39;)
     
-    def convert_color(self, color, alpha=1):
+    @staticmethod
+    def convert_color(color, alpha=1):
         if len(color)==3:
             if alpha is None:
                 alpha=1.0
@@ -2959,78 +3213,32 @@ def light_properties(self):
 <li><a title="BlenderPy.sending_data.MetallicMaterial" href="#BlenderPy.sending_data.MetallicMaterial">MetallicMaterial</a></li>
 <li><a title="BlenderPy.sending_data.PositionDependantMaterial" href="#BlenderPy.sending_data.PositionDependantMaterial">PositionDependantMaterial</a></li>
 </ul>
-<h3>Instance variables</h3>
+<h3>Static methods</h3>
 <dl>
-<dt id="BlenderPy.sending_data.Material.height_shadernode_dimensions"><code class="name">var <span class="ident">height_shadernode_dimensions</span></code></dt>
+<dt id="BlenderPy.sending_data.Material.convert_color"><code class="name flex">
+<span>def <span class="ident">convert_color</span></span>(<span>color, alpha=1)</span>
+</code></dt>
 <dd>
 <div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@property
-def height_shadernode_dimensions(self):
-    return self.ymax_shadernode_dimensions-self.ymin_shadernode_dimensions</code></pre>
-</details>
-</dd>
-<dt id="BlenderPy.sending_data.Material.width_shadernode_dimensions"><code class="name">var <span class="ident">width_shadernode_dimensions</span></code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def width_shadernode_dimensions(self):
-    return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions</code></pre>
-</details>
-</dd>
-<dt id="BlenderPy.sending_data.Material.xmax_shadernode_dimensions"><code class="name">var <span class="ident">xmax_shadernode_dimensions</span></code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def xmax_shadernode_dimensions(self):
-    return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,0])</code></pre>
-</details>
-</dd>
-<dt id="BlenderPy.sending_data.Material.xmin_shadernode_dimensions"><code class="name">var <span class="ident">xmin_shadernode_dimensions</span></code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def xmin_shadernode_dimensions(self):
-    return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,0])</code></pre>
-</details>
-</dd>
-<dt id="BlenderPy.sending_data.Material.ymax_shadernode_dimensions"><code class="name">var <span class="ident">ymax_shadernode_dimensions</span></code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def ymax_shadernode_dimensions(self):
-    return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,1])</code></pre>
-</details>
-</dd>
-<dt id="BlenderPy.sending_data.Material.ymin_shadernode_dimensions"><code class="name">var <span class="ident">ymin_shadernode_dimensions</span></code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">@property
-def ymin_shadernode_dimensions(self):
-    return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,1])</code></pre>
+<pre><code class="python">@staticmethod
+def convert_color(color, alpha=1):
+    if len(color)==3:
+        if alpha is None:
+            alpha=1.0
+        return color+[alpha]
+    elif len(color)==4:
+        return color
+    elif color[0]==&#39;#&#39;:
+        if len(color)==7:
+            if alpha is None:
+                alpha=1.0
+        else:
+            alpha=int(color[7:9], 16)/256.
+        return [int(color[i:i+2], 16)/256. for i in [1,3,5]] +[alpha]</code></pre>
 </details>
 </dd>
 </dl>
@@ -3060,45 +3268,20 @@ def ymin_shadernode_dimensions(self):
     &#39;&#39;&#39;
     dx, dy=200, 200
     i,j=0,0
-    while [i*dx, j*dy] in list(self.shadernodes_dimensions.values()):
+    while [i*dx, j*dy] in list(self._shadernodes_dimensions.values()):
         i+=1
-        if i*dx&gt;self.width_shadernode_dimensions:
+        if i*dx&gt;self._width_shadernode_dimensions:
             i=0
             j+=1
-            if j*dy&gt;self.height_shadernode_dimensions:
+            if j*dy&gt;self._height_shadernode_dimensions:
                 j=0
-                i=int(self.width_shadernode_dimensions)/dx+1
+                i=int(self._width_shadernode_dimensions)/dx+1
                 break
     res= ShaderNode(shader_type=shader_type,
                       parent=self.material_object)
     res.properties[&#39;location&#39;]=[i*dx, j*dy]
-    self.shadernodes_dimensions[res.name]=[i*dx, j*dy]
+    self._shadernodes_dimensions[res.name]=[i*dx, j*dy]
     return res</code></pre>
-</details>
-</dd>
-<dt id="BlenderPy.sending_data.Material.convert_color"><code class="name flex">
-<span>def <span class="ident">convert_color</span></span>(<span>self, color, alpha=1)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def convert_color(self, color, alpha=1):
-    if len(color)==3:
-        if alpha is None:
-            alpha=1.0
-        return color+[alpha]
-    elif len(color)==4:
-        return color
-    elif color[0]==&#39;#&#39;:
-        if len(color)==7:
-            if alpha is None:
-                alpha=1.0
-        else:
-            alpha=int(color[7:9], 16)/256.
-        return [int(color[i:i+2], 16)/256. for i in [1,3,5]] +[alpha]</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Material.coordinate_expression"><code class="name flex">
@@ -3140,7 +3323,7 @@ another ShaderNode</p></div>
     if not e.is_leaf():
         tree=e.get_tree()
         tree[&#39;parent&#39;]=None
-        return self.distribute_shaders(tree,
+        return self._distribute_shaders(tree,
                                        special_keys=special_keys)</code></pre>
 </details>
 </dd>
@@ -3155,46 +3338,6 @@ another ShaderNode</p></div>
 </summary>
 <pre><code class="python">def create_material(self, name):
     return Communication.ask(&#39;create_material&#39;, name=name)</code></pre>
-</details>
-</dd>
-<dt id="BlenderPy.sending_data.Material.distribute_shaders"><code class="name flex">
-<span>def <span class="ident">distribute_shaders</span></span>(<span>self, tree, special_keys=None)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def distribute_shaders(self, tree, special_keys=None):
-    return_shader=None
-    if isinstance(tree, dict):
-        operation=list(tree.keys())[0]
-        tree[&#39;shader&#39;]=self.add_shader(shader_type=&#39;Math&#39;)
-        tree[&#39;shader&#39;].properties[&#39;operation&#39;]=self.operations[operation]
-        if tree[&#39;parent&#39;] is None:
-            return_shader=tree[&#39;shader&#39;]
-        subtree=tree[operation]
-        for node in subtree:
-            if isinstance(node, dict):
-                node[&#39;parent&#39;]=tree[&#39;shader&#39;]
-            self.distribute_shaders(node, 
-                                    special_keys=special_keys)
-        for i, node in enumerate(subtree):
-            if isinstance(node, dict):
-                tree[&#39;shader&#39;].inputs[i]=node[&#39;shader&#39;].outputs[&#39;Value&#39;]
-            else:
-                try:
-                    tree[&#39;shader&#39;].inputs[i]=float(node)
-                except ValueError:
-                    if node==&#39;e&#39;:
-                        tree[&#39;shader&#39;].inputs[i]=np.e
-                    if node in special_keys.keys():
-                        tree[&#39;shader&#39;].inputs[i]=special_keys[node]
-                        
-    else:
-        pass
-    return return_shader</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Material.get_material"><code class="name flex">
@@ -3285,7 +3428,7 @@ another ShaderNode</p></div>
     &#39;&#39;&#39;
     
     emission=self.add_shader(&#39;Emission&#39;)
-    emission.inputs[&#39;Color&#39;]=self.convert_color(color)
+    emission.inputs[&#39;Color&#39;]=Material.convert_color(color)
     emission.inputs[&#39;Strength&#39;]=strength
     output=self.get_shader(&#39;Material Output&#39;)
     add_shader=self.add_shader(&#39;Add&#39;)
@@ -3403,7 +3546,7 @@ dimensions is '2D'</p>
     color_ramp=self.add_shader(&#39;Color_Ramp&#39;)
     color_ramp.inputs[&#39;Fac&#39;]=sep.outputs[&#39;Z&#39;]
     color_ramp.properties[&#39;color_ramp&#39;]=dict({&#39;positions&#39;:positions,
-                         &#39;colors&#39;:[self.convert_color(color) for color in colors]})
+                         &#39;colors&#39;:[Material.convert_color(color) for color in colors]})
     principled=self.get_shader(&#39;Principled BSDF&#39;)
     principled.inputs[&#39;Base Color&#39;]=color_ramp.outputs[&#39;Color&#39;]</code></pre>
 </details>
@@ -3412,55 +3555,58 @@ dimensions is '2D'</p>
 </dd>
 <dt id="BlenderPy.sending_data.Mesh"><code class="flex name class">
 <span>class <span class="ident">Mesh</span></span>
-<span>(</span><span>mesh=None, cells=None, points=None, thickness=None, name='mesh', subdivide=1, material=None, **kwargs)</span>
+<span>(</span><span>cells=None, points=None, thickness=None, name='mesh', subdivide=1, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing an Object</p>
-<h2 id="parameters">Parameters</h2>
-<p>name_obj: the name of the object</p>
-<p>filepath: if given, a json file location containing properties to
-set to the object</p>
-<p>location: if given, the location of the desired object</p>
-<p>scale: if given, the scale of the desired object</p>
-<p>material: if given, the material of the desired object</p>
-<p>rotation: if given, the rotation of the desired object</p></div>
+<div class="desc"><p>Class representing a Mesh</p>
+<p>Parameters:
+cells: a list of cells consisting in a list of integer point
+indices
+points: a list of points consisting in a list
+of the x, y and z coordinates
+thickness: the thickness of the desired extruded 2D shape. Can be
+None, which means no extrusion
+name: the desired name for the Mesh
+subdivide: the number of division in the extrusion
+kwargs: Object properties</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Mesh(Object, GeometricEntity):
+    &#39;&#39;&#39;Class representing a Mesh&#39;&#39;&#39;
     
-    def __init__(self, mesh=None, cells=None, points=None,
+    def __init__(self, cells=None, points=None,
                  thickness=None, name=&#39;mesh&#39;, subdivide=1,
-                 material=None, **kwargs):
+                 **kwargs):
+        &#39;&#39;&#39;Parameters:
+            cells: a list of cells consisting in a list of integer point
+            indices
+            points: a list of points consisting in a list 
+            of the x, y and z coordinates
+            thickness: the thickness of the desired extruded 2D shape. Can be
+            None, which means no extrusion
+            name: the desired name for the Mesh
+            subdivide: the number of division in the extrusion
+            kwargs: Object properties
+        &#39;&#39;&#39;
+        
         self.subdivide=subdivide
         self.thickness=thickness
         self.cells=cells
         self.points=points
-        self.mesh=mesh
-        self.name_obj, self.name_msh = self.send_mesh(self.mesh, 
-                                                      thickness=self.thickness,
+        self.name_obj, self.name_msh = self._send_mesh(thickness=self.thickness,
                                                       name=name)
         super().__init__(**kwargs)
-        if material is not None:
-            self.assign_material(material)
         
-    def send_mesh(self, mesh, thickness=None, name=&#39;mesh&#39;):
-        if self.mesh is not None:
-            points=[[float(coord) for coord in p] for p in self.points]
-            cells=[]
-            for celltype in self.cells:
-                if celltype.type==&#39;triangle&#39;:
-                    cells+=[[int(ind) for ind in cell] for cell in celltype.data]
-            
-        else:
-            cells=[]
-            points=[[coord for coord in p] for p in self.points]
-            for celltype in self.cells:
-                if not isinstance(celltype[0], str):
-                    cells+=[[int(ind) for ind in celltype]]
-                elif celltype[0]==&#39;triangle&#39;:
-                    cells+=[[int(ind) for ind in cell] for cell in celltype[1]]
+    def _send_mesh(self, thickness=None, name=&#39;mesh&#39;):
+        cells=[]
+        points=[[coord for coord in p] for p in self.points]
+        for celltype in self.cells:
+            if not isinstance(celltype[0], str):
+                cells+=[[int(ind) for ind in celltype]]
+            elif celltype[0]==&#39;triangle&#39;:
+                cells+=[[int(ind) for ind in cell] for cell in celltype[1]]
         return Communication.ask(&#39;create_mesh&#39;,
                                  name=name,
                                  thickness=thickness,
@@ -3470,20 +3616,57 @@ set to the object</p>
     
     def insert_mesh_keyframe(self, frame=&#39;current&#39;,
                              waiting_time_between_points=0.01):
-         Communication.ask(&#39;insert_keyframe_mesh&#39;,
+        &#39;&#39;&#39;
+        Insert a keyframe on the position of each vertices of the mesh
+        
+        Parameters:
+            frame: the frame where the keyframes should be placed. Default to
+            &#39;current&#39;, which means the current frame. Otherwise should be an
+            integer
+            waiting_time_between_points: number of seconds to wait between the
+            keyframing of each point. Should be adjusted to maximise speed
+            while not crashing Blender when keyframing a large number of
+            points.
+        &#39;&#39;&#39;
+        Communication.ask(&#39;insert_keyframe_mesh&#39;,
                            name_msh=self.name_msh,
                            frame=frame,
                            waiting_time_between_points=waiting_time_between_points)
         
     def cut_mesh(self, plane_points, plane_normals):
+        &#39;&#39;&#39;
+        Cut the mesh along a list of planes to subdivide it. 
+        
+        Parameters:
+            plane_points: a list of points that belong the plane cuts. Each 
+            point is a 3D list of coordinates
+            plane_normals: a list of 3D vectors that are normal to the plane
+            cuts. Each vector is a 3D list of coordinates
+        &#39;&#39;&#39;
+        
         Communication.send(&#39;cut_mesh&#39;, name_msh=self.name_msh,
                            planes_co=plane_points,
                            planes_no=plane_normals)
     
     def smooth(self):
+        &#39;&#39;&#39;
+        Use the smooth option
+        &#39;&#39;&#39;
+        
         Communication.ask(&#39;smooth&#39;, name_msh=self.name_msh)
     
     def divide(self, Nx=None, Ny=None, Nz=None):
+        &#39;&#39;&#39;Use the cut_mesh method for planes regularly spaced
+        in X, Y and Z, and oriented along thos axis
+        
+        Parameters:
+            Nx: an integer that represents the number of cuts along the X axis.
+            Default to None which means no cut
+            Ny: an integer that represents the number of cuts along the Y axis.
+            Default to None which means no cut
+            Nz: an integer that represents the number of cuts along the Z axis.
+            Default to None which means no cut
+        &#39;&#39;&#39;
         if Nx is not None:
             xs=np.linspace(self.xmin, self.xmax, Nx)
             self.cut_mesh([[x,0,0] for x in xs],
@@ -3499,6 +3682,7 @@ set to the object</p>
     
     @property
     def use_auto_smooth(self):
+        &#39;&#39;&#39;Use the auto_smooth property. Expects a boolean&#39;&#39;&#39;
         return self._properties[[&#39;data&#39;, &#39;use_auto_smooth&#39;]]
     
     @use_auto_smooth.setter
@@ -3507,6 +3691,7 @@ set to the object</p>
     
     @property
     def auto_smooth_angle(self):
+        &#39;&#39;&#39;Define the auto_smooth angle. Expects a float&#39;&#39;&#39;
         return self._properties[[&#39;data&#39;, &#39;auto_smooth_angle&#39;]]
     
     @auto_smooth_angle.setter
@@ -3515,10 +3700,12 @@ set to the object</p>
 
     @property
     def parent(self):
+        &#39;&#39;&#39;Get the Object associated with this Mesh&#39;&#39;&#39;
         return Object(self.name_obj)
 
     @property
     def vertices(self):
+        &#39;&#39;&#39;Get the (local) vertices of this mesh as a numpy array&#39;&#39;&#39;
         return np.array(Communication.ask(&#39;get_vertices&#39;,
                                           name_msh=self.name_msh))
     
@@ -3544,49 +3731,53 @@ set to the object</p>
 <dl>
 <dt id="BlenderPy.sending_data.Mesh.auto_smooth_angle"><code class="name">var <span class="ident">auto_smooth_angle</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Define the auto_smooth angle. Expects a float</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def auto_smooth_angle(self):
+    &#39;&#39;&#39;Define the auto_smooth angle. Expects a float&#39;&#39;&#39;
     return self._properties[[&#39;data&#39;, &#39;auto_smooth_angle&#39;]]</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Mesh.parent"><code class="name">var <span class="ident">parent</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Get the Object associated with this Mesh</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def parent(self):
+    &#39;&#39;&#39;Get the Object associated with this Mesh&#39;&#39;&#39;
     return Object(self.name_obj)</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Mesh.use_auto_smooth"><code class="name">var <span class="ident">use_auto_smooth</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Use the auto_smooth property. Expects a boolean</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def use_auto_smooth(self):
+    &#39;&#39;&#39;Use the auto_smooth property. Expects a boolean&#39;&#39;&#39;
     return self._properties[[&#39;data&#39;, &#39;use_auto_smooth&#39;]]</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Mesh.vertices"><code class="name">var <span class="ident">vertices</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Get the (local) vertices of this mesh as a numpy array</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def vertices(self):
+    &#39;&#39;&#39;Get the (local) vertices of this mesh as a numpy array&#39;&#39;&#39;
     return np.array(Communication.ask(&#39;get_vertices&#39;,
                                       name_msh=self.name_msh))</code></pre>
 </details>
@@ -3598,12 +3789,27 @@ def vertices(self):
 <span>def <span class="ident">cut_mesh</span></span>(<span>self, plane_points, plane_normals)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Cut the mesh along a list of planes to subdivide it. </p>
+<h2 id="parameters">Parameters</h2>
+<p>plane_points: a list of points that belong the plane cuts. Each
+point is a 3D list of coordinates
+plane_normals: a list of 3D vectors that are normal to the plane
+cuts. Each vector is a 3D list of coordinates</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def cut_mesh(self, plane_points, plane_normals):
+    &#39;&#39;&#39;
+    Cut the mesh along a list of planes to subdivide it. 
+    
+    Parameters:
+        plane_points: a list of points that belong the plane cuts. Each 
+        point is a 3D list of coordinates
+        plane_normals: a list of 3D vectors that are normal to the plane
+        cuts. Each vector is a 3D list of coordinates
+    &#39;&#39;&#39;
+    
     Communication.send(&#39;cut_mesh&#39;, name_msh=self.name_msh,
                        planes_co=plane_points,
                        planes_no=plane_normals)</code></pre>
@@ -3613,12 +3819,31 @@ def vertices(self):
 <span>def <span class="ident">divide</span></span>(<span>self, Nx=None, Ny=None, Nz=None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Use the cut_mesh method for planes regularly spaced
+in X, Y and Z, and oriented along thos axis</p>
+<h2 id="parameters">Parameters</h2>
+<p>Nx: an integer that represents the number of cuts along the X axis.
+Default to None which means no cut
+Ny: an integer that represents the number of cuts along the Y axis.
+Default to None which means no cut
+Nz: an integer that represents the number of cuts along the Z axis.
+Default to None which means no cut</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def divide(self, Nx=None, Ny=None, Nz=None):
+    &#39;&#39;&#39;Use the cut_mesh method for planes regularly spaced
+    in X, Y and Z, and oriented along thos axis
+    
+    Parameters:
+        Nx: an integer that represents the number of cuts along the X axis.
+        Default to None which means no cut
+        Ny: an integer that represents the number of cuts along the Y axis.
+        Default to None which means no cut
+        Nz: an integer that represents the number of cuts along the Z axis.
+        Default to None which means no cut
+    &#39;&#39;&#39;
     if Nx is not None:
         xs=np.linspace(self.xmin, self.xmax, Nx)
         self.cut_mesh([[x,0,0] for x in xs],
@@ -3637,62 +3862,53 @@ def vertices(self):
 <span>def <span class="ident">insert_mesh_keyframe</span></span>(<span>self, frame='current', waiting_time_between_points=0.01)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Insert a keyframe on the position of each vertices of the mesh</p>
+<h2 id="parameters">Parameters</h2>
+<p>frame: the frame where the keyframes should be placed. Default to
+'current', which means the current frame. Otherwise should be an
+integer
+waiting_time_between_points: number of seconds to wait between the
+keyframing of each point. Should be adjusted to maximise speed
+while not crashing Blender when keyframing a large number of
+points.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def insert_mesh_keyframe(self, frame=&#39;current&#39;,
                          waiting_time_between_points=0.01):
-     Communication.ask(&#39;insert_keyframe_mesh&#39;,
+    &#39;&#39;&#39;
+    Insert a keyframe on the position of each vertices of the mesh
+    
+    Parameters:
+        frame: the frame where the keyframes should be placed. Default to
+        &#39;current&#39;, which means the current frame. Otherwise should be an
+        integer
+        waiting_time_between_points: number of seconds to wait between the
+        keyframing of each point. Should be adjusted to maximise speed
+        while not crashing Blender when keyframing a large number of
+        points.
+    &#39;&#39;&#39;
+    Communication.ask(&#39;insert_keyframe_mesh&#39;,
                        name_msh=self.name_msh,
                        frame=frame,
                        waiting_time_between_points=waiting_time_between_points)</code></pre>
-</details>
-</dd>
-<dt id="BlenderPy.sending_data.Mesh.send_mesh"><code class="name flex">
-<span>def <span class="ident">send_mesh</span></span>(<span>self, mesh, thickness=None, name='mesh')</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def send_mesh(self, mesh, thickness=None, name=&#39;mesh&#39;):
-    if self.mesh is not None:
-        points=[[float(coord) for coord in p] for p in self.points]
-        cells=[]
-        for celltype in self.cells:
-            if celltype.type==&#39;triangle&#39;:
-                cells+=[[int(ind) for ind in cell] for cell in celltype.data]
-        
-    else:
-        cells=[]
-        points=[[coord for coord in p] for p in self.points]
-        for celltype in self.cells:
-            if not isinstance(celltype[0], str):
-                cells+=[[int(ind) for ind in celltype]]
-            elif celltype[0]==&#39;triangle&#39;:
-                cells+=[[int(ind) for ind in cell] for cell in celltype[1]]
-    return Communication.ask(&#39;create_mesh&#39;,
-                             name=name,
-                             thickness=thickness,
-                             subdivide=self.subdivide,
-                             points=points,
-                             cells=cells) </code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Mesh.smooth"><code class="name flex">
 <span>def <span class="ident">smooth</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Use the smooth option</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def smooth(self):
+    &#39;&#39;&#39;
+    Use the smooth option
+    &#39;&#39;&#39;
+    
     Communication.ask(&#39;smooth&#39;, name_msh=self.name_msh)</code></pre>
 </details>
 </dd>
@@ -3703,11 +3919,23 @@ def vertices(self):
 <ul class="hlist">
 <li><code><a title="BlenderPy.sending_data.Object.assign_constraint" href="#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.assign_material" href="#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.assign_modifier" href="#BlenderPy.sending_data.Object.assign_modifier">assign_modifier</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.copy_location" href="#BlenderPy.sending_data.Object.copy_location">copy_location</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.curve_modifier" href="#BlenderPy.sending_data.Object.curve_modifier">curve_modifier</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.duplicate" href="#BlenderPy.sending_data.Object.duplicate">duplicate</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.follow_path" href="#BlenderPy.sending_data.Object.follow_path">follow_path</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.insert_keyframe" href="#BlenderPy.sending_data.Object.insert_keyframe">insert_keyframe</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.load" href="#BlenderPy.sending_data.Object.load">load</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.location" href="#BlenderPy.sending_data.Object.location">location</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.properties" href="#BlenderPy.sending_data.Object.properties">properties</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.remove" href="#BlenderPy.sending_data.Object.remove">remove</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.rotation" href="#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.scale" href="#BlenderPy.sending_data.Object.scale">scale</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.subtract" href="#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.to_dict" href="#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.x" href="#BlenderPy.sending_data.Object.x">x</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.y" href="#BlenderPy.sending_data.Object.y">y</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.z" href="#BlenderPy.sending_data.Object.z">z</a></code></li>
 </ul>
 </li>
 <li><code><b><a title="BlenderPy.sending_data.GeometricEntity" href="#BlenderPy.sending_data.GeometricEntity">GeometricEntity</a></b></code>:
@@ -3776,7 +4004,7 @@ see surface_noise for the Material class</p></div>
         glossy=self.add_shader(&#39;Glossy&#39;)
         coord=self.add_shader(&#39;Texture_coordinates&#39;)
         output.inputs[&#39;Surface&#39;]=glossy.outputs[&#39;BSDF&#39;]
-        glossy.inputs[&#39;Color&#39;]=self.convert_color(color)
+        glossy.inputs[&#39;Color&#39;]=Material.convert_color(color)
         noise=self.add_shader(&#39;Noise&#39;)
         coord=self.add_shader(&#39;Texture_coordinates&#39;)
         noise.inputs[&#39;Vector&#39;]=coord.outputs[origin]
@@ -4054,7 +4282,7 @@ set to the object</p>
                                    **kwargs)
     
     def curve_modifier(self, target=None, deform_axis=&#39;POS_X&#39;):
-        &#39;&#39;&#39;Apply a Curve modifier to the object
+        &#39;&#39;&#39;Assign a Curve modifier to the object
         
         Parameters:
             target: the Curve object
@@ -4068,32 +4296,76 @@ set to the object</p>
         self.modifiers.append(modifier)
     
     def assign_modifier(self, modifier_type=&#39;CURVE&#39;, **kwargs):
+        &#39;&#39;&#39;Assign a modifier to the object
+        
+        Parameters:
+            modifier_type: the type of modifier. See Modifier
+        
+        Returns:
+            the created Modifier
+        &#39;&#39;&#39;
         return Modifier(parent=self.name_obj,
                                    modifier_type=modifier_type,
                                    **kwargs)
     
     def subtract(self, target):
+        &#39;&#39;&#39;Assign and apply a Boolean Modifier for subtraction between
+        self and another Object.
+        
+        Parameters:
+            target: Object to subtract
+        
+        Returns:
+            None
+        &#39;&#39;&#39;
         boolean=self.assign_modifier(modifier_type=&#39;BOOLEAN&#39;)
         boolean.properties[&#39;object&#39;]=target
         boolean.apply()
     
     def copy_location(self, target=None):
+        &#39;&#39;&#39;Apply a COPY_LOCATION constraint to the object
+        
+        Parameters:
+            target: the Object whose location should be copied from
+        
+        Returns:
+            None
+        &#39;&#39;&#39;
+        
         self.assign_constraint(constraint_type=&#39;COPY_LOCATION&#39;)
         self.constraint.properties[&#39;target&#39;]=target
     
     def to_dict(self, **kwargs):
+        &#39;&#39;&#39;Returns a dictionary representing the object
+        
+        Parameters:
+            kwargs: some keyword arguments to add to the base dictionary,
+            which is only the name of the object
+        
+        Returns:
+            the generated dictionary
+        &#39;&#39;&#39;
+        
         kwargs.update(dict({&#39;name_obj&#39;:self.name_obj}))
         return kwargs
     
     def remove(self):
+        &#39;&#39;&#39;Delete the Object
+        &#39;&#39;&#39;
         Communication.send(&#39;remove_object&#39;, **self.to_dict())
         
     @property
     def properties(self):
+        &#39;&#39;&#39;PropertyDict to get and set the Object properties
+        &#39;&#39;&#39;
+        
         return self._properties
     
     @property
     def scale(self):
+        &#39;&#39;&#39;Scale of the Object. Expect and returns a list of 3 scalings,
+        for x,y and z respectively
+        &#39;&#39;&#39;
         return self.properties[&#39;scale&#39;]
     
     @scale.setter
@@ -4102,6 +4374,8 @@ set to the object</p>
     
     @property
     def location(self):
+        &#39;&#39;&#39;Location of the Object. Expect and returns a list of 3 coordinates
+        &#39;&#39;&#39;
         return self.properties[&#39;location&#39;]
     
     @location.setter
@@ -4110,6 +4384,10 @@ set to the object</p>
     
     @property
     def rotation(self):
+        &#39;&#39;&#39;Rotation of the Object. Expect and returns a list of 3 rotations
+        in radians around the x,y and z axis, following the Euler angles
+        convention
+        &#39;&#39;&#39;
         return self.properties[&#39;rotation_euler&#39;]
     
     @rotation.setter
@@ -4118,14 +4396,20 @@ set to the object</p>
     
     @property
     def x(self):
+        &#39;&#39;&#39;x coordinate of the location
+        &#39;&#39;&#39;
         return self.location[0]
     
     @property
     def y(self):
+        &#39;&#39;&#39;y coordinate of the location
+        &#39;&#39;&#39;
         return self.location[1]
     
     @property
     def z(self):
+        &#39;&#39;&#39;z coordinate of the location
+        &#39;&#39;&#39;
         return self.location[2]
     
     @x.setter
@@ -4155,13 +4439,15 @@ set to the object</p>
 <dl>
 <dt id="BlenderPy.sending_data.Object.location"><code class="name">var <span class="ident">location</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Location of the Object. Expect and returns a list of 3 coordinates</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def location(self):
+    &#39;&#39;&#39;Location of the Object. Expect and returns a list of 3 coordinates
+    &#39;&#39;&#39;
     return self.properties[&#39;location&#39;]</code></pre>
 </details>
 </dd>
@@ -4179,73 +4465,92 @@ def matrix_world(self):
 </dd>
 <dt id="BlenderPy.sending_data.Object.properties"><code class="name">var <span class="ident">properties</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>PropertyDict to get and set the Object properties</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def properties(self):
+    &#39;&#39;&#39;PropertyDict to get and set the Object properties
+    &#39;&#39;&#39;
+    
     return self._properties</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Object.rotation"><code class="name">var <span class="ident">rotation</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Rotation of the Object. Expect and returns a list of 3 rotations
+in radians around the x,y and z axis, following the Euler angles
+convention</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def rotation(self):
+    &#39;&#39;&#39;Rotation of the Object. Expect and returns a list of 3 rotations
+    in radians around the x,y and z axis, following the Euler angles
+    convention
+    &#39;&#39;&#39;
     return self.properties[&#39;rotation_euler&#39;]</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Object.scale"><code class="name">var <span class="ident">scale</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Scale of the Object. Expect and returns a list of 3 scalings,
+for x,y and z respectively</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def scale(self):
+    &#39;&#39;&#39;Scale of the Object. Expect and returns a list of 3 scalings,
+    for x,y and z respectively
+    &#39;&#39;&#39;
     return self.properties[&#39;scale&#39;]</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Object.x"><code class="name">var <span class="ident">x</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>x coordinate of the location</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def x(self):
+    &#39;&#39;&#39;x coordinate of the location
+    &#39;&#39;&#39;
     return self.location[0]</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Object.y"><code class="name">var <span class="ident">y</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>y coordinate of the location</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def y(self):
+    &#39;&#39;&#39;y coordinate of the location
+    &#39;&#39;&#39;
     return self.location[1]</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Object.z"><code class="name">var <span class="ident">z</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>z coordinate of the location</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def z(self):
+    &#39;&#39;&#39;z coordinate of the location
+    &#39;&#39;&#39;
     return self.location[2]</code></pre>
 </details>
 </dd>
@@ -4306,12 +4611,24 @@ def z(self):
 <span>def <span class="ident">assign_modifier</span></span>(<span>self, modifier_type='CURVE', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Assign a modifier to the object</p>
+<h2 id="parameters">Parameters</h2>
+<p>modifier_type: the type of modifier. See Modifier</p>
+<h2 id="returns">Returns</h2>
+<p>the created Modifier</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def assign_modifier(self, modifier_type=&#39;CURVE&#39;, **kwargs):
+    &#39;&#39;&#39;Assign a modifier to the object
+    
+    Parameters:
+        modifier_type: the type of modifier. See Modifier
+    
+    Returns:
+        the created Modifier
+    &#39;&#39;&#39;
     return Modifier(parent=self.name_obj,
                                modifier_type=modifier_type,
                                **kwargs)</code></pre>
@@ -4321,12 +4638,25 @@ def z(self):
 <span>def <span class="ident">copy_location</span></span>(<span>self, target=None)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Apply a COPY_LOCATION constraint to the object</p>
+<h2 id="parameters">Parameters</h2>
+<p>target: the Object whose location should be copied from</p>
+<h2 id="returns">Returns</h2>
+<p>None</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def copy_location(self, target=None):
+    &#39;&#39;&#39;Apply a COPY_LOCATION constraint to the object
+    
+    Parameters:
+        target: the Object whose location should be copied from
+    
+    Returns:
+        None
+    &#39;&#39;&#39;
+    
     self.assign_constraint(constraint_type=&#39;COPY_LOCATION&#39;)
     self.constraint.properties[&#39;target&#39;]=target</code></pre>
 </details>
@@ -4335,7 +4665,7 @@ def z(self):
 <span>def <span class="ident">curve_modifier</span></span>(<span>self, target=None, deform_axis='POS_X')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Apply a Curve modifier to the object</p>
+<div class="desc"><p>Assign a Curve modifier to the object</p>
 <h2 id="parameters">Parameters</h2>
 <p>target: the Curve object</p>
 <p>deform_axis: property of the constraint</p></div>
@@ -4344,7 +4674,7 @@ def z(self):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def curve_modifier(self, target=None, deform_axis=&#39;POS_X&#39;):
-    &#39;&#39;&#39;Apply a Curve modifier to the object
+    &#39;&#39;&#39;Assign a Curve modifier to the object
     
     Parameters:
         target: the Curve object
@@ -4463,12 +4793,14 @@ filepath: path the Json file</p></div>
 <span>def <span class="ident">remove</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Delete the Object</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def remove(self):
+    &#39;&#39;&#39;Delete the Object
+    &#39;&#39;&#39;
     Communication.send(&#39;remove_object&#39;, **self.to_dict())</code></pre>
 </details>
 </dd>
@@ -4476,12 +4808,26 @@ filepath: path the Json file</p></div>
 <span>def <span class="ident">subtract</span></span>(<span>self, target)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Assign and apply a Boolean Modifier for subtraction between
+self and another Object.</p>
+<h2 id="parameters">Parameters</h2>
+<p>target: Object to subtract</p>
+<h2 id="returns">Returns</h2>
+<p>None</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def subtract(self, target):
+    &#39;&#39;&#39;Assign and apply a Boolean Modifier for subtraction between
+    self and another Object.
+    
+    Parameters:
+        target: Object to subtract
+    
+    Returns:
+        None
+    &#39;&#39;&#39;
     boolean=self.assign_modifier(modifier_type=&#39;BOOLEAN&#39;)
     boolean.properties[&#39;object&#39;]=target
     boolean.apply()</code></pre>
@@ -4491,12 +4837,27 @@ filepath: path the Json file</p></div>
 <span>def <span class="ident">to_dict</span></span>(<span>self, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Returns a dictionary representing the object</p>
+<h2 id="parameters">Parameters</h2>
+<p>kwargs: some keyword arguments to add to the base dictionary,
+which is only the name of the object</p>
+<h2 id="returns">Returns</h2>
+<p>the generated dictionary</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_dict(self, **kwargs):
+    &#39;&#39;&#39;Returns a dictionary representing the object
+    
+    Parameters:
+        kwargs: some keyword arguments to add to the base dictionary,
+        which is only the name of the object
+    
+    Returns:
+        the generated dictionary
+    &#39;&#39;&#39;
+    
     kwargs.update(dict({&#39;name_obj&#39;:self.name_obj}))
     return kwargs</code></pre>
 </details>
@@ -4559,7 +4920,7 @@ of the expression</p></div>
                                                          &#39;z&#39;:sepxyz.outputs[&#39;Z&#39;]}))
             color_ramp.inputs[&#39;Fac&#39;]=shader.outputs[&#39;Value&#39;]
         color_ramp.properties[&#39;color_ramp&#39;]=dict({&#39;positions&#39;:positions,
-                             &#39;colors&#39;:[self.convert_color(color) for color in colors]})
+                             &#39;colors&#39;:[Material.convert_color(color) for color in colors]})
         principled=self.get_shader(&#39;Principled BSDF&#39;)
         principled.inputs[&#39;Base Color&#39;]=color_ramp.outputs[&#39;Color&#39;]</code></pre>
 </details>
@@ -5224,7 +5585,6 @@ of the expression</p></div>
 <li>
 <h4><code><a title="BlenderPy.sending_data.Camera" href="#BlenderPy.sending_data.Camera">Camera</a></code></h4>
 <ul class="">
-<li><code><a title="BlenderPy.sending_data.Camera.add_camera" href="#BlenderPy.sending_data.Camera.add_camera">add_camera</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Camera.cam_properties" href="#BlenderPy.sending_data.Camera.cam_properties">cam_properties</a></code></li>
 </ul>
 </li>
@@ -5276,9 +5636,10 @@ of the expression</p></div>
 <li>
 <h4><code><a title="BlenderPy.sending_data.Light" href="#BlenderPy.sending_data.Light">Light</a></code></h4>
 <ul class="">
-<li><code><a title="BlenderPy.sending_data.Light.add_light" href="#BlenderPy.sending_data.Light.add_light">add_light</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Light.color" href="#BlenderPy.sending_data.Light.color">color</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Light.light_properties" href="#BlenderPy.sending_data.Light.light_properties">light_properties</a></code></li>
-<li><code><a title="BlenderPy.sending_data.Light.load_light" href="#BlenderPy.sending_data.Light.load_light">load_light</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Light.power" href="#BlenderPy.sending_data.Light.power">power</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Light.radius" href="#BlenderPy.sending_data.Light.radius">radius</a></code></li>
 </ul>
 </li>
 <li>
@@ -5288,18 +5649,11 @@ of the expression</p></div>
 <li><code><a title="BlenderPy.sending_data.Material.convert_color" href="#BlenderPy.sending_data.Material.convert_color">convert_color</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Material.coordinate_expression" href="#BlenderPy.sending_data.Material.coordinate_expression">coordinate_expression</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Material.create_material" href="#BlenderPy.sending_data.Material.create_material">create_material</a></code></li>
-<li><code><a title="BlenderPy.sending_data.Material.distribute_shaders" href="#BlenderPy.sending_data.Material.distribute_shaders">distribute_shaders</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Material.get_material" href="#BlenderPy.sending_data.Material.get_material">get_material</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Material.get_material_names" href="#BlenderPy.sending_data.Material.get_material_names">get_material_names</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Material.get_shader" href="#BlenderPy.sending_data.Material.get_shader">get_shader</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Material.glowing" href="#BlenderPy.sending_data.Material.glowing">glowing</a></code></li>
-<li><code><a title="BlenderPy.sending_data.Material.height_shadernode_dimensions" href="#BlenderPy.sending_data.Material.height_shadernode_dimensions">height_shadernode_dimensions</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Material.surface_noise" href="#BlenderPy.sending_data.Material.surface_noise">surface_noise</a></code></li>
-<li><code><a title="BlenderPy.sending_data.Material.width_shadernode_dimensions" href="#BlenderPy.sending_data.Material.width_shadernode_dimensions">width_shadernode_dimensions</a></code></li>
-<li><code><a title="BlenderPy.sending_data.Material.xmax_shadernode_dimensions" href="#BlenderPy.sending_data.Material.xmax_shadernode_dimensions">xmax_shadernode_dimensions</a></code></li>
-<li><code><a title="BlenderPy.sending_data.Material.xmin_shadernode_dimensions" href="#BlenderPy.sending_data.Material.xmin_shadernode_dimensions">xmin_shadernode_dimensions</a></code></li>
-<li><code><a title="BlenderPy.sending_data.Material.ymax_shadernode_dimensions" href="#BlenderPy.sending_data.Material.ymax_shadernode_dimensions">ymax_shadernode_dimensions</a></code></li>
-<li><code><a title="BlenderPy.sending_data.Material.ymin_shadernode_dimensions" href="#BlenderPy.sending_data.Material.ymin_shadernode_dimensions">ymin_shadernode_dimensions</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Material.z_dependant_color" href="#BlenderPy.sending_data.Material.z_dependant_color">z_dependant_color</a></code></li>
 </ul>
 </li>
@@ -5311,7 +5665,6 @@ of the expression</p></div>
 <li><code><a title="BlenderPy.sending_data.Mesh.divide" href="#BlenderPy.sending_data.Mesh.divide">divide</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.insert_mesh_keyframe" href="#BlenderPy.sending_data.Mesh.insert_mesh_keyframe">insert_mesh_keyframe</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.parent" href="#BlenderPy.sending_data.Mesh.parent">parent</a></code></li>
-<li><code><a title="BlenderPy.sending_data.Mesh.send_mesh" href="#BlenderPy.sending_data.Mesh.send_mesh">send_mesh</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.smooth" href="#BlenderPy.sending_data.Mesh.smooth">smooth</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.use_auto_smooth" href="#BlenderPy.sending_data.Mesh.use_auto_smooth">use_auto_smooth</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Mesh.vertices" href="#BlenderPy.sending_data.Mesh.vertices">vertices</a></code></li>
