@@ -42,8 +42,15 @@ from BlenderPy.meshing import PlaneGeom, Polygon, MultiPolygon
 from BlenderPy.sending_data import Mesh
 
 class VTULoader:
+    &#39;&#39;&#39;Load a VTU file, tipycally exported from COMSOL&#39;&#39;&#39;
     
     def __init__(self, filename, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            filename: path to the file
+            kwargs: PlaneGeom keyword arguments
+        &#39;&#39;&#39;
+        
         self.kwargs=kwargs
         self.filename=filename
         with open(filename, &#39;r&#39;) as f:
@@ -77,12 +84,19 @@ class VTULoader:
             self.points[i][2]=self.data[i]
             
     def load(self):
+        &#39;&#39;&#39;Send the loading to Blender&#39;&#39;&#39;
         return Mesh(cells=[[&#39;triangle&#39;,self.cells]],
                     points=list(self.points), **self.kwargs) 
 
 class STLLoader:
+    &#39;&#39;&#39;Loader for a STL file&#39;&#39;&#39;
     
     def __init__(self, filename, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            filename: path to the file
+            kwargs: PlaneGeom keyword arguments
+        &#39;&#39;&#39;
         self.kwargs=kwargs
         self.filename=filename
         with open(self.filename, &#39;rb&#39;) as f:
@@ -109,17 +123,31 @@ class STLLoader:
         self.new_dict_points={v:struct.unpack(&#39;fff&#39;,k) for k, v in dict_points.items()}
     
     def load(self):
+        &#39;&#39;&#39;Send the loading to Blender&#39;&#39;&#39;
         return Mesh(cells=[[&#39;triangle&#39;,self.cells]],
           points=list(self.new_dict_points.values()), **self.kwargs) 
 
 
 class GDSLoader:
+    &#39;&#39;&#39;Loader for a GDS file. It needs to be opened by Klayout&#39;&#39;&#39;
     
     def __init__(self, filename=None, xmin=None, 
                  xmax=None, ymin=None,
                  ymax=None, layer=None, scaling=1e-3,
                  cell_name=&#39;TOP&#39;, centering=[0.,0.,0.],
                  merged=True, **kwargs):
+        &#39;&#39;&#39;
+        Prameters:
+            filename: path to the GDS
+            xmin xmax, ymin, ymax: limits of the box to select from
+            layer: layer number to select from. Ex: 2 will select the layer 2/0
+            scaling: 2D scaling to apply after loading
+            cell_name: name of the cell to select from
+            centering: desired center of the coordinates,
+            merged: if True, merge all the found polygons before sending
+            to Blender. If False, send those polygons separately
+            kwargs: keyword arguments for PlaneGeom&#39;&#39;&#39;
+            
         self.scaling=scaling
         self.filename=filename
         self.centering=centering
@@ -179,6 +207,7 @@ class GDSLoader:
     
         
     def load(self):
+        &#39;&#39;&#39;Send the loading to Blender&#39;&#39;&#39;
         return PlaneGeom(polygon=self.polygons, **self.kwargs)
 
 if __name__==&#39;__main__&#39;:
@@ -237,18 +266,41 @@ if __name__==&#39;__main__&#39;:
 <span>(</span><span>filename=None, xmin=None, xmax=None, ymin=None, ymax=None, layer=None, scaling=0.001, cell_name='TOP', centering=[0.0, 0.0, 0.0], merged=True, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Loader for a GDS file. It needs to be opened by Klayout</p>
+<h2 id="prameters">Prameters</h2>
+<p>filename: path to the GDS
+xmin xmax, ymin, ymax: limits of the box to select from
+layer: layer number to select from. Ex: 2 will select the layer 2/0
+scaling: 2D scaling to apply after loading
+cell_name: name of the cell to select from
+centering: desired center of the coordinates,
+merged: if True, merge all the found polygons before sending
+to Blender. If False, send those polygons separately
+kwargs: keyword arguments for PlaneGeom</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class GDSLoader:
+    &#39;&#39;&#39;Loader for a GDS file. It needs to be opened by Klayout&#39;&#39;&#39;
     
     def __init__(self, filename=None, xmin=None, 
                  xmax=None, ymin=None,
                  ymax=None, layer=None, scaling=1e-3,
                  cell_name=&#39;TOP&#39;, centering=[0.,0.,0.],
                  merged=True, **kwargs):
+        &#39;&#39;&#39;
+        Prameters:
+            filename: path to the GDS
+            xmin xmax, ymin, ymax: limits of the box to select from
+            layer: layer number to select from. Ex: 2 will select the layer 2/0
+            scaling: 2D scaling to apply after loading
+            cell_name: name of the cell to select from
+            centering: desired center of the coordinates,
+            merged: if True, merge all the found polygons before sending
+            to Blender. If False, send those polygons separately
+            kwargs: keyword arguments for PlaneGeom&#39;&#39;&#39;
+            
         self.scaling=scaling
         self.filename=filename
         self.centering=centering
@@ -308,6 +360,7 @@ if __name__==&#39;__main__&#39;:
     
         
     def load(self):
+        &#39;&#39;&#39;Send the loading to Blender&#39;&#39;&#39;
         return PlaneGeom(polygon=self.polygons, **self.kwargs)</code></pre>
 </details>
 <h3>Methods</h3>
@@ -316,12 +369,13 @@ if __name__==&#39;__main__&#39;:
 <span>def <span class="ident">load</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Send the loading to Blender</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def load(self):
+    &#39;&#39;&#39;Send the loading to Blender&#39;&#39;&#39;
     return PlaneGeom(polygon=self.polygons, **self.kwargs)</code></pre>
 </details>
 </dd>
@@ -332,14 +386,23 @@ if __name__==&#39;__main__&#39;:
 <span>(</span><span>filename, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Loader for a STL file</p>
+<h2 id="parameters">Parameters</h2>
+<p>filename: path to the file
+kwargs: PlaneGeom keyword arguments</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class STLLoader:
+    &#39;&#39;&#39;Loader for a STL file&#39;&#39;&#39;
     
     def __init__(self, filename, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            filename: path to the file
+            kwargs: PlaneGeom keyword arguments
+        &#39;&#39;&#39;
         self.kwargs=kwargs
         self.filename=filename
         with open(self.filename, &#39;rb&#39;) as f:
@@ -366,6 +429,7 @@ if __name__==&#39;__main__&#39;:
         self.new_dict_points={v:struct.unpack(&#39;fff&#39;,k) for k, v in dict_points.items()}
     
     def load(self):
+        &#39;&#39;&#39;Send the loading to Blender&#39;&#39;&#39;
         return Mesh(cells=[[&#39;triangle&#39;,self.cells]],
           points=list(self.new_dict_points.values()), **self.kwargs) </code></pre>
 </details>
@@ -375,12 +439,13 @@ if __name__==&#39;__main__&#39;:
 <span>def <span class="ident">load</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Send the loading to Blender</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def load(self):
+    &#39;&#39;&#39;Send the loading to Blender&#39;&#39;&#39;
     return Mesh(cells=[[&#39;triangle&#39;,self.cells]],
       points=list(self.new_dict_points.values()), **self.kwargs) </code></pre>
 </details>
@@ -392,14 +457,24 @@ if __name__==&#39;__main__&#39;:
 <span>(</span><span>filename, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Load a VTU file, tipycally exported from COMSOL</p>
+<h2 id="parameters">Parameters</h2>
+<p>filename: path to the file
+kwargs: PlaneGeom keyword arguments</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class VTULoader:
+    &#39;&#39;&#39;Load a VTU file, tipycally exported from COMSOL&#39;&#39;&#39;
     
     def __init__(self, filename, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            filename: path to the file
+            kwargs: PlaneGeom keyword arguments
+        &#39;&#39;&#39;
+        
         self.kwargs=kwargs
         self.filename=filename
         with open(filename, &#39;r&#39;) as f:
@@ -433,6 +508,7 @@ if __name__==&#39;__main__&#39;:
             self.points[i][2]=self.data[i]
             
     def load(self):
+        &#39;&#39;&#39;Send the loading to Blender&#39;&#39;&#39;
         return Mesh(cells=[[&#39;triangle&#39;,self.cells]],
                     points=list(self.points), **self.kwargs) </code></pre>
 </details>
@@ -442,12 +518,13 @@ if __name__==&#39;__main__&#39;:
 <span>def <span class="ident">load</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Send the loading to Blender</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def load(self):
+    &#39;&#39;&#39;Send the loading to Blender&#39;&#39;&#39;
     return Mesh(cells=[[&#39;triangle&#39;,self.cells]],
                 points=list(self.points), **self.kwargs) </code></pre>
 </details>

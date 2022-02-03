@@ -12,8 +12,15 @@ from BlenderPy.meshing import PlaneGeom, Polygon, MultiPolygon
 from BlenderPy.sending_data import Mesh
 
 class VTULoader:
+    '''Load a VTU file, tipycally exported from COMSOL'''
     
     def __init__(self, filename, **kwargs):
+        '''
+        Parameters:
+            filename: path to the file
+            kwargs: PlaneGeom keyword arguments
+        '''
+        
         self.kwargs=kwargs
         self.filename=filename
         with open(filename, 'r') as f:
@@ -47,12 +54,19 @@ class VTULoader:
             self.points[i][2]=self.data[i]
             
     def load(self):
+        '''Send the loading to Blender'''
         return Mesh(cells=[['triangle',self.cells]],
                     points=list(self.points), **self.kwargs) 
 
 class STLLoader:
+    '''Loader for a STL file'''
     
     def __init__(self, filename, **kwargs):
+        '''
+        Parameters:
+            filename: path to the file
+            kwargs: PlaneGeom keyword arguments
+        '''
         self.kwargs=kwargs
         self.filename=filename
         with open(self.filename, 'rb') as f:
@@ -79,17 +93,31 @@ class STLLoader:
         self.new_dict_points={v:struct.unpack('fff',k) for k, v in dict_points.items()}
     
     def load(self):
+        '''Send the loading to Blender'''
         return Mesh(cells=[['triangle',self.cells]],
           points=list(self.new_dict_points.values()), **self.kwargs) 
 
 
 class GDSLoader:
+    '''Loader for a GDS file. It needs to be opened by Klayout'''
     
     def __init__(self, filename=None, xmin=None, 
                  xmax=None, ymin=None,
                  ymax=None, layer=None, scaling=1e-3,
                  cell_name='TOP', centering=[0.,0.,0.],
                  merged=True, **kwargs):
+        '''
+        Prameters:
+            filename: path to the GDS
+            xmin xmax, ymin, ymax: limits of the box to select from
+            layer: layer number to select from. Ex: 2 will select the layer 2/0
+            scaling: 2D scaling to apply after loading
+            cell_name: name of the cell to select from
+            centering: desired center of the coordinates,
+            merged: if True, merge all the found polygons before sending
+            to Blender. If False, send those polygons separately
+            kwargs: keyword arguments for PlaneGeom'''
+            
         self.scaling=scaling
         self.filename=filename
         self.centering=centering
@@ -149,6 +177,7 @@ class GDSLoader:
     
         
     def load(self):
+        '''Send the loading to Blender'''
         return PlaneGeom(polygon=self.polygons, **self.kwargs)
 
 if __name__=='__main__':

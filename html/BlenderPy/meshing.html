@@ -45,6 +45,12 @@ class Vector:
     &#39;&#39;&#39;Class representing a Vector, of 2 or 3 dimensions.&#39;&#39;&#39;
     
     def __init__(self, *args):
+        &#39;&#39;&#39;
+        Parameters:
+            args: the coordinates. Can be x,y,z, or x,y or (x,y), or [x,y],
+            or np.array([x,y]), or x+i*y, or (x1,y1), (x2,y2), 
+            which in that last case would give a vector (x2-x1, y2-y1)
+        &#39;&#39;&#39;
         if len(args)==2:
             self.z=0.
             if isinstance(args[0], tuple) and isinstance(args[1], tuple):
@@ -76,21 +82,26 @@ class Vector:
                 self.z=args[2]
     
     def norm(self):
+        &#39;&#39;&#39;return the norm of the vector&#39;&#39;&#39;
         return np.sqrt(self.x**2+self.y**2+self.z**2)
     
     def normalize(self):
+        &#39;&#39;&#39;return this vector divided by his norm&#39;&#39;&#39;
         return self/self.norm()
     
     def compl(self):
+        &#39;&#39;&#39;return x+i*y&#39;&#39;&#39;
         return self.x+1j*self.y
     
     def cross3(self, other):
+        &#39;&#39;&#39;return the 3d cross product of this Vector with the Vector other&#39;&#39;&#39;
         assert isinstance(other, Vector)
         return Vector(self.y*other.z-self.z*other.y,
                       self.z*other.x-self.x*other.z,
                       self.x*other.y-self.y*other.x)
     
     def cross(self, other):
+        &#39;&#39;&#39;return the 2d cross product of this Vector with the Vector other&#39;&#39;&#39;
         assert isinstance(other, Vector)
         return self.x*other.y-self.y*other.x
     
@@ -123,17 +134,26 @@ class Vector:
         return &#39;x:{:}, y:{:}, z:{:}&#39;.format(self.x, self.y, self.z)
 
 class Transformation:
-    
+    &#39;&#39;&#39;class representing a Transformation for a Polygon. Only one method,
+    which is update&#39;&#39;&#39;
     def __init__(self):
         pass
     
     @abstractmethod
     def update(self, points):
+        &#39;&#39;&#39;apply the transformation&#39;&#39;&#39;
         pass
 
 class Mirror(Transformation):
+    &#39;&#39;&#39;a Mirror transformation along an axis&#39;&#39;&#39;
     
     def __init__(self, point, ax):
+        &#39;&#39;&#39;
+        Parameters:
+            point: a point on the mirror axis. Should be compatible with Vector
+            initializer
+            ax: the direction of the mirror axis. should be a list
+        &#39;&#39;&#39;
         assert isinstance(ax, list)
         self.point=Vector(point)
         self.ax=Vector(ax)
@@ -141,6 +161,8 @@ class Mirror(Transformation):
         self.norm=self.up.cross3(self.ax)
     
     def update(self, points):
+        &#39;&#39;&#39;return the mirrored points&#39;&#39;&#39;
+        
         for i, point in enumerate(points):
             p=Vector(point)
             p0=self.point
@@ -149,15 +171,34 @@ class Mirror(Transformation):
         return points
     
 class MultiPolygon():
+    &#39;&#39;&#39;
+    Class representing a list of Polygons
+    &#39;&#39;&#39;
     
     def __init__(self, polygons=[]):
+        &#39;&#39;&#39;
+        Parameters:
+            polygons: a list of Polygon
+        &#39;&#39;&#39;
         self.polygons=polygons
     
     def translate(self, val):
+        &#39;&#39;&#39;
+        Apply a translation of amount val to all the Polygons
+        
+        Parameters:
+            val: the translation value. See Polygon.translate
+        &#39;&#39;&#39;
         for p in self.polygons:
             p.translate(val)
     
     def append(self, val):
+        &#39;&#39;&#39;
+        Add a Polygon
+        
+        Parameters:
+            val: Polygon to add
+        &#39;&#39;&#39;
         if isinstance(val, Polygon):
             self.polygons.append(val)
         elif isinstance(val, MultiPolygon):
@@ -165,10 +206,20 @@ class MultiPolygon():
                 self.polygons.append(p)
     
     def to_shapely(self):
+        &#39;&#39;&#39;
+        convert to shapely MultiPolygon
+        &#39;&#39;&#39;
         return geometry.MultiPolygon(polygons=[p.to_shapely()
                                                for p in self.polygons])
     
     def from_shapely(self, poly):
+        &#39;&#39;&#39;
+        Load a Shapely MultiPolygon
+        
+        Parameters:
+            poly: the shapely MultiPolygon to load
+        &#39;&#39;&#39;
+        
         self.polygons=[]
         for p in poly.geoms:
             polygon=Polygon()
@@ -177,6 +228,8 @@ class MultiPolygon():
     
     @property
     def left(self):
+        &#39;&#39;&#39;The minimum x value of all the Polygons as a group
+        &#39;&#39;&#39;
         return np.min([p.left for p in self.polygons])
     
     @left.setter
@@ -186,6 +239,8 @@ class MultiPolygon():
     
     @property
     def right(self):
+        &#39;&#39;&#39;The maximum x value of all the Polygons as a group
+        &#39;&#39;&#39;
         return np.max([p.right for p in self.polygons])
     
     @right.setter
@@ -195,6 +250,8 @@ class MultiPolygon():
     
     @property
     def bottom(self):
+        &#39;&#39;&#39;The minimum y value of all the Polygons as a group
+        &#39;&#39;&#39;
         return np.min([p.bottom for p in self.polygons])
     
     @bottom.setter
@@ -204,6 +261,8 @@ class MultiPolygon():
     
     @property
     def top(self):
+        &#39;&#39;&#39;The maximum x value of all the Polygons as a group
+        &#39;&#39;&#39;
         return np.max([p.top for p in self.polygons])
     
     @top.setter
@@ -213,6 +272,8 @@ class MultiPolygon():
     
     @property
     def center(self):
+        &#39;&#39;&#39;The center of all the Polygons as a group
+        &#39;&#39;&#39;
         return [0.5*(self.left+self.right),
                 0.5*(self.bottom+self.top)]
         
@@ -224,27 +285,63 @@ class MultiPolygon():
     
     @property
     def width(self):
+        &#39;&#39;&#39;The width of all the Polygons as a group
+        &#39;&#39;&#39;
         return self.right-self.left
     
     @property
     def height(self):
+        &#39;&#39;&#39;The height of all the Polygons as a group
+        &#39;&#39;&#39;
         return self.top-self.bottom
 
 
 
 class Polygon():
+    &#39;&#39;&#39; 
+    Class representing a 2D Polygon
+    &#39;&#39;&#39;
     
     def __init__(self, points=[], holes=[]):
+        &#39;&#39;&#39;
+        Parameters:
+            points: a list of 2D points representing the exterior of the Polygon
+            holes: a list of lists of 2D points. Each list represents a hole
+        &#39;&#39;&#39;
         self.points=points
         self.holes=holes
     
     def to_shapely(self):
+        &#39;&#39;&#39;convert to shapely.geometry.Polygon
+        
+        Parameters:
+            None
+            
+        Returns:
+            the shapely.geometry.Polygon representing this Polygon
+        &#39;&#39;&#39;
         return geometry.Polygon(self.points, holes=self.holes)
     
     def from_shapely(self, poly):
-        self.points, self.holes=self.polygon_to_points(poly)
+        &#39;&#39;&#39;Load a shapely.geometry.Polygon
+        
+        Parameters:
+            poly: the shapely.geometry.Polygon to load
+        
+        Returns:
+            None
+        &#39;&#39;&#39;
+        self.points, self.holes=self._polygon_to_points(poly)
     
     def subtract(self, other):
+        &#39;&#39;&#39;Performs a boolean subtraction between this Polygon and another
+        
+        Parameters:
+            other: a Polygon or a MultiPolygon to subtract
+        
+        Returns:
+            a Polygon or a MultiPolygon, resulting from the subtraction
+        &#39;&#39;&#39;
         if isinstance(other, Polygon) or isinstance(other, MultiPolygon):
             diff=self.to_shapely().difference(other.to_shapely())
         if isinstance(diff, geometry.multipolygon.MultiPolygon):
@@ -260,6 +357,14 @@ class Polygon():
             return self
     
     def intersect(self, other):
+        &#39;&#39;&#39;Performs a boolean intersection between this Polygon and another
+        
+        Parameters:
+            other: a Polygon or a MultiPolygon to subtract
+        
+        Returns:
+            a Polygon, resulting from the intersection
+        &#39;&#39;&#39;
         if isinstance(other, Polygon):
             inter=self.to_shapely().intersection(other.to_shapely())
             self.from_shapely(inter)
@@ -270,23 +375,39 @@ class Polygon():
             self.from_shapely(inter)
     
     def duplicate(self):
+        &#39;&#39;&#39;duplicate the Polygon
+        
+        Parameters:
+            None
+            
+        Return:
+            The duplicated Polygon
+        &#39;&#39;&#39;
         return Polygon(points=self.points.copy(),
                        holes=self.holes.copy())
         
-    def xy_to_points(self, line):
+    def _xy_to_points(self, line):
         xs, ys=(np.array(line.xy[0]),
                 np.array(line.xy[1]))
         return [[x,y] for x,y in zip(xs, ys)]
     
-    def polygon_to_points(self, polygon):
-        points_ext=self.xy_to_points(polygon.exterior)
+    def _polygon_to_points(self, polygon):
+        points_ext=self._xy_to_points(polygon.exterior)
         points_int=[]
         for i, interior in enumerate(polygon.interiors):
-            points_int.append(self.xy_to_points(interior))
+            points_int.append(self._xy_to_points(interior))
         return points_ext, points_int
 
     
     def translate(self, vect):
+        &#39;&#39;&#39;Translate the Polygon
+        
+        Parameters:
+            vect: a list or tuple representing the displacement in 2D
+        
+        Returns:
+            None
+        &#39;&#39;&#39;
         for i, p in enumerate(self.points):
             self.points[i]=[p[0]+vect[0],
                             p[1]+vect[1]]
@@ -296,12 +417,22 @@ class Polygon():
                                   p[1]+vect[1]]
     
     def mirror(self, point, ax):
+        &#39;&#39;&#39;Mirror the Polygon
+        
+        Parameters:
+            point, ax: see Mirror
+        
+        Returns:
+            self, after mirroring
+        &#39;&#39;&#39;
         mir=Mirror(point, ax)
         self.points=[[p.x, p.y] for p in mir.update(self.points)]
         return self
             
     @property
     def left(self):
+        &#39;&#39;&#39;The minimum x value of the Polygon
+        &#39;&#39;&#39;
         return np.min([p[0] for p in self.points])
     
     @left.setter
@@ -311,6 +442,8 @@ class Polygon():
     
     @property
     def right(self):
+        &#39;&#39;&#39;The maximum x value of the Polygon
+        &#39;&#39;&#39;
         return np.max([p[0] for p in self.points])
     
     @right.setter
@@ -320,6 +453,8 @@ class Polygon():
     
     @property
     def bottom(self):
+        &#39;&#39;&#39;The minimum y value of the Polygon
+        &#39;&#39;&#39;
         return np.min([p[1] for p in self.points])
     
     @bottom.setter
@@ -329,6 +464,8 @@ class Polygon():
     
     @property
     def top(self):
+        &#39;&#39;&#39;The maximum y value of the Polygon
+        &#39;&#39;&#39;
         return np.max([p[1] for p in self.points])
     
     @top.setter
@@ -338,6 +475,8 @@ class Polygon():
     
     @property
     def center(self):
+        &#39;&#39;&#39;The center of the Polygon
+        &#39;&#39;&#39;
         return [0.5*(self.left+self.right),
                 0.5*(self.bottom+self.top)]
         
@@ -349,33 +488,66 @@ class Polygon():
     
     @property
     def width(self):
+        &#39;&#39;&#39;The width (xmax-xmin) value of the Polygon
+        &#39;&#39;&#39;
         return self.right-self.left
     
     @property
     def height(self):
+        &#39;&#39;&#39;The height (ymax-ymin) value of the Polygon
+        &#39;&#39;&#39;
         return self.top-self.bottom
     
 class Circle(Polygon):
+    &#39;&#39;&#39;2D Circle
+    &#39;&#39;&#39;
     
     def __init__(self, x0=0, y0=0, radius=1., N=32):
+        &#39;&#39;&#39;
+        Parameters:
+            x0, y0: the center of the circle
+            radius: the radius of the circle
+            N: the number of points
+        &#39;&#39;&#39;
         points=[[x0+radius*np.cos(theta),
                  y0+radius*np.sin(theta)] 
                  for theta in np.linspace(0, 2*np.pi, N)]
         super().__init__(points=points)
 
 class AngularSector(Polygon):
+    &#39;&#39;&#39;Angular section of a circle &#39;&#39;&#39;
     
     def __init__(self, x0=0, y0=0, radius=1., N=32,
                  theta_1=0, theta_2=np.pi/2):
+        &#39;&#39;&#39;
+        Parameters:
+            x0, y0: the center of the circle
+            radius: the radius of the circle
+            N: the number of points
+            theta_1: the starting angle of the sector
+            theta_2: the end angle of the sector
+        &#39;&#39;&#39;
         points=[[x0+radius*np.cos(theta),
                  y0+radius*np.sin(theta)] 
                  for theta in np.linspace(theta_1, theta_2, N)]+[[0.,0.]]
         super().__init__(points=points)
 
 class RoundCorner(Polygon):
+    &#39;&#39;&#39;Rounded path, i.e. AnularSector define by R&gt;radius-width/2 and 
+    R&lt;radius+width/2
+    &#39;&#39;&#39;
     
     def __init__(self, x0=0, y0=0, radius=1., N=32,
                  theta_1=0, theta_2=np.pi/2, width=0.1):
+        &#39;&#39;&#39;
+        Parameters:
+            x0, y0: the center of the circle
+            radius: the radius of the circle
+            N: the number of points
+            theta_1: the starting angle of the sector
+            theta_2: the end angle of the sector
+            width: the width of the path
+        &#39;&#39;&#39;
         points=[[x0+(radius+width/2)*np.cos(theta),
                  y0+(radius+width/2)*np.sin(theta)] 
                  for theta in np.linspace(theta_1, theta_2, N)]
@@ -385,8 +557,14 @@ class RoundCorner(Polygon):
         super().__init__(points=points)
         
 class Rectangle(Polygon):
+    &#39;&#39;&#39;A Rectangle (2D)&#39;&#39;&#39;
     
     def __init__(self, x0=0, y0=0, Lx=1, Ly=1):
+        &#39;&#39;&#39;
+        Parameters:
+            x0, y0: the center of the Rectangle
+            Lx, Ly: the width and height of the Rectangle
+        &#39;&#39;&#39;
         points=[[x0-Lx/2, x0-Ly/2],
                 [x0-Lx/2, x0+Ly/2],
                 [x0+Lx/2, x0+Ly/2],
@@ -394,9 +572,21 @@ class Rectangle(Polygon):
         super().__init__(points=points)
 
 class Triangle:
+    &#39;&#39;&#39;A Class for having the 2D triangulation, with the triangle library
+    method isolated
+    &#39;&#39;&#39;
     
     @staticmethod
     def triangulate(points, holes):
+        &#39;&#39;&#39;static method for trangulating a group of 2D points with holes.
+        
+        Parameters:
+            points: a list of 2D vertices representing the exterior of the 
+            Polygon
+            holes: a list of lists of 2D vertices representing for each list 
+            a hole in the Polygon
+        &#39;&#39;&#39;
+        
         _to_triangle_vertices=points
         _to_triangle_segments=[(len(points)-1,0)]+\
                         [(i,i+1) for i in range(len(points)-1)]
@@ -421,10 +611,21 @@ class Triangle:
                 tri[&#39;triangles&#39;].tolist())
     
 class PlaneGeom(Mesh, GeometricEntity):
+    &#39;&#39;&#39;class representing an eventually extruded 2D geometry&#39;&#39;&#39;
     
     def __init__(self, polygon=None, name=&#39;&#39;, 
                  refine=None, **kwargs):
-        self.refine=refine
+        &#39;&#39;&#39;
+        Parameters:
+            polygon: eventually a Polygon to send to Blender
+            name: the desired name
+            refine: number of time to refine the mesh triangulation before 
+            sending it to Blender
+            kwargs: Mesh keyword arguments
+        &#39;&#39;&#39;    
+        
+                
+        self._refine=refine
         self.name=name
         self.kwargs=kwargs
         if polygon is not None:
@@ -432,11 +633,11 @@ class PlaneGeom(Mesh, GeometricEntity):
                 if len(polygon.holes)==0:
                     self.cell_points=[[p[0], p[1], 0.] for p in polygon.points]
                     self.cells=[[i for i, p in enumerate(polygon.points)]]
-                    self.send_to_blender(from_external_loading=True)
+                    self._send_to_blender(from_external_loading=True)
                 else:
                     self.cell_points, self.cells = Triangle.triangulat(polygon.points,
                                                                  polygon.holes)
-                    self.send_to_blender(from_external_loading=True)
+                    self._send_to_blender(from_external_loading=True)
             elif isinstance(polygon, MultiPolygon):
                 self.cell_points, self.cells=[], []
                 offset=0
@@ -455,28 +656,28 @@ class PlaneGeom(Mesh, GeometricEntity):
                             self.cells.append([offset+p for
                                                p in cell])
                     offset=len(self.cell_points)
-                self.send_to_blender(from_external_loading=True)
+                self._send_to_blender(from_external_loading=True)
                         
                             
-    def send_to_blender(self, use_triangle=False, from_external_loading=False):
+    def _send_to_blender(self, use_triangle=False, from_external_loading=False):
         if use_triangle:
-            self.generate_triangulation_from_shapely_linestring(self.line)
+            self._generate_triangulation_from_shapely_linestring(self.line)
         super().__init__(cells=self.cells, points=self.cell_points,
                                  name=self.name,
                                 **self.kwargs)
         
-    def format_line(self, line):
+    def _format_line(self, line):
         x_s, y_s=line.xy
         res = [(x,y,0) for x,y in zip(x_s, y_s)]
         if res[-1]==res[0]:
             res=res[:-1]
         return res
 
-    def generate_triangulation_from_shapely_linestring(self, poly):
+    def _generate_triangulation_from_shapely_linestring(self, poly):
         if hasattr(poly, &#39;exterior&#39;):
-            self.xy=self.format_line(poly.exterior, gmsh=False)
+            self.xy=self._format_line(poly.exterior, gmsh=False)
         else:
-            self.xy=self.format_line(poly, gmsh=False)
+            self.xy=self._format_line(poly, gmsh=False)
         self.holes=[]
         xy=[[p[0], p[1]] for p in self.xy]
         self._to_triangle_vertices=xy
@@ -486,14 +687,14 @@ class PlaneGeom(Mesh, GeometricEntity):
             t=triangle.triangulate({&#39;vertices&#39;: self._to_triangle_vertices,
                         &#39;segments&#39;: self._to_triangle_segments},
                        opts=&#34;p&#34;)
-            if self.refine is not None:
-                t=triangle.triangulate(t, opts=&#34;pra{:}&#34;.format(self.refine))
+            if self._refine is not None:
+                t=triangle.triangulate(t, opts=&#34;pra{:}&#34;.format(self._refine))
             self.cell_points, self.cells = ([p+[0.] for p in t[&#39;vertices&#39;].tolist()],
                                        [(&#34;triangle&#34;, t[&#39;triangles&#39;].tolist())])
         else:
             holes=[]
             for interior in poly.interiors:
-                xy=self.format_line(interior, gmsh=False)
+                xy=self._format_line(interior, gmsh=False)
                 xy=[[p[0], p[1]] for p in xy]
                 N=len(self._to_triangle_vertices)
                 self._to_triangle_segments+=[(N+len(xy)+-1,N)]+\
@@ -509,10 +710,20 @@ class PlaneGeom(Mesh, GeometricEntity):
     
 
 class Path(PlaneGeom):
-
+    &#39;&#39;&#39;extruded Path&#39;&#39;&#39;
+    
     def __init__(self, points, width, cap_style=&#39;flat&#39;,
                  join_style=&#39;round&#39;, resolution=16,
                  **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            points: the 2D points of the Path, should be a list
+            width: the width of the Path
+            cap_style, join_style, resolution: Shapely options, see shapely 
+            manual for Path
+            kwargs: PlaneGeom keyword arguments
+        &#39;&#39;&#39;
+        
         super().__init__(**kwargs)
         self.resolution=resolution
         self.width=width
@@ -525,10 +736,10 @@ class Path(PlaneGeom):
                                   &#39;bevel&#39;:3})
         self.cap_style=self.cap_style_dict[cap_style]
         self.join_style=self.join_style_dict[join_style]
-        self.generate()
-        self.send_to_blender(use_triangle=True)
+        self._generate()
+        self._send_to_blender(use_triangle=True)
     
-    def generate(self):
+    def _generate(self):
         self.line=geometry.LineString(self.points).buffer(self.width/2.,
                                 cap_style=self.cap_style,
                                 join_style=self.join_style,
@@ -536,9 +747,19 @@ class Path(PlaneGeom):
         self.generate_polygon_from_shapely_linestring(self.line)
         
 class Arrow(PlaneGeom):
+    &#39;&#39;&#39;Extruded Arrow&#39;&#39;&#39;
     
     def __init__(self, head_width=0.1, head_length=0.2,
                  length=1, width=0.05, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            head_width: width of the head of the arrow
+            head_length: length of the head of the arrow
+            length: length of the arrow
+            width: width of the arrow
+            kwargs: PlaneGeom keyword arguments
+        &#39;&#39;&#39;
+        
         super().__init__(**kwargs)
         self.head_width=head_width
         self.head_length=head_length
@@ -553,38 +774,66 @@ class Arrow(PlaneGeom):
                           [-width/2, 0., 0.]]
         self.cells=[[i for i,p in enumerate(self.cell_points)]]
         super().__init__(**kwargs)
-        self.send_to_blender(from_external_loading=True)
+        self._send_to_blender(from_external_loading=True)
 
 class Cylinder(PlaneGeom):
-    
+
     def __init__(self, name=&#39;Cylinder&#39;, radius=1, height=1,
                  N_points=32, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            name: desired name
+            radius: radius of the Cylinder
+            height: height of the cylinder
+            N_points: number of points in the cylinder
+            kwargs: PlaneGeom keyword arguments
+        &#39;&#39;&#39;
+        
         self.cell_points=[[radius*np.cos(theta), radius*np.sin(theta), -height/2] 
                         for theta in np.linspace(0, 2*np.pi, N_points)]
         self.cells=[[i for i in range(N_points)]]
         super().__init__(name=name, thickness=height, **kwargs)
-        self.send_to_blender(from_external_loading=True)
+        self._send_to_blender(from_external_loading=True)
 
 class Box(PlaneGeom):
     
     def __init__(self, name=&#39;Box&#39;, Lx=1, Ly=1, Lz=1, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            name: desired name
+            Lx, Ly, Lz: x, y, and z extension of the box
+        &#39;&#39;&#39;
         self.cell_points=[[-Lx/2, -Ly/2, -Lz/2],
                           [-Lx/2, Ly/2, -Lz/2],
                           [Lx/2, Ly/2, -Lz/2],
                           [Lx/2, -Ly/2, -Lz/2]]
         self.cells=[[0, 1, 2, 3]]
         super().__init__(name=name, thickness=Lz, **kwargs)
-        self.send_to_blender(from_external_loading=True)
+        self._send_to_blender(from_external_loading=True)
         
 class Plane(Box):
     
     def __init__(self, name=&#39;plane&#39;, size=10, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            name: desired name
+            Lx, Ly: x and y extension of the plane
+        &#39;&#39;&#39;
         super().__init__(Lx=size, Ly=size, Lz=0.,
                          name=name, **kwargs)
         
 class Sphere(Mesh):
+    &#39;&#39;&#39;Class representing an isocahedron sphere in 3D&#39;&#39;&#39;
     
     def __init__(self, radius=1, refine=0, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            radius: radius of the sphere
+            refine: number of desired refinements from a 20 faces
+            sphere. Each refinement divide each face in four equilateral
+            triangles
+        &#39;&#39;&#39;
+        
         self.radius=radius
         self.initialize(self.radius)
         for i in range(refine):
@@ -630,7 +879,7 @@ class Sphere(Mesh):
                     [  8,  9,  6 ],
                     [  8,  6,  2 ]]
     
-    def refine(self):
+    def _refine(self):
         edges=dict()
         for i, f in enumerate(self.cells):
             for pair in [[0,1], [1,2], [0,2]]:
@@ -654,7 +903,7 @@ class Sphere(Mesh):
         middle_points=dict()
         i=len(self.points)
         for v in edges.keys():
-            self.points.append(self.get_middle_point(self.points[v[0]],
+            self.points.append(self._get_middle_point(self.points[v[0]],
                                                      self.points[v[1]]))
             middle_points[v]=i
             i+=1
@@ -681,7 +930,7 @@ class Sphere(Mesh):
                               middle_points[edges[2]]])
         self.cells=new_faces
 
-    def get_middle_point(self, p1, p2):
+    def _get_middle_point(self, p1, p2):
         middle=0.5*(Vector(p1)+Vector(p2))
         middle=middle.normalize()*self.radius
         return [middle.x, middle.y, middle.z]
@@ -705,15 +954,30 @@ if __name__==&#39;__main__&#39;:
 <span>(</span><span>x0=0, y0=0, radius=1.0, N=32, theta_1=0, theta_2=1.5707963267948966)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Angular section of a circle </p>
+<h2 id="parameters">Parameters</h2>
+<p>x0, y0: the center of the circle
+radius: the radius of the circle
+N: the number of points
+theta_1: the starting angle of the sector
+theta_2: the end angle of the sector</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class AngularSector(Polygon):
+    &#39;&#39;&#39;Angular section of a circle &#39;&#39;&#39;
     
     def __init__(self, x0=0, y0=0, radius=1., N=32,
                  theta_1=0, theta_2=np.pi/2):
+        &#39;&#39;&#39;
+        Parameters:
+            x0, y0: the center of the circle
+            radius: the radius of the circle
+            N: the number of points
+            theta_1: the starting angle of the sector
+            theta_2: the end angle of the sector
+        &#39;&#39;&#39;
         points=[[x0+radius*np.cos(theta),
                  y0+radius*np.sin(theta)] 
                  for theta in np.linspace(theta_1, theta_2, N)]+[[0.,0.]]
@@ -723,31 +987,58 @@ if __name__==&#39;__main__&#39;:
 <ul class="hlist">
 <li><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></li>
 </ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.meshing.Polygon.bottom" href="#BlenderPy.meshing.Polygon.bottom">bottom</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.center" href="#BlenderPy.meshing.Polygon.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.duplicate" href="#BlenderPy.meshing.Polygon.duplicate">duplicate</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.from_shapely" href="#BlenderPy.meshing.Polygon.from_shapely">from_shapely</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.height" href="#BlenderPy.meshing.Polygon.height">height</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.intersect" href="#BlenderPy.meshing.Polygon.intersect">intersect</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.left" href="#BlenderPy.meshing.Polygon.left">left</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.mirror" href="#BlenderPy.meshing.Polygon.mirror">mirror</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.right" href="#BlenderPy.meshing.Polygon.right">right</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.subtract" href="#BlenderPy.meshing.Polygon.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.to_shapely" href="#BlenderPy.meshing.Polygon.to_shapely">to_shapely</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.top" href="#BlenderPy.meshing.Polygon.top">top</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.translate" href="#BlenderPy.meshing.Polygon.translate">translate</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.width" href="#BlenderPy.meshing.Polygon.width">width</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="BlenderPy.meshing.Arrow"><code class="flex name class">
 <span>class <span class="ident">Arrow</span></span>
 <span>(</span><span>head_width=0.1, head_length=0.2, length=1, width=0.05, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing a Mesh</p>
-<p>Parameters:
-cells: a list of cells consisting in a list of integer point
-indices
-points: a list of points consisting in a list
-of the x, y and z coordinates
-thickness: the thickness of the desired extruded 2D shape. Can be
-None, which means no extrusion
-name: the desired name for the Mesh
-subdivide: the number of division in the extrusion
-kwargs: Object properties</p></div>
+<div class="desc"><p>Extruded Arrow</p>
+<h2 id="parameters">Parameters</h2>
+<p>head_width: width of the head of the arrow
+head_length: length of the head of the arrow
+length: length of the arrow
+width: width of the arrow
+kwargs: PlaneGeom keyword arguments</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Arrow(PlaneGeom):
+    &#39;&#39;&#39;Extruded Arrow&#39;&#39;&#39;
     
     def __init__(self, head_width=0.1, head_length=0.2,
                  length=1, width=0.05, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            head_width: width of the head of the arrow
+            head_length: length of the head of the arrow
+            length: length of the arrow
+            width: width of the arrow
+            kwargs: PlaneGeom keyword arguments
+        &#39;&#39;&#39;
+        
         super().__init__(**kwargs)
         self.head_width=head_width
         self.head_length=head_length
@@ -762,7 +1053,7 @@ kwargs: Object properties</p></div>
                           [-width/2, 0., 0.]]
         self.cells=[[i for i,p in enumerate(self.cell_points)]]
         super().__init__(**kwargs)
-        self.send_to_blender(from_external_loading=True)</code></pre>
+        self._send_to_blender(from_external_loading=True)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -823,17 +1114,10 @@ kwargs: Object properties</p></div>
 <span>(</span><span>name='Box', Lx=1, Ly=1, Lz=1, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing a Mesh</p>
-<p>Parameters:
-cells: a list of cells consisting in a list of integer point
-indices
-points: a list of points consisting in a list
-of the x, y and z coordinates
-thickness: the thickness of the desired extruded 2D shape. Can be
-None, which means no extrusion
-name: the desired name for the Mesh
-subdivide: the number of division in the extrusion
-kwargs: Object properties</p></div>
+<div class="desc"><p>class representing an eventually extruded 2D geometry</p>
+<h2 id="parameters">Parameters</h2>
+<p>name: desired name
+Lx, Ly, Lz: x, y, and z extension of the box</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -841,13 +1125,18 @@ kwargs: Object properties</p></div>
 <pre><code class="python">class Box(PlaneGeom):
     
     def __init__(self, name=&#39;Box&#39;, Lx=1, Ly=1, Lz=1, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            name: desired name
+            Lx, Ly, Lz: x, y, and z extension of the box
+        &#39;&#39;&#39;
         self.cell_points=[[-Lx/2, -Ly/2, -Lz/2],
                           [-Lx/2, Ly/2, -Lz/2],
                           [Lx/2, Ly/2, -Lz/2],
                           [Lx/2, -Ly/2, -Lz/2]]
         self.cells=[[0, 1, 2, 3]]
         super().__init__(name=name, thickness=Lz, **kwargs)
-        self.send_to_blender(from_external_loading=True)</code></pre>
+        self._send_to_blender(from_external_loading=True)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -912,14 +1201,26 @@ kwargs: Object properties</p></div>
 <span>(</span><span>x0=0, y0=0, radius=1.0, N=32)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>2D Circle</p>
+<h2 id="parameters">Parameters</h2>
+<p>x0, y0: the center of the circle
+radius: the radius of the circle
+N: the number of points</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Circle(Polygon):
+    &#39;&#39;&#39;2D Circle
+    &#39;&#39;&#39;
     
     def __init__(self, x0=0, y0=0, radius=1., N=32):
+        &#39;&#39;&#39;
+        Parameters:
+            x0, y0: the center of the circle
+            radius: the radius of the circle
+            N: the number of points
+        &#39;&#39;&#39;
         points=[[x0+radius*np.cos(theta),
                  y0+radius*np.sin(theta)] 
                  for theta in np.linspace(0, 2*np.pi, N)]
@@ -929,36 +1230,62 @@ kwargs: Object properties</p></div>
 <ul class="hlist">
 <li><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></li>
 </ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.meshing.Polygon.bottom" href="#BlenderPy.meshing.Polygon.bottom">bottom</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.center" href="#BlenderPy.meshing.Polygon.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.duplicate" href="#BlenderPy.meshing.Polygon.duplicate">duplicate</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.from_shapely" href="#BlenderPy.meshing.Polygon.from_shapely">from_shapely</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.height" href="#BlenderPy.meshing.Polygon.height">height</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.intersect" href="#BlenderPy.meshing.Polygon.intersect">intersect</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.left" href="#BlenderPy.meshing.Polygon.left">left</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.mirror" href="#BlenderPy.meshing.Polygon.mirror">mirror</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.right" href="#BlenderPy.meshing.Polygon.right">right</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.subtract" href="#BlenderPy.meshing.Polygon.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.to_shapely" href="#BlenderPy.meshing.Polygon.to_shapely">to_shapely</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.top" href="#BlenderPy.meshing.Polygon.top">top</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.translate" href="#BlenderPy.meshing.Polygon.translate">translate</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.width" href="#BlenderPy.meshing.Polygon.width">width</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="BlenderPy.meshing.Cylinder"><code class="flex name class">
 <span>class <span class="ident">Cylinder</span></span>
 <span>(</span><span>name='Cylinder', radius=1, height=1, N_points=32, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing a Mesh</p>
-<p>Parameters:
-cells: a list of cells consisting in a list of integer point
-indices
-points: a list of points consisting in a list
-of the x, y and z coordinates
-thickness: the thickness of the desired extruded 2D shape. Can be
-None, which means no extrusion
-name: the desired name for the Mesh
-subdivide: the number of division in the extrusion
-kwargs: Object properties</p></div>
+<div class="desc"><p>class representing an eventually extruded 2D geometry</p>
+<h2 id="parameters">Parameters</h2>
+<p>name: desired name
+radius: radius of the Cylinder
+height: height of the cylinder
+N_points: number of points in the cylinder
+kwargs: PlaneGeom keyword arguments</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Cylinder(PlaneGeom):
-    
+
     def __init__(self, name=&#39;Cylinder&#39;, radius=1, height=1,
                  N_points=32, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            name: desired name
+            radius: radius of the Cylinder
+            height: height of the cylinder
+            N_points: number of points in the cylinder
+            kwargs: PlaneGeom keyword arguments
+        &#39;&#39;&#39;
+        
         self.cell_points=[[radius*np.cos(theta), radius*np.sin(theta), -height/2] 
                         for theta in np.linspace(0, 2*np.pi, N_points)]
         self.cells=[[i for i in range(N_points)]]
         super().__init__(name=name, thickness=height, **kwargs)
-        self.send_to_blender(from_external_loading=True)</code></pre>
+        self._send_to_blender(from_external_loading=True)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1019,14 +1346,25 @@ kwargs: Object properties</p></div>
 <span>(</span><span>point, ax)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>a Mirror transformation along an axis</p>
+<h2 id="parameters">Parameters</h2>
+<p>point: a point on the mirror axis. Should be compatible with Vector
+initializer
+ax: the direction of the mirror axis. should be a list</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Mirror(Transformation):
+    &#39;&#39;&#39;a Mirror transformation along an axis&#39;&#39;&#39;
     
     def __init__(self, point, ax):
+        &#39;&#39;&#39;
+        Parameters:
+            point: a point on the mirror axis. Should be compatible with Vector
+            initializer
+            ax: the direction of the mirror axis. should be a list
+        &#39;&#39;&#39;
         assert isinstance(ax, list)
         self.point=Vector(point)
         self.ax=Vector(ax)
@@ -1034,6 +1372,8 @@ kwargs: Object properties</p></div>
         self.norm=self.up.cross3(self.ax)
     
     def update(self, points):
+        &#39;&#39;&#39;return the mirrored points&#39;&#39;&#39;
+        
         for i, point in enumerate(points):
             p=Vector(point)
             p0=self.point
@@ -1051,12 +1391,14 @@ kwargs: Object properties</p></div>
 <span>def <span class="ident">update</span></span>(<span>self, points)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>return the mirrored points</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def update(self, points):
+    &#39;&#39;&#39;return the mirrored points&#39;&#39;&#39;
+    
     for i, point in enumerate(points):
         p=Vector(point)
         p0=self.point
@@ -1072,21 +1414,42 @@ kwargs: Object properties</p></div>
 <span>(</span><span>polygons=[])</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class representing a list of Polygons</p>
+<h2 id="parameters">Parameters</h2>
+<p>polygons: a list of Polygon</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class MultiPolygon():
+    &#39;&#39;&#39;
+    Class representing a list of Polygons
+    &#39;&#39;&#39;
     
     def __init__(self, polygons=[]):
+        &#39;&#39;&#39;
+        Parameters:
+            polygons: a list of Polygon
+        &#39;&#39;&#39;
         self.polygons=polygons
     
     def translate(self, val):
+        &#39;&#39;&#39;
+        Apply a translation of amount val to all the Polygons
+        
+        Parameters:
+            val: the translation value. See Polygon.translate
+        &#39;&#39;&#39;
         for p in self.polygons:
             p.translate(val)
     
     def append(self, val):
+        &#39;&#39;&#39;
+        Add a Polygon
+        
+        Parameters:
+            val: Polygon to add
+        &#39;&#39;&#39;
         if isinstance(val, Polygon):
             self.polygons.append(val)
         elif isinstance(val, MultiPolygon):
@@ -1094,10 +1457,20 @@ kwargs: Object properties</p></div>
                 self.polygons.append(p)
     
     def to_shapely(self):
+        &#39;&#39;&#39;
+        convert to shapely MultiPolygon
+        &#39;&#39;&#39;
         return geometry.MultiPolygon(polygons=[p.to_shapely()
                                                for p in self.polygons])
     
     def from_shapely(self, poly):
+        &#39;&#39;&#39;
+        Load a Shapely MultiPolygon
+        
+        Parameters:
+            poly: the shapely MultiPolygon to load
+        &#39;&#39;&#39;
+        
         self.polygons=[]
         for p in poly.geoms:
             polygon=Polygon()
@@ -1106,6 +1479,8 @@ kwargs: Object properties</p></div>
     
     @property
     def left(self):
+        &#39;&#39;&#39;The minimum x value of all the Polygons as a group
+        &#39;&#39;&#39;
         return np.min([p.left for p in self.polygons])
     
     @left.setter
@@ -1115,6 +1490,8 @@ kwargs: Object properties</p></div>
     
     @property
     def right(self):
+        &#39;&#39;&#39;The maximum x value of all the Polygons as a group
+        &#39;&#39;&#39;
         return np.max([p.right for p in self.polygons])
     
     @right.setter
@@ -1124,6 +1501,8 @@ kwargs: Object properties</p></div>
     
     @property
     def bottom(self):
+        &#39;&#39;&#39;The minimum y value of all the Polygons as a group
+        &#39;&#39;&#39;
         return np.min([p.bottom for p in self.polygons])
     
     @bottom.setter
@@ -1133,6 +1512,8 @@ kwargs: Object properties</p></div>
     
     @property
     def top(self):
+        &#39;&#39;&#39;The maximum x value of all the Polygons as a group
+        &#39;&#39;&#39;
         return np.max([p.top for p in self.polygons])
     
     @top.setter
@@ -1142,6 +1523,8 @@ kwargs: Object properties</p></div>
     
     @property
     def center(self):
+        &#39;&#39;&#39;The center of all the Polygons as a group
+        &#39;&#39;&#39;
         return [0.5*(self.left+self.right),
                 0.5*(self.bottom+self.top)]
         
@@ -1153,96 +1536,114 @@ kwargs: Object properties</p></div>
     
     @property
     def width(self):
+        &#39;&#39;&#39;The width of all the Polygons as a group
+        &#39;&#39;&#39;
         return self.right-self.left
     
     @property
     def height(self):
+        &#39;&#39;&#39;The height of all the Polygons as a group
+        &#39;&#39;&#39;
         return self.top-self.bottom</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
 <dt id="BlenderPy.meshing.MultiPolygon.bottom"><code class="name">var <span class="ident">bottom</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The minimum y value of all the Polygons as a group</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def bottom(self):
+    &#39;&#39;&#39;The minimum y value of all the Polygons as a group
+    &#39;&#39;&#39;
     return np.min([p.bottom for p in self.polygons])</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.MultiPolygon.center"><code class="name">var <span class="ident">center</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The center of all the Polygons as a group</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def center(self):
+    &#39;&#39;&#39;The center of all the Polygons as a group
+    &#39;&#39;&#39;
     return [0.5*(self.left+self.right),
             0.5*(self.bottom+self.top)]</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.MultiPolygon.height"><code class="name">var <span class="ident">height</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The height of all the Polygons as a group</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def height(self):
+    &#39;&#39;&#39;The height of all the Polygons as a group
+    &#39;&#39;&#39;
     return self.top-self.bottom</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.MultiPolygon.left"><code class="name">var <span class="ident">left</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The minimum x value of all the Polygons as a group</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def left(self):
+    &#39;&#39;&#39;The minimum x value of all the Polygons as a group
+    &#39;&#39;&#39;
     return np.min([p.left for p in self.polygons])</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.MultiPolygon.right"><code class="name">var <span class="ident">right</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The maximum x value of all the Polygons as a group</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def right(self):
+    &#39;&#39;&#39;The maximum x value of all the Polygons as a group
+    &#39;&#39;&#39;
     return np.max([p.right for p in self.polygons])</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.MultiPolygon.top"><code class="name">var <span class="ident">top</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The maximum x value of all the Polygons as a group</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def top(self):
+    &#39;&#39;&#39;The maximum x value of all the Polygons as a group
+    &#39;&#39;&#39;
     return np.max([p.top for p in self.polygons])</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.MultiPolygon.width"><code class="name">var <span class="ident">width</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The width of all the Polygons as a group</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def width(self):
+    &#39;&#39;&#39;The width of all the Polygons as a group
+    &#39;&#39;&#39;
     return self.right-self.left</code></pre>
 </details>
 </dd>
@@ -1253,12 +1654,20 @@ def width(self):
 <span>def <span class="ident">append</span></span>(<span>self, val)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Add a Polygon</p>
+<h2 id="parameters">Parameters</h2>
+<p>val: Polygon to add</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def append(self, val):
+    &#39;&#39;&#39;
+    Add a Polygon
+    
+    Parameters:
+        val: Polygon to add
+    &#39;&#39;&#39;
     if isinstance(val, Polygon):
         self.polygons.append(val)
     elif isinstance(val, MultiPolygon):
@@ -1270,12 +1679,21 @@ def width(self):
 <span>def <span class="ident">from_shapely</span></span>(<span>self, poly)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Load a Shapely MultiPolygon</p>
+<h2 id="parameters">Parameters</h2>
+<p>poly: the shapely MultiPolygon to load</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def from_shapely(self, poly):
+    &#39;&#39;&#39;
+    Load a Shapely MultiPolygon
+    
+    Parameters:
+        poly: the shapely MultiPolygon to load
+    &#39;&#39;&#39;
+    
     self.polygons=[]
     for p in poly.geoms:
         polygon=Polygon()
@@ -1287,12 +1705,15 @@ def width(self):
 <span>def <span class="ident">to_shapely</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>convert to shapely MultiPolygon</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_shapely(self):
+    &#39;&#39;&#39;
+    convert to shapely MultiPolygon
+    &#39;&#39;&#39;
     return geometry.MultiPolygon(polygons=[p.to_shapely()
                                            for p in self.polygons])</code></pre>
 </details>
@@ -1301,12 +1722,20 @@ def width(self):
 <span>def <span class="ident">translate</span></span>(<span>self, val)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Apply a translation of amount val to all the Polygons</p>
+<h2 id="parameters">Parameters</h2>
+<p>val: the translation value. See Polygon.translate</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def translate(self, val):
+    &#39;&#39;&#39;
+    Apply a translation of amount val to all the Polygons
+    
+    Parameters:
+        val: the translation value. See Polygon.translate
+    &#39;&#39;&#39;
     for p in self.polygons:
         p.translate(val)</code></pre>
 </details>
@@ -1318,26 +1747,32 @@ def width(self):
 <span>(</span><span>points, width, cap_style='flat', join_style='round', resolution=16, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing a Mesh</p>
-<p>Parameters:
-cells: a list of cells consisting in a list of integer point
-indices
-points: a list of points consisting in a list
-of the x, y and z coordinates
-thickness: the thickness of the desired extruded 2D shape. Can be
-None, which means no extrusion
-name: the desired name for the Mesh
-subdivide: the number of division in the extrusion
-kwargs: Object properties</p></div>
+<div class="desc"><p>extruded Path</p>
+<h2 id="parameters">Parameters</h2>
+<p>points: the 2D points of the Path, should be a list
+width: the width of the Path
+cap_style, join_style, resolution: Shapely options, see shapely
+manual for Path
+kwargs: PlaneGeom keyword arguments</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Path(PlaneGeom):
-
+    &#39;&#39;&#39;extruded Path&#39;&#39;&#39;
+    
     def __init__(self, points, width, cap_style=&#39;flat&#39;,
                  join_style=&#39;round&#39;, resolution=16,
                  **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            points: the 2D points of the Path, should be a list
+            width: the width of the Path
+            cap_style, join_style, resolution: Shapely options, see shapely 
+            manual for Path
+            kwargs: PlaneGeom keyword arguments
+        &#39;&#39;&#39;
+        
         super().__init__(**kwargs)
         self.resolution=resolution
         self.width=width
@@ -1350,10 +1785,10 @@ kwargs: Object properties</p></div>
                                   &#39;bevel&#39;:3})
         self.cap_style=self.cap_style_dict[cap_style]
         self.join_style=self.join_style_dict[join_style]
-        self.generate()
-        self.send_to_blender(use_triangle=True)
+        self._generate()
+        self._send_to_blender(use_triangle=True)
     
-    def generate(self):
+    def _generate(self):
         self.line=geometry.LineString(self.points).buffer(self.width/2.,
                                 cap_style=self.cap_style,
                                 join_style=self.join_style,
@@ -1367,26 +1802,6 @@ kwargs: Object properties</p></div>
 <li><a title="BlenderPy.sending_data.Object" href="sending_data.html#BlenderPy.sending_data.Object">Object</a></li>
 <li><a title="BlenderPy.sending_data.GeometricEntity" href="sending_data.html#BlenderPy.sending_data.GeometricEntity">GeometricEntity</a></li>
 </ul>
-<h3>Methods</h3>
-<dl>
-<dt id="BlenderPy.meshing.Path.generate"><code class="name flex">
-<span>def <span class="ident">generate</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def generate(self):
-    self.line=geometry.LineString(self.points).buffer(self.width/2.,
-                            cap_style=self.cap_style,
-                            join_style=self.join_style,
-                            resolution=self.resolution)
-    self.generate_polygon_from_shapely_linestring(self.line)</code></pre>
-</details>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="BlenderPy.meshing.PlaneGeom" href="#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></b></code>:
@@ -1439,17 +1854,10 @@ kwargs: Object properties</p></div>
 <span>(</span><span>name='plane', size=10, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing a Mesh</p>
-<p>Parameters:
-cells: a list of cells consisting in a list of integer point
-indices
-points: a list of points consisting in a list
-of the x, y and z coordinates
-thickness: the thickness of the desired extruded 2D shape. Can be
-None, which means no extrusion
-name: the desired name for the Mesh
-subdivide: the number of division in the extrusion
-kwargs: Object properties</p></div>
+<div class="desc"><p>class representing an eventually extruded 2D geometry</p>
+<h2 id="parameters">Parameters</h2>
+<p>name: desired name
+Lx, Ly: x and y extension of the plane</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1457,6 +1865,11 @@ kwargs: Object properties</p></div>
 <pre><code class="python">class Plane(Box):
     
     def __init__(self, name=&#39;plane&#39;, size=10, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            name: desired name
+            Lx, Ly: x and y extension of the plane
+        &#39;&#39;&#39;
         super().__init__(Lx=size, Ly=size, Lz=0.,
                          name=name, **kwargs)</code></pre>
 </details>
@@ -1520,26 +1933,33 @@ kwargs: Object properties</p></div>
 <span>(</span><span>polygon=None, name='', refine=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing a Mesh</p>
-<p>Parameters:
-cells: a list of cells consisting in a list of integer point
-indices
-points: a list of points consisting in a list
-of the x, y and z coordinates
-thickness: the thickness of the desired extruded 2D shape. Can be
-None, which means no extrusion
-name: the desired name for the Mesh
-subdivide: the number of division in the extrusion
-kwargs: Object properties</p></div>
+<div class="desc"><p>class representing an eventually extruded 2D geometry</p>
+<h2 id="parameters">Parameters</h2>
+<p>polygon: eventually a Polygon to send to Blender
+name: the desired name
+refine: number of time to refine the mesh triangulation before
+sending it to Blender
+kwargs: Mesh keyword arguments</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class PlaneGeom(Mesh, GeometricEntity):
+    &#39;&#39;&#39;class representing an eventually extruded 2D geometry&#39;&#39;&#39;
     
     def __init__(self, polygon=None, name=&#39;&#39;, 
                  refine=None, **kwargs):
-        self.refine=refine
+        &#39;&#39;&#39;
+        Parameters:
+            polygon: eventually a Polygon to send to Blender
+            name: the desired name
+            refine: number of time to refine the mesh triangulation before 
+            sending it to Blender
+            kwargs: Mesh keyword arguments
+        &#39;&#39;&#39;    
+        
+                
+        self._refine=refine
         self.name=name
         self.kwargs=kwargs
         if polygon is not None:
@@ -1547,11 +1967,11 @@ kwargs: Object properties</p></div>
                 if len(polygon.holes)==0:
                     self.cell_points=[[p[0], p[1], 0.] for p in polygon.points]
                     self.cells=[[i for i, p in enumerate(polygon.points)]]
-                    self.send_to_blender(from_external_loading=True)
+                    self._send_to_blender(from_external_loading=True)
                 else:
                     self.cell_points, self.cells = Triangle.triangulat(polygon.points,
                                                                  polygon.holes)
-                    self.send_to_blender(from_external_loading=True)
+                    self._send_to_blender(from_external_loading=True)
             elif isinstance(polygon, MultiPolygon):
                 self.cell_points, self.cells=[], []
                 offset=0
@@ -1570,28 +1990,28 @@ kwargs: Object properties</p></div>
                             self.cells.append([offset+p for
                                                p in cell])
                     offset=len(self.cell_points)
-                self.send_to_blender(from_external_loading=True)
+                self._send_to_blender(from_external_loading=True)
                         
                             
-    def send_to_blender(self, use_triangle=False, from_external_loading=False):
+    def _send_to_blender(self, use_triangle=False, from_external_loading=False):
         if use_triangle:
-            self.generate_triangulation_from_shapely_linestring(self.line)
+            self._generate_triangulation_from_shapely_linestring(self.line)
         super().__init__(cells=self.cells, points=self.cell_points,
                                  name=self.name,
                                 **self.kwargs)
         
-    def format_line(self, line):
+    def _format_line(self, line):
         x_s, y_s=line.xy
         res = [(x,y,0) for x,y in zip(x_s, y_s)]
         if res[-1]==res[0]:
             res=res[:-1]
         return res
 
-    def generate_triangulation_from_shapely_linestring(self, poly):
+    def _generate_triangulation_from_shapely_linestring(self, poly):
         if hasattr(poly, &#39;exterior&#39;):
-            self.xy=self.format_line(poly.exterior, gmsh=False)
+            self.xy=self._format_line(poly.exterior, gmsh=False)
         else:
-            self.xy=self.format_line(poly, gmsh=False)
+            self.xy=self._format_line(poly, gmsh=False)
         self.holes=[]
         xy=[[p[0], p[1]] for p in self.xy]
         self._to_triangle_vertices=xy
@@ -1601,14 +2021,14 @@ kwargs: Object properties</p></div>
             t=triangle.triangulate({&#39;vertices&#39;: self._to_triangle_vertices,
                         &#39;segments&#39;: self._to_triangle_segments},
                        opts=&#34;p&#34;)
-            if self.refine is not None:
-                t=triangle.triangulate(t, opts=&#34;pra{:}&#34;.format(self.refine))
+            if self._refine is not None:
+                t=triangle.triangulate(t, opts=&#34;pra{:}&#34;.format(self._refine))
             self.cell_points, self.cells = ([p+[0.] for p in t[&#39;vertices&#39;].tolist()],
                                        [(&#34;triangle&#34;, t[&#39;triangles&#39;].tolist())])
         else:
             holes=[]
             for interior in poly.interiors:
-                xy=self.format_line(interior, gmsh=False)
+                xy=self._format_line(interior, gmsh=False)
                 xy=[[p[0], p[1]] for p in xy]
                 N=len(self._to_triangle_vertices)
                 self._to_triangle_segments+=[(N+len(xy)+-1,N)]+\
@@ -1635,88 +2055,6 @@ kwargs: Object properties</p></div>
 <li><a title="BlenderPy.meshing.Cylinder" href="#BlenderPy.meshing.Cylinder">Cylinder</a></li>
 <li><a title="BlenderPy.meshing.Path" href="#BlenderPy.meshing.Path">Path</a></li>
 </ul>
-<h3>Methods</h3>
-<dl>
-<dt id="BlenderPy.meshing.PlaneGeom.format_line"><code class="name flex">
-<span>def <span class="ident">format_line</span></span>(<span>self, line)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def format_line(self, line):
-    x_s, y_s=line.xy
-    res = [(x,y,0) for x,y in zip(x_s, y_s)]
-    if res[-1]==res[0]:
-        res=res[:-1]
-    return res</code></pre>
-</details>
-</dd>
-<dt id="BlenderPy.meshing.PlaneGeom.generate_triangulation_from_shapely_linestring"><code class="name flex">
-<span>def <span class="ident">generate_triangulation_from_shapely_linestring</span></span>(<span>self, poly)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def generate_triangulation_from_shapely_linestring(self, poly):
-    if hasattr(poly, &#39;exterior&#39;):
-        self.xy=self.format_line(poly.exterior, gmsh=False)
-    else:
-        self.xy=self.format_line(poly, gmsh=False)
-    self.holes=[]
-    xy=[[p[0], p[1]] for p in self.xy]
-    self._to_triangle_vertices=xy
-    self._to_triangle_segments=[(len(xy)-1,0)]+\
-                    [(i,i+1) for i in range(len(xy)-1)]
-    if not hasattr(poly, &#39;interiors&#39;) or  hasattr(poly, &#39;interiors&#39;) and len(poly.interiors)==0:
-        t=triangle.triangulate({&#39;vertices&#39;: self._to_triangle_vertices,
-                    &#39;segments&#39;: self._to_triangle_segments},
-                   opts=&#34;p&#34;)
-        if self.refine is not None:
-            t=triangle.triangulate(t, opts=&#34;pra{:}&#34;.format(self.refine))
-        self.cell_points, self.cells = ([p+[0.] for p in t[&#39;vertices&#39;].tolist()],
-                                   [(&#34;triangle&#34;, t[&#39;triangles&#39;].tolist())])
-    else:
-        holes=[]
-        for interior in poly.interiors:
-            xy=self.format_line(interior, gmsh=False)
-            xy=[[p[0], p[1]] for p in xy]
-            N=len(self._to_triangle_vertices)
-            self._to_triangle_segments+=[(N+len(xy)+-1,N)]+\
-                    [(N+i,N+i+1) for i in range(len(xy)-1)]
-            self._to_triangle_vertices+=xy
-            holes.append([p[0] for p in interior.centroid.xy])
-        t=triangle.triangulate({&#39;vertices&#39;: self._to_triangle_vertices,
-                        &#39;segments&#39;: self._to_triangle_segments,
-                        &#39;holes&#39;:holes},
-                       opts=&#34;p&#34;)
-        self.cell_points, self.cells = ([p+[0.] for p in t[&#39;vertices&#39;].tolist()],
-                                   [(&#34;triangle&#34;, t[&#39;triangles&#39;].tolist())])</code></pre>
-</details>
-</dd>
-<dt id="BlenderPy.meshing.PlaneGeom.send_to_blender"><code class="name flex">
-<span>def <span class="ident">send_to_blender</span></span>(<span>self, use_triangle=False, from_external_loading=False)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def send_to_blender(self, use_triangle=False, from_external_loading=False):
-    if use_triangle:
-        self.generate_triangulation_from_shapely_linestring(self.line)
-    super().__init__(cells=self.cells, points=self.cell_points,
-                             name=self.name,
-                            **self.kwargs)</code></pre>
-</details>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="BlenderPy.sending_data.Mesh" href="sending_data.html#BlenderPy.sending_data.Mesh">Mesh</a></b></code>:
@@ -1769,24 +2107,59 @@ kwargs: Object properties</p></div>
 <span>(</span><span>points=[], holes=[])</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class representing a 2D Polygon</p>
+<h2 id="parameters">Parameters</h2>
+<p>points: a list of 2D points representing the exterior of the Polygon
+holes: a list of lists of 2D points. Each list represents a hole</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Polygon():
+    &#39;&#39;&#39; 
+    Class representing a 2D Polygon
+    &#39;&#39;&#39;
     
     def __init__(self, points=[], holes=[]):
+        &#39;&#39;&#39;
+        Parameters:
+            points: a list of 2D points representing the exterior of the Polygon
+            holes: a list of lists of 2D points. Each list represents a hole
+        &#39;&#39;&#39;
         self.points=points
         self.holes=holes
     
     def to_shapely(self):
+        &#39;&#39;&#39;convert to shapely.geometry.Polygon
+        
+        Parameters:
+            None
+            
+        Returns:
+            the shapely.geometry.Polygon representing this Polygon
+        &#39;&#39;&#39;
         return geometry.Polygon(self.points, holes=self.holes)
     
     def from_shapely(self, poly):
-        self.points, self.holes=self.polygon_to_points(poly)
+        &#39;&#39;&#39;Load a shapely.geometry.Polygon
+        
+        Parameters:
+            poly: the shapely.geometry.Polygon to load
+        
+        Returns:
+            None
+        &#39;&#39;&#39;
+        self.points, self.holes=self._polygon_to_points(poly)
     
     def subtract(self, other):
+        &#39;&#39;&#39;Performs a boolean subtraction between this Polygon and another
+        
+        Parameters:
+            other: a Polygon or a MultiPolygon to subtract
+        
+        Returns:
+            a Polygon or a MultiPolygon, resulting from the subtraction
+        &#39;&#39;&#39;
         if isinstance(other, Polygon) or isinstance(other, MultiPolygon):
             diff=self.to_shapely().difference(other.to_shapely())
         if isinstance(diff, geometry.multipolygon.MultiPolygon):
@@ -1802,6 +2175,14 @@ kwargs: Object properties</p></div>
             return self
     
     def intersect(self, other):
+        &#39;&#39;&#39;Performs a boolean intersection between this Polygon and another
+        
+        Parameters:
+            other: a Polygon or a MultiPolygon to subtract
+        
+        Returns:
+            a Polygon, resulting from the intersection
+        &#39;&#39;&#39;
         if isinstance(other, Polygon):
             inter=self.to_shapely().intersection(other.to_shapely())
             self.from_shapely(inter)
@@ -1812,23 +2193,39 @@ kwargs: Object properties</p></div>
             self.from_shapely(inter)
     
     def duplicate(self):
+        &#39;&#39;&#39;duplicate the Polygon
+        
+        Parameters:
+            None
+            
+        Return:
+            The duplicated Polygon
+        &#39;&#39;&#39;
         return Polygon(points=self.points.copy(),
                        holes=self.holes.copy())
         
-    def xy_to_points(self, line):
+    def _xy_to_points(self, line):
         xs, ys=(np.array(line.xy[0]),
                 np.array(line.xy[1]))
         return [[x,y] for x,y in zip(xs, ys)]
     
-    def polygon_to_points(self, polygon):
-        points_ext=self.xy_to_points(polygon.exterior)
+    def _polygon_to_points(self, polygon):
+        points_ext=self._xy_to_points(polygon.exterior)
         points_int=[]
         for i, interior in enumerate(polygon.interiors):
-            points_int.append(self.xy_to_points(interior))
+            points_int.append(self._xy_to_points(interior))
         return points_ext, points_int
 
     
     def translate(self, vect):
+        &#39;&#39;&#39;Translate the Polygon
+        
+        Parameters:
+            vect: a list or tuple representing the displacement in 2D
+        
+        Returns:
+            None
+        &#39;&#39;&#39;
         for i, p in enumerate(self.points):
             self.points[i]=[p[0]+vect[0],
                             p[1]+vect[1]]
@@ -1838,12 +2235,22 @@ kwargs: Object properties</p></div>
                                   p[1]+vect[1]]
     
     def mirror(self, point, ax):
+        &#39;&#39;&#39;Mirror the Polygon
+        
+        Parameters:
+            point, ax: see Mirror
+        
+        Returns:
+            self, after mirroring
+        &#39;&#39;&#39;
         mir=Mirror(point, ax)
         self.points=[[p.x, p.y] for p in mir.update(self.points)]
         return self
             
     @property
     def left(self):
+        &#39;&#39;&#39;The minimum x value of the Polygon
+        &#39;&#39;&#39;
         return np.min([p[0] for p in self.points])
     
     @left.setter
@@ -1853,6 +2260,8 @@ kwargs: Object properties</p></div>
     
     @property
     def right(self):
+        &#39;&#39;&#39;The maximum x value of the Polygon
+        &#39;&#39;&#39;
         return np.max([p[0] for p in self.points])
     
     @right.setter
@@ -1862,6 +2271,8 @@ kwargs: Object properties</p></div>
     
     @property
     def bottom(self):
+        &#39;&#39;&#39;The minimum y value of the Polygon
+        &#39;&#39;&#39;
         return np.min([p[1] for p in self.points])
     
     @bottom.setter
@@ -1871,6 +2282,8 @@ kwargs: Object properties</p></div>
     
     @property
     def top(self):
+        &#39;&#39;&#39;The maximum y value of the Polygon
+        &#39;&#39;&#39;
         return np.max([p[1] for p in self.points])
     
     @top.setter
@@ -1880,6 +2293,8 @@ kwargs: Object properties</p></div>
     
     @property
     def center(self):
+        &#39;&#39;&#39;The center of the Polygon
+        &#39;&#39;&#39;
         return [0.5*(self.left+self.right),
                 0.5*(self.bottom+self.top)]
         
@@ -1891,10 +2306,14 @@ kwargs: Object properties</p></div>
     
     @property
     def width(self):
+        &#39;&#39;&#39;The width (xmax-xmin) value of the Polygon
+        &#39;&#39;&#39;
         return self.right-self.left
     
     @property
     def height(self):
+        &#39;&#39;&#39;The height (ymax-ymin) value of the Polygon
+        &#39;&#39;&#39;
         return self.top-self.bottom</code></pre>
 </details>
 <h3>Subclasses</h3>
@@ -1908,86 +2327,100 @@ kwargs: Object properties</p></div>
 <dl>
 <dt id="BlenderPy.meshing.Polygon.bottom"><code class="name">var <span class="ident">bottom</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The minimum y value of the Polygon</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def bottom(self):
+    &#39;&#39;&#39;The minimum y value of the Polygon
+    &#39;&#39;&#39;
     return np.min([p[1] for p in self.points])</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.Polygon.center"><code class="name">var <span class="ident">center</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The center of the Polygon</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def center(self):
+    &#39;&#39;&#39;The center of the Polygon
+    &#39;&#39;&#39;
     return [0.5*(self.left+self.right),
             0.5*(self.bottom+self.top)]</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.Polygon.height"><code class="name">var <span class="ident">height</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The height (ymax-ymin) value of the Polygon</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def height(self):
+    &#39;&#39;&#39;The height (ymax-ymin) value of the Polygon
+    &#39;&#39;&#39;
     return self.top-self.bottom</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.Polygon.left"><code class="name">var <span class="ident">left</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The minimum x value of the Polygon</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def left(self):
+    &#39;&#39;&#39;The minimum x value of the Polygon
+    &#39;&#39;&#39;
     return np.min([p[0] for p in self.points])</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.Polygon.right"><code class="name">var <span class="ident">right</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The maximum x value of the Polygon</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def right(self):
+    &#39;&#39;&#39;The maximum x value of the Polygon
+    &#39;&#39;&#39;
     return np.max([p[0] for p in self.points])</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.Polygon.top"><code class="name">var <span class="ident">top</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The maximum y value of the Polygon</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def top(self):
+    &#39;&#39;&#39;The maximum y value of the Polygon
+    &#39;&#39;&#39;
     return np.max([p[1] for p in self.points])</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.Polygon.width"><code class="name">var <span class="ident">width</span></code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>The width (xmax-xmin) value of the Polygon</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@property
 def width(self):
+    &#39;&#39;&#39;The width (xmax-xmin) value of the Polygon
+    &#39;&#39;&#39;
     return self.right-self.left</code></pre>
 </details>
 </dd>
@@ -1998,12 +2431,24 @@ def width(self):
 <span>def <span class="ident">duplicate</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>duplicate the Polygon</p>
+<h2 id="parameters">Parameters</h2>
+<p>None</p>
+<h2 id="return">Return</h2>
+<p>The duplicated Polygon</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def duplicate(self):
+    &#39;&#39;&#39;duplicate the Polygon
+    
+    Parameters:
+        None
+        
+    Return:
+        The duplicated Polygon
+    &#39;&#39;&#39;
     return Polygon(points=self.points.copy(),
                    holes=self.holes.copy())</code></pre>
 </details>
@@ -2012,25 +2457,49 @@ def width(self):
 <span>def <span class="ident">from_shapely</span></span>(<span>self, poly)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Load a shapely.geometry.Polygon</p>
+<h2 id="parameters">Parameters</h2>
+<p>poly: the shapely.geometry.Polygon to load</p>
+<h2 id="returns">Returns</h2>
+<p>None</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def from_shapely(self, poly):
-    self.points, self.holes=self.polygon_to_points(poly)</code></pre>
+    &#39;&#39;&#39;Load a shapely.geometry.Polygon
+    
+    Parameters:
+        poly: the shapely.geometry.Polygon to load
+    
+    Returns:
+        None
+    &#39;&#39;&#39;
+    self.points, self.holes=self._polygon_to_points(poly)</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.Polygon.intersect"><code class="name flex">
 <span>def <span class="ident">intersect</span></span>(<span>self, other)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Performs a boolean intersection between this Polygon and another</p>
+<h2 id="parameters">Parameters</h2>
+<p>other: a Polygon or a MultiPolygon to subtract</p>
+<h2 id="returns">Returns</h2>
+<p>a Polygon, resulting from the intersection</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def intersect(self, other):
+    &#39;&#39;&#39;Performs a boolean intersection between this Polygon and another
+    
+    Parameters:
+        other: a Polygon or a MultiPolygon to subtract
+    
+    Returns:
+        a Polygon, resulting from the intersection
+    &#39;&#39;&#39;
     if isinstance(other, Polygon):
         inter=self.to_shapely().intersection(other.to_shapely())
         self.from_shapely(inter)
@@ -2045,44 +2514,51 @@ def width(self):
 <span>def <span class="ident">mirror</span></span>(<span>self, point, ax)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Mirror the Polygon</p>
+<h2 id="parameters">Parameters</h2>
+<p>point, ax: see Mirror</p>
+<h2 id="returns">Returns</h2>
+<p>self, after mirroring</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def mirror(self, point, ax):
+    &#39;&#39;&#39;Mirror the Polygon
+    
+    Parameters:
+        point, ax: see Mirror
+    
+    Returns:
+        self, after mirroring
+    &#39;&#39;&#39;
     mir=Mirror(point, ax)
     self.points=[[p.x, p.y] for p in mir.update(self.points)]
     return self</code></pre>
-</details>
-</dd>
-<dt id="BlenderPy.meshing.Polygon.polygon_to_points"><code class="name flex">
-<span>def <span class="ident">polygon_to_points</span></span>(<span>self, polygon)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def polygon_to_points(self, polygon):
-    points_ext=self.xy_to_points(polygon.exterior)
-    points_int=[]
-    for i, interior in enumerate(polygon.interiors):
-        points_int.append(self.xy_to_points(interior))
-    return points_ext, points_int</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.meshing.Polygon.subtract"><code class="name flex">
 <span>def <span class="ident">subtract</span></span>(<span>self, other)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Performs a boolean subtraction between this Polygon and another</p>
+<h2 id="parameters">Parameters</h2>
+<p>other: a Polygon or a MultiPolygon to subtract</p>
+<h2 id="returns">Returns</h2>
+<p>a Polygon or a MultiPolygon, resulting from the subtraction</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def subtract(self, other):
+    &#39;&#39;&#39;Performs a boolean subtraction between this Polygon and another
+    
+    Parameters:
+        other: a Polygon or a MultiPolygon to subtract
+    
+    Returns:
+        a Polygon or a MultiPolygon, resulting from the subtraction
+    &#39;&#39;&#39;
     if isinstance(other, Polygon) or isinstance(other, MultiPolygon):
         diff=self.to_shapely().difference(other.to_shapely())
     if isinstance(diff, geometry.multipolygon.MultiPolygon):
@@ -2102,12 +2578,24 @@ def width(self):
 <span>def <span class="ident">to_shapely</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>convert to shapely.geometry.Polygon</p>
+<h2 id="parameters">Parameters</h2>
+<p>None</p>
+<h2 id="returns">Returns</h2>
+<p>the shapely.geometry.Polygon representing this Polygon</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def to_shapely(self):
+    &#39;&#39;&#39;convert to shapely.geometry.Polygon
+    
+    Parameters:
+        None
+        
+    Returns:
+        the shapely.geometry.Polygon representing this Polygon
+    &#39;&#39;&#39;
     return geometry.Polygon(self.points, holes=self.holes)</code></pre>
 </details>
 </dd>
@@ -2115,12 +2603,24 @@ def width(self):
 <span>def <span class="ident">translate</span></span>(<span>self, vect)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Translate the Polygon</p>
+<h2 id="parameters">Parameters</h2>
+<p>vect: a list or tuple representing the displacement in 2D</p>
+<h2 id="returns">Returns</h2>
+<p>None</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def translate(self, vect):
+    &#39;&#39;&#39;Translate the Polygon
+    
+    Parameters:
+        vect: a list or tuple representing the displacement in 2D
+    
+    Returns:
+        None
+    &#39;&#39;&#39;
     for i, p in enumerate(self.points):
         self.points[i]=[p[0]+vect[0],
                         p[1]+vect[1]]
@@ -2130,21 +2630,6 @@ def width(self):
                               p[1]+vect[1]]</code></pre>
 </details>
 </dd>
-<dt id="BlenderPy.meshing.Polygon.xy_to_points"><code class="name flex">
-<span>def <span class="ident">xy_to_points</span></span>(<span>self, line)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def xy_to_points(self, line):
-    xs, ys=(np.array(line.xy[0]),
-            np.array(line.xy[1]))
-    return [[x,y] for x,y in zip(xs, ys)]</code></pre>
-</details>
-</dd>
 </dl>
 </dd>
 <dt id="BlenderPy.meshing.Rectangle"><code class="flex name class">
@@ -2152,14 +2637,23 @@ def width(self):
 <span>(</span><span>x0=0, y0=0, Lx=1, Ly=1)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>A Rectangle (2D)</p>
+<h2 id="parameters">Parameters</h2>
+<p>x0, y0: the center of the Rectangle
+Lx, Ly: the width and height of the Rectangle</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Rectangle(Polygon):
+    &#39;&#39;&#39;A Rectangle (2D)&#39;&#39;&#39;
     
     def __init__(self, x0=0, y0=0, Lx=1, Ly=1):
+        &#39;&#39;&#39;
+        Parameters:
+            x0, y0: the center of the Rectangle
+            Lx, Ly: the width and height of the Rectangle
+        &#39;&#39;&#39;
         points=[[x0-Lx/2, x0-Ly/2],
                 [x0-Lx/2, x0+Ly/2],
                 [x0+Lx/2, x0+Ly/2],
@@ -2170,21 +2664,62 @@ def width(self):
 <ul class="hlist">
 <li><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></li>
 </ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.meshing.Polygon.bottom" href="#BlenderPy.meshing.Polygon.bottom">bottom</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.center" href="#BlenderPy.meshing.Polygon.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.duplicate" href="#BlenderPy.meshing.Polygon.duplicate">duplicate</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.from_shapely" href="#BlenderPy.meshing.Polygon.from_shapely">from_shapely</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.height" href="#BlenderPy.meshing.Polygon.height">height</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.intersect" href="#BlenderPy.meshing.Polygon.intersect">intersect</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.left" href="#BlenderPy.meshing.Polygon.left">left</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.mirror" href="#BlenderPy.meshing.Polygon.mirror">mirror</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.right" href="#BlenderPy.meshing.Polygon.right">right</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.subtract" href="#BlenderPy.meshing.Polygon.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.to_shapely" href="#BlenderPy.meshing.Polygon.to_shapely">to_shapely</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.top" href="#BlenderPy.meshing.Polygon.top">top</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.translate" href="#BlenderPy.meshing.Polygon.translate">translate</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.width" href="#BlenderPy.meshing.Polygon.width">width</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="BlenderPy.meshing.RoundCorner"><code class="flex name class">
 <span>class <span class="ident">RoundCorner</span></span>
 <span>(</span><span>x0=0, y0=0, radius=1.0, N=32, theta_1=0, theta_2=1.5707963267948966, width=0.1)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Rounded path, i.e. AnularSector define by R&gt;radius-width/2 and
+R&lt;radius+width/2</p>
+<h2 id="parameters">Parameters</h2>
+<p>x0, y0: the center of the circle
+radius: the radius of the circle
+N: the number of points
+theta_1: the starting angle of the sector
+theta_2: the end angle of the sector
+width: the width of the path</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class RoundCorner(Polygon):
+    &#39;&#39;&#39;Rounded path, i.e. AnularSector define by R&gt;radius-width/2 and 
+    R&lt;radius+width/2
+    &#39;&#39;&#39;
     
     def __init__(self, x0=0, y0=0, radius=1., N=32,
                  theta_1=0, theta_2=np.pi/2, width=0.1):
+        &#39;&#39;&#39;
+        Parameters:
+            x0, y0: the center of the circle
+            radius: the radius of the circle
+            N: the number of points
+            theta_1: the starting angle of the sector
+            theta_2: the end angle of the sector
+            width: the width of the path
+        &#39;&#39;&#39;
         points=[[x0+(radius+width/2)*np.cos(theta),
                  y0+(radius+width/2)*np.sin(theta)] 
                  for theta in np.linspace(theta_1, theta_2, N)]
@@ -2197,30 +2732,55 @@ def width(self):
 <ul class="hlist">
 <li><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></li>
 </ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></b></code>:
+<ul class="hlist">
+<li><code><a title="BlenderPy.meshing.Polygon.bottom" href="#BlenderPy.meshing.Polygon.bottom">bottom</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.center" href="#BlenderPy.meshing.Polygon.center">center</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.duplicate" href="#BlenderPy.meshing.Polygon.duplicate">duplicate</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.from_shapely" href="#BlenderPy.meshing.Polygon.from_shapely">from_shapely</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.height" href="#BlenderPy.meshing.Polygon.height">height</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.intersect" href="#BlenderPy.meshing.Polygon.intersect">intersect</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.left" href="#BlenderPy.meshing.Polygon.left">left</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.mirror" href="#BlenderPy.meshing.Polygon.mirror">mirror</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.right" href="#BlenderPy.meshing.Polygon.right">right</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.subtract" href="#BlenderPy.meshing.Polygon.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.to_shapely" href="#BlenderPy.meshing.Polygon.to_shapely">to_shapely</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.top" href="#BlenderPy.meshing.Polygon.top">top</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.translate" href="#BlenderPy.meshing.Polygon.translate">translate</a></code></li>
+<li><code><a title="BlenderPy.meshing.Polygon.width" href="#BlenderPy.meshing.Polygon.width">width</a></code></li>
+</ul>
+</li>
+</ul>
 </dd>
 <dt id="BlenderPy.meshing.Sphere"><code class="flex name class">
 <span>class <span class="ident">Sphere</span></span>
 <span>(</span><span>radius=1, refine=0, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing a Mesh</p>
-<p>Parameters:
-cells: a list of cells consisting in a list of integer point
-indices
-points: a list of points consisting in a list
-of the x, y and z coordinates
-thickness: the thickness of the desired extruded 2D shape. Can be
-None, which means no extrusion
-name: the desired name for the Mesh
-subdivide: the number of division in the extrusion
-kwargs: Object properties</p></div>
+<div class="desc"><p>Class representing an isocahedron sphere in 3D</p>
+<h2 id="parameters">Parameters</h2>
+<p>radius: radius of the sphere
+refine: number of desired refinements from a 20 faces
+sphere. Each refinement divide each face in four equilateral
+triangles</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Sphere(Mesh):
+    &#39;&#39;&#39;Class representing an isocahedron sphere in 3D&#39;&#39;&#39;
     
     def __init__(self, radius=1, refine=0, **kwargs):
+        &#39;&#39;&#39;
+        Parameters:
+            radius: radius of the sphere
+            refine: number of desired refinements from a 20 faces
+            sphere. Each refinement divide each face in four equilateral
+            triangles
+        &#39;&#39;&#39;
+        
         self.radius=radius
         self.initialize(self.radius)
         for i in range(refine):
@@ -2266,7 +2826,7 @@ kwargs: Object properties</p></div>
                     [  8,  9,  6 ],
                     [  8,  6,  2 ]]
     
-    def refine(self):
+    def _refine(self):
         edges=dict()
         for i, f in enumerate(self.cells):
             for pair in [[0,1], [1,2], [0,2]]:
@@ -2290,7 +2850,7 @@ kwargs: Object properties</p></div>
         middle_points=dict()
         i=len(self.points)
         for v in edges.keys():
-            self.points.append(self.get_middle_point(self.points[v[0]],
+            self.points.append(self._get_middle_point(self.points[v[0]],
                                                      self.points[v[1]]))
             middle_points[v]=i
             i+=1
@@ -2317,7 +2877,7 @@ kwargs: Object properties</p></div>
                               middle_points[edges[2]]])
         self.cells=new_faces
 
-    def get_middle_point(self, p1, p2):
+    def _get_middle_point(self, p1, p2):
         middle=0.5*(Vector(p1)+Vector(p2))
         middle=middle.normalize()*self.radius
         return [middle.x, middle.y, middle.z]</code></pre>
@@ -2330,21 +2890,6 @@ kwargs: Object properties</p></div>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="BlenderPy.meshing.Sphere.get_middle_point"><code class="name flex">
-<span>def <span class="ident">get_middle_point</span></span>(<span>self, p1, p2)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def get_middle_point(self, p1, p2):
-    middle=0.5*(Vector(p1)+Vector(p2))
-    middle=middle.normalize()*self.radius
-    return [middle.x, middle.y, middle.z]</code></pre>
-</details>
-</dd>
 <dt id="BlenderPy.meshing.Sphere.initialize"><code class="name flex">
 <span>def <span class="ident">initialize</span></span>(<span>self, radius)</span>
 </code></dt>
@@ -2390,67 +2935,6 @@ kwargs: Object properties</p></div>
                 [  4,  9,  8 ],
                 [  8,  9,  6 ],
                 [  8,  6,  2 ]]</code></pre>
-</details>
-</dd>
-<dt id="BlenderPy.meshing.Sphere.refine"><code class="name flex">
-<span>def <span class="ident">refine</span></span>(<span>self)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def refine(self):
-    edges=dict()
-    for i, f in enumerate(self.cells):
-        for pair in [[0,1], [1,2], [0,2]]:
-            ordered=(np.min([f[pair[0]], f[pair[1]]]),
-                     np.max([f[pair[0]], f[pair[1]]]))
-            if not ordered in edges.keys():
-                edges[ordered]=[i]
-            else:
-                edges[ordered].append(i)
-
-    faces_to_edges=dict()
-    for i, f in enumerate(self.cells):
-        for pair in [[0,1], [1,2], [0,2]]:
-            ordered=(np.min([f[pair[0]], f[pair[1]]]),
-                     np.max([f[pair[0]], f[pair[1]]]))
-            if not i in faces_to_edges.keys():
-                faces_to_edges[i]=[ordered]
-            else:
-                faces_to_edges[i].append(ordered)   
-    
-    middle_points=dict()
-    i=len(self.points)
-    for v in edges.keys():
-        self.points.append(self.get_middle_point(self.points[v[0]],
-                                                 self.points[v[1]]))
-        middle_points[v]=i
-        i+=1
-        
-    new_faces=[]
-    for f, edges in faces_to_edges.items():
-        if edges[0][0] in edges[1]:
-            new_faces.append([edges[0][0], middle_points[edges[0]],
-                              middle_points[edges[1]]])
-            new_faces.append([edges[0][1], middle_points[edges[0]],
-                              middle_points[edges[2]]])
-        else:
-            new_faces.append([edges[0][0], middle_points[edges[0]],
-                              middle_points[edges[2]]])
-            new_faces.append([edges[0][1], middle_points[edges[0]],
-                              middle_points[edges[1]]])
-        for point in self.cells[f]:
-            if point not in edges[0]:
-                break
-        new_faces.append([point, middle_points[edges[1]],
-                          middle_points[edges[2]]])
-        new_faces.append([middle_points[edges[0]],
-                          middle_points[edges[1]],
-                          middle_points[edges[2]]])
-    self.cells=new_faces</code></pre>
 </details>
 </dd>
 </dl>
@@ -2505,18 +2989,21 @@ kwargs: Object properties</p></div>
 <span>class <span class="ident">Transformation</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>class representing a Transformation for a Polygon. Only one method,
+which is update</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Transformation:
-    
+    &#39;&#39;&#39;class representing a Transformation for a Polygon. Only one method,
+    which is update&#39;&#39;&#39;
     def __init__(self):
         pass
     
     @abstractmethod
     def update(self, points):
+        &#39;&#39;&#39;apply the transformation&#39;&#39;&#39;
         pass</code></pre>
 </details>
 <h3>Subclasses</h3>
@@ -2529,13 +3016,14 @@ kwargs: Object properties</p></div>
 <span>def <span class="ident">update</span></span>(<span>self, points)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>apply the transformation</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@abstractmethod
 def update(self, points):
+    &#39;&#39;&#39;apply the transformation&#39;&#39;&#39;
     pass</code></pre>
 </details>
 </dd>
@@ -2545,15 +3033,28 @@ def update(self, points):
 <span>class <span class="ident">Triangle</span></span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>A Class for having the 2D triangulation, with the triangle library
+method isolated</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Triangle:
+    &#39;&#39;&#39;A Class for having the 2D triangulation, with the triangle library
+    method isolated
+    &#39;&#39;&#39;
     
     @staticmethod
     def triangulate(points, holes):
+        &#39;&#39;&#39;static method for trangulating a group of 2D points with holes.
+        
+        Parameters:
+            points: a list of 2D vertices representing the exterior of the 
+            Polygon
+            holes: a list of lists of 2D vertices representing for each list 
+            a hole in the Polygon
+        &#39;&#39;&#39;
+        
         _to_triangle_vertices=points
         _to_triangle_segments=[(len(points)-1,0)]+\
                         [(i,i+1) for i in range(len(points)-1)]
@@ -2583,13 +3084,27 @@ def update(self, points):
 <span>def <span class="ident">triangulate</span></span>(<span>points, holes)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>static method for trangulating a group of 2D points with holes.</p>
+<h2 id="parameters">Parameters</h2>
+<p>points: a list of 2D vertices representing the exterior of the
+Polygon
+holes: a list of lists of 2D vertices representing for each list
+a hole in the Polygon</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@staticmethod
 def triangulate(points, holes):
+    &#39;&#39;&#39;static method for trangulating a group of 2D points with holes.
+    
+    Parameters:
+        points: a list of 2D vertices representing the exterior of the 
+        Polygon
+        holes: a list of lists of 2D vertices representing for each list 
+        a hole in the Polygon
+    &#39;&#39;&#39;
+    
     _to_triangle_vertices=points
     _to_triangle_segments=[(len(points)-1,0)]+\
                     [(i,i+1) for i in range(len(points)-1)]
@@ -2621,7 +3136,11 @@ def triangulate(points, holes):
 <span>(</span><span>*args)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class representing a Vector, of 2 or 3 dimensions.</p></div>
+<div class="desc"><p>Class representing a Vector, of 2 or 3 dimensions.</p>
+<h2 id="parameters">Parameters</h2>
+<p>args: the coordinates. Can be x,y,z, or x,y or (x,y), or [x,y],
+or np.array([x,y]), or x+i*y, or (x1,y1), (x2,y2),
+which in that last case would give a vector (x2-x1, y2-y1)</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2630,6 +3149,12 @@ def triangulate(points, holes):
     &#39;&#39;&#39;Class representing a Vector, of 2 or 3 dimensions.&#39;&#39;&#39;
     
     def __init__(self, *args):
+        &#39;&#39;&#39;
+        Parameters:
+            args: the coordinates. Can be x,y,z, or x,y or (x,y), or [x,y],
+            or np.array([x,y]), or x+i*y, or (x1,y1), (x2,y2), 
+            which in that last case would give a vector (x2-x1, y2-y1)
+        &#39;&#39;&#39;
         if len(args)==2:
             self.z=0.
             if isinstance(args[0], tuple) and isinstance(args[1], tuple):
@@ -2661,21 +3186,26 @@ def triangulate(points, holes):
                 self.z=args[2]
     
     def norm(self):
+        &#39;&#39;&#39;return the norm of the vector&#39;&#39;&#39;
         return np.sqrt(self.x**2+self.y**2+self.z**2)
     
     def normalize(self):
+        &#39;&#39;&#39;return this vector divided by his norm&#39;&#39;&#39;
         return self/self.norm()
     
     def compl(self):
+        &#39;&#39;&#39;return x+i*y&#39;&#39;&#39;
         return self.x+1j*self.y
     
     def cross3(self, other):
+        &#39;&#39;&#39;return the 3d cross product of this Vector with the Vector other&#39;&#39;&#39;
         assert isinstance(other, Vector)
         return Vector(self.y*other.z-self.z*other.y,
                       self.z*other.x-self.x*other.z,
                       self.x*other.y-self.y*other.x)
     
     def cross(self, other):
+        &#39;&#39;&#39;return the 2d cross product of this Vector with the Vector other&#39;&#39;&#39;
         assert isinstance(other, Vector)
         return self.x*other.y-self.y*other.x
     
@@ -2713,12 +3243,13 @@ def triangulate(points, holes):
 <span>def <span class="ident">compl</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>return x+i*y</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def compl(self):
+    &#39;&#39;&#39;return x+i*y&#39;&#39;&#39;
     return self.x+1j*self.y</code></pre>
 </details>
 </dd>
@@ -2726,12 +3257,13 @@ def triangulate(points, holes):
 <span>def <span class="ident">cross</span></span>(<span>self, other)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>return the 2d cross product of this Vector with the Vector other</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def cross(self, other):
+    &#39;&#39;&#39;return the 2d cross product of this Vector with the Vector other&#39;&#39;&#39;
     assert isinstance(other, Vector)
     return self.x*other.y-self.y*other.x</code></pre>
 </details>
@@ -2740,12 +3272,13 @@ def triangulate(points, holes):
 <span>def <span class="ident">cross3</span></span>(<span>self, other)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>return the 3d cross product of this Vector with the Vector other</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def cross3(self, other):
+    &#39;&#39;&#39;return the 3d cross product of this Vector with the Vector other&#39;&#39;&#39;
     assert isinstance(other, Vector)
     return Vector(self.y*other.z-self.z*other.y,
                   self.z*other.x-self.x*other.z,
@@ -2756,12 +3289,13 @@ def triangulate(points, holes):
 <span>def <span class="ident">norm</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>return the norm of the vector</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def norm(self):
+    &#39;&#39;&#39;return the norm of the vector&#39;&#39;&#39;
     return np.sqrt(self.x**2+self.y**2+self.z**2)</code></pre>
 </details>
 </dd>
@@ -2769,12 +3303,13 @@ def triangulate(points, holes):
 <span>def <span class="ident">normalize</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>return this vector divided by his norm</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def normalize(self):
+    &#39;&#39;&#39;return this vector divided by his norm&#39;&#39;&#39;
     return self/self.norm()</code></pre>
 </details>
 </dd>
@@ -2835,20 +3370,12 @@ def triangulate(points, holes):
 </li>
 <li>
 <h4><code><a title="BlenderPy.meshing.Path" href="#BlenderPy.meshing.Path">Path</a></code></h4>
-<ul class="">
-<li><code><a title="BlenderPy.meshing.Path.generate" href="#BlenderPy.meshing.Path.generate">generate</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="BlenderPy.meshing.Plane" href="#BlenderPy.meshing.Plane">Plane</a></code></h4>
 </li>
 <li>
 <h4><code><a title="BlenderPy.meshing.PlaneGeom" href="#BlenderPy.meshing.PlaneGeom">PlaneGeom</a></code></h4>
-<ul class="">
-<li><code><a title="BlenderPy.meshing.PlaneGeom.format_line" href="#BlenderPy.meshing.PlaneGeom.format_line">format_line</a></code></li>
-<li><code><a title="BlenderPy.meshing.PlaneGeom.generate_triangulation_from_shapely_linestring" href="#BlenderPy.meshing.PlaneGeom.generate_triangulation_from_shapely_linestring">generate_triangulation_from_shapely_linestring</a></code></li>
-<li><code><a title="BlenderPy.meshing.PlaneGeom.send_to_blender" href="#BlenderPy.meshing.PlaneGeom.send_to_blender">send_to_blender</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="BlenderPy.meshing.Polygon" href="#BlenderPy.meshing.Polygon">Polygon</a></code></h4>
@@ -2861,14 +3388,12 @@ def triangulate(points, holes):
 <li><code><a title="BlenderPy.meshing.Polygon.intersect" href="#BlenderPy.meshing.Polygon.intersect">intersect</a></code></li>
 <li><code><a title="BlenderPy.meshing.Polygon.left" href="#BlenderPy.meshing.Polygon.left">left</a></code></li>
 <li><code><a title="BlenderPy.meshing.Polygon.mirror" href="#BlenderPy.meshing.Polygon.mirror">mirror</a></code></li>
-<li><code><a title="BlenderPy.meshing.Polygon.polygon_to_points" href="#BlenderPy.meshing.Polygon.polygon_to_points">polygon_to_points</a></code></li>
 <li><code><a title="BlenderPy.meshing.Polygon.right" href="#BlenderPy.meshing.Polygon.right">right</a></code></li>
 <li><code><a title="BlenderPy.meshing.Polygon.subtract" href="#BlenderPy.meshing.Polygon.subtract">subtract</a></code></li>
 <li><code><a title="BlenderPy.meshing.Polygon.to_shapely" href="#BlenderPy.meshing.Polygon.to_shapely">to_shapely</a></code></li>
 <li><code><a title="BlenderPy.meshing.Polygon.top" href="#BlenderPy.meshing.Polygon.top">top</a></code></li>
 <li><code><a title="BlenderPy.meshing.Polygon.translate" href="#BlenderPy.meshing.Polygon.translate">translate</a></code></li>
 <li><code><a title="BlenderPy.meshing.Polygon.width" href="#BlenderPy.meshing.Polygon.width">width</a></code></li>
-<li><code><a title="BlenderPy.meshing.Polygon.xy_to_points" href="#BlenderPy.meshing.Polygon.xy_to_points">xy_to_points</a></code></li>
 </ul>
 </li>
 <li>
@@ -2880,9 +3405,7 @@ def triangulate(points, holes):
 <li>
 <h4><code><a title="BlenderPy.meshing.Sphere" href="#BlenderPy.meshing.Sphere">Sphere</a></code></h4>
 <ul class="">
-<li><code><a title="BlenderPy.meshing.Sphere.get_middle_point" href="#BlenderPy.meshing.Sphere.get_middle_point">get_middle_point</a></code></li>
 <li><code><a title="BlenderPy.meshing.Sphere.initialize" href="#BlenderPy.meshing.Sphere.initialize">initialize</a></code></li>
-<li><code><a title="BlenderPy.meshing.Sphere.refine" href="#BlenderPy.meshing.Sphere.refine">refine</a></code></li>
 </ul>
 </li>
 <li>
