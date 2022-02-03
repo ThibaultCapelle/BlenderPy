@@ -605,7 +605,7 @@ class PlaneGeom(Mesh, GeometricEntity):
                     self.cells=[[i for i, p in enumerate(polygon.points)]]
                     self._send_to_blender(from_external_loading=True)
                 else:
-                    self.cell_points, self.cells = Triangle.triangulat(polygon.points,
+                    self.cell_points, self.cells = Triangle.triangulate(polygon.points,
                                                                  polygon.holes)
                     self._send_to_blender(from_external_loading=True)
             elif isinstance(polygon, MultiPolygon):
