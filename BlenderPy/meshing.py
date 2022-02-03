@@ -807,7 +807,7 @@ class Sphere(Mesh):
         self.radius=radius
         self.initialize(self.radius)
         for i in range(refine):
-            self.refine()
+            self._refine()
         super().__init__(cells=self.cells, 
                          points=self.points,
                          **kwargs)

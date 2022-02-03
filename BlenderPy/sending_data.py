@@ -757,7 +757,7 @@ class Material:
             for node in subtree:
                 if isinstance(node, dict):
                     node['parent']=tree['shader']
-                self.distribute_shaders(node, 
+                self._distribute_shaders(node, 
                                         special_keys=special_keys)
             for i, node in enumerate(subtree):
                 if isinstance(node, dict):
