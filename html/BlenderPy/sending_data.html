@@ -605,6 +605,7 @@ class Modifier:
         kwargs[&#39;modifier_type&#39;]=modifier_type
         kwargs[&#39;parent_name&#39;]=parent
         self.parent_name=parent
+        self.modifier_type=modifier_type
         self.name=Communication.ask(&#39;create_modifier&#39;, **kwargs)
         self._properties=PropertyDict(self.name, self.parent_name,
                                       func=&#39;modifier_property&#39;)
@@ -616,11 +617,11 @@ class Modifier:
     
     def apply(self):
         &#39;&#39;&#39;apply the modifier&#39;&#39;&#39;
-        if self.properties[&#39;type&#39;]==&#39;BOOLEAN&#39;:
-            kwargs=dict({&#39;name&#39;:self.name,
-                         &#39;name_obj&#39;:self.parent_name})
-            time.sleep(0.1)
-            Communication.ask(&#39;apply_modifier&#39;, **kwargs)
+        kwargs=dict({&#39;name&#39;:self.name,
+                     &#39;name_obj&#39;:self.parent_name,
+                     &#39;modifier_type&#39;: self.modifier_type})
+        time.sleep(0.1)
+        Communication.ask(&#39;apply_modifier&#39;, **kwargs)
         
     
 class Material:
@@ -682,27 +683,27 @@ class Material:
     
     @property
     def _xmax_shadernode_dimensions(self):
-        return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,0])
+        return np.max(np.array(list(self._shadernodes_dimensions.values()))[:,0])
     
     @property
     def _ymax_shadernode_dimensions(self):
-        return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,1])
+        return np.max(np.array(list(self._shadernodes_dimensions.values()))[:,1])
     
     @property
     def _xmin_shadernode_dimensions(self):
-        return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,0])
+        return np.min(np.array(list(self._shadernodes_dimensions.values()))[:,0])
     
     @property
     def _ymin_shadernode_dimensions(self):
-        return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,1])
+        return np.min(np.array(list(self._shadernodes_dimensions.values()))[:,1])
     
     @property
     def _height_shadernode_dimensions(self):
-        return self.ymax_shadernode_dimensions-self.ymin_shadernode_dimensions
+        return self._ymax_shadernode_dimensions-self._ymin_shadernode_dimensions
     
     @property
     def _width_shadernode_dimensions(self):
-        return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions
+        return self._xmax_shadernode_dimensions-self._xmin_shadernode_dimensions
     
     def add_shader(self, shader_type):
         &#39;&#39;&#39;Add a ShaderNode to this Material.
@@ -1229,6 +1230,19 @@ class Object:
                                    modifier_type=modifier_type,
                                    **kwargs)
     
+    def surface_subdivisions(self, levels=1):
+        &#39;&#39;&#39;subdivide the Mesh to increase its smoothness
+        
+        Parameters:
+            levels: number of iterations for the subdivision
+        &#39;&#39;&#39;
+        
+        modifier=self.assign_modifier(&#39;SUBSURF&#39;)
+        modifier.properties[&#39;levels&#39;]=levels
+        time.sleep(0.5)
+        modifier.apply()
+        time.sleep(0.5)
+    
     def subtract(self, target):
         &#39;&#39;&#39;Assign and apply a Boolean Modifier for subtraction between
         self and another Object.
@@ -1471,7 +1485,7 @@ class Light(Object):
     
     @color.setter
     def color(self, val):
-        self.light_properties[&#39;color&#39;]=Material.convert_color(val)
+        self.light_properties[&#39;color&#39;]=Material.convert_color(val)[:3]
     
     @property
     def radius(self):
@@ -1754,6 +1768,7 @@ def cam_properties(self):
 <li><code><a title="BlenderPy.sending_data.Object.rotation" href="#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.scale" href="#BlenderPy.sending_data.Object.scale">scale</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.subtract" href="#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.surface_subdivisions" href="#BlenderPy.sending_data.Object.surface_subdivisions">surface_subdivisions</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.to_dict" href="#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.x" href="#BlenderPy.sending_data.Object.x">x</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.y" href="#BlenderPy.sending_data.Object.y">y</a></code></li>
@@ -2200,6 +2215,7 @@ def points(self):
 <li><code><a title="BlenderPy.sending_data.Object.rotation" href="#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.scale" href="#BlenderPy.sending_data.Object.scale">scale</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.subtract" href="#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.surface_subdivisions" href="#BlenderPy.sending_data.Object.surface_subdivisions">surface_subdivisions</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.to_dict" href="#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.x" href="#BlenderPy.sending_data.Object.x">x</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.y" href="#BlenderPy.sending_data.Object.y">y</a></code></li>
@@ -2774,7 +2790,7 @@ this light</p></div>
     
     @color.setter
     def color(self, val):
-        self.light_properties[&#39;color&#39;]=Material.convert_color(val)
+        self.light_properties[&#39;color&#39;]=Material.convert_color(val)[:3]
     
     @property
     def radius(self):
@@ -2876,6 +2892,7 @@ def radius(self):
 <li><code><a title="BlenderPy.sending_data.Object.rotation" href="#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.scale" href="#BlenderPy.sending_data.Object.scale">scale</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.subtract" href="#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.surface_subdivisions" href="#BlenderPy.sending_data.Object.surface_subdivisions">surface_subdivisions</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.to_dict" href="#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.x" href="#BlenderPy.sending_data.Object.x">x</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.y" href="#BlenderPy.sending_data.Object.y">y</a></code></li>
@@ -2958,27 +2975,27 @@ def radius(self):
     
     @property
     def _xmax_shadernode_dimensions(self):
-        return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,0])
+        return np.max(np.array(list(self._shadernodes_dimensions.values()))[:,0])
     
     @property
     def _ymax_shadernode_dimensions(self):
-        return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,1])
+        return np.max(np.array(list(self._shadernodes_dimensions.values()))[:,1])
     
     @property
     def _xmin_shadernode_dimensions(self):
-        return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,0])
+        return np.min(np.array(list(self._shadernodes_dimensions.values()))[:,0])
     
     @property
     def _ymin_shadernode_dimensions(self):
-        return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,1])
+        return np.min(np.array(list(self._shadernodes_dimensions.values()))[:,1])
     
     @property
     def _height_shadernode_dimensions(self):
-        return self.ymax_shadernode_dimensions-self.ymin_shadernode_dimensions
+        return self._ymax_shadernode_dimensions-self._ymin_shadernode_dimensions
     
     @property
     def _width_shadernode_dimensions(self):
-        return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions
+        return self._xmax_shadernode_dimensions-self._xmin_shadernode_dimensions
     
     def add_shader(self, shader_type):
         &#39;&#39;&#39;Add a ShaderNode to this Material.
@@ -3932,6 +3949,7 @@ points.</p></div>
 <li><code><a title="BlenderPy.sending_data.Object.rotation" href="#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.scale" href="#BlenderPy.sending_data.Object.scale">scale</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.subtract" href="#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.surface_subdivisions" href="#BlenderPy.sending_data.Object.surface_subdivisions">surface_subdivisions</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.to_dict" href="#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.x" href="#BlenderPy.sending_data.Object.x">x</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.y" href="#BlenderPy.sending_data.Object.y">y</a></code></li>
@@ -4092,6 +4110,7 @@ see surface_noise for the Material class</p></div>
         kwargs[&#39;modifier_type&#39;]=modifier_type
         kwargs[&#39;parent_name&#39;]=parent
         self.parent_name=parent
+        self.modifier_type=modifier_type
         self.name=Communication.ask(&#39;create_modifier&#39;, **kwargs)
         self._properties=PropertyDict(self.name, self.parent_name,
                                       func=&#39;modifier_property&#39;)
@@ -4103,11 +4122,11 @@ see surface_noise for the Material class</p></div>
     
     def apply(self):
         &#39;&#39;&#39;apply the modifier&#39;&#39;&#39;
-        if self.properties[&#39;type&#39;]==&#39;BOOLEAN&#39;:
-            kwargs=dict({&#39;name&#39;:self.name,
-                         &#39;name_obj&#39;:self.parent_name})
-            time.sleep(0.1)
-            Communication.ask(&#39;apply_modifier&#39;, **kwargs)</code></pre>
+        kwargs=dict({&#39;name&#39;:self.name,
+                     &#39;name_obj&#39;:self.parent_name,
+                     &#39;modifier_type&#39;: self.modifier_type})
+        time.sleep(0.1)
+        Communication.ask(&#39;apply_modifier&#39;, **kwargs)</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
@@ -4138,11 +4157,11 @@ def properties(self):
 </summary>
 <pre><code class="python">def apply(self):
     &#39;&#39;&#39;apply the modifier&#39;&#39;&#39;
-    if self.properties[&#39;type&#39;]==&#39;BOOLEAN&#39;:
-        kwargs=dict({&#39;name&#39;:self.name,
-                     &#39;name_obj&#39;:self.parent_name})
-        time.sleep(0.1)
-        Communication.ask(&#39;apply_modifier&#39;, **kwargs)</code></pre>
+    kwargs=dict({&#39;name&#39;:self.name,
+                 &#39;name_obj&#39;:self.parent_name,
+                 &#39;modifier_type&#39;: self.modifier_type})
+    time.sleep(0.1)
+    Communication.ask(&#39;apply_modifier&#39;, **kwargs)</code></pre>
 </details>
 </dd>
 </dl>
@@ -4307,6 +4326,19 @@ set to the object</p>
         return Modifier(parent=self.name_obj,
                                    modifier_type=modifier_type,
                                    **kwargs)
+    
+    def surface_subdivisions(self, levels=1):
+        &#39;&#39;&#39;subdivide the Mesh to increase its smoothness
+        
+        Parameters:
+            levels: number of iterations for the subdivision
+        &#39;&#39;&#39;
+        
+        modifier=self.assign_modifier(&#39;SUBSURF&#39;)
+        modifier.properties[&#39;levels&#39;]=levels
+        time.sleep(0.5)
+        modifier.apply()
+        time.sleep(0.5)
     
     def subtract(self, target):
         &#39;&#39;&#39;Assign and apply a Boolean Modifier for subtraction between
@@ -4831,6 +4863,31 @@ self and another Object.</p>
     boolean=self.assign_modifier(modifier_type=&#39;BOOLEAN&#39;)
     boolean.properties[&#39;object&#39;]=target
     boolean.apply()</code></pre>
+</details>
+</dd>
+<dt id="BlenderPy.sending_data.Object.surface_subdivisions"><code class="name flex">
+<span>def <span class="ident">surface_subdivisions</span></span>(<span>self, levels=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>subdivide the Mesh to increase its smoothness</p>
+<h2 id="parameters">Parameters</h2>
+<p>levels: number of iterations for the subdivision</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def surface_subdivisions(self, levels=1):
+    &#39;&#39;&#39;subdivide the Mesh to increase its smoothness
+    
+    Parameters:
+        levels: number of iterations for the subdivision
+    &#39;&#39;&#39;
+    
+    modifier=self.assign_modifier(&#39;SUBSURF&#39;)
+    modifier.properties[&#39;levels&#39;]=levels
+    time.sleep(0.5)
+    modifier.apply()
+    time.sleep(0.5)</code></pre>
 </details>
 </dd>
 <dt id="BlenderPy.sending_data.Object.to_dict"><code class="name flex">
@@ -5682,7 +5739,7 @@ of the expression</p></div>
 </li>
 <li>
 <h4><code><a title="BlenderPy.sending_data.Object" href="#BlenderPy.sending_data.Object">Object</a></code></h4>
-<ul class="two-column">
+<ul class="">
 <li><code><a title="BlenderPy.sending_data.Object.assign_constraint" href="#BlenderPy.sending_data.Object.assign_constraint">assign_constraint</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.assign_material" href="#BlenderPy.sending_data.Object.assign_material">assign_material</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.assign_modifier" href="#BlenderPy.sending_data.Object.assign_modifier">assign_modifier</a></code></li>
@@ -5699,6 +5756,7 @@ of the expression</p></div>
 <li><code><a title="BlenderPy.sending_data.Object.rotation" href="#BlenderPy.sending_data.Object.rotation">rotation</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.scale" href="#BlenderPy.sending_data.Object.scale">scale</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.subtract" href="#BlenderPy.sending_data.Object.subtract">subtract</a></code></li>
+<li><code><a title="BlenderPy.sending_data.Object.surface_subdivisions" href="#BlenderPy.sending_data.Object.surface_subdivisions">surface_subdivisions</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.to_dict" href="#BlenderPy.sending_data.Object.to_dict">to_dict</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.x" href="#BlenderPy.sending_data.Object.x">x</a></code></li>
 <li><code><a title="BlenderPy.sending_data.Object.y" href="#BlenderPy.sending_data.Object.y">y</a></code></li>

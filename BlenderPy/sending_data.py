@@ -575,6 +575,7 @@ class Modifier:
         kwargs['modifier_type']=modifier_type
         kwargs['parent_name']=parent
         self.parent_name=parent
+        self.modifier_type=modifier_type
         self.name=Communication.ask('create_modifier', **kwargs)
         self._properties=PropertyDict(self.name, self.parent_name,
                                       func='modifier_property')
@@ -586,11 +587,11 @@ class Modifier:
     
     def apply(self):
         '''apply the modifier'''
-        if self.properties['type']=='BOOLEAN':
-            kwargs=dict({'name':self.name,
-                         'name_obj':self.parent_name})
-            time.sleep(0.1)
-            Communication.ask('apply_modifier', **kwargs)
+        kwargs=dict({'name':self.name,
+                     'name_obj':self.parent_name,
+                     'modifier_type': self.modifier_type})
+        time.sleep(0.1)
+        Communication.ask('apply_modifier', **kwargs)
         
     
 class Material:
@@ -652,27 +653,27 @@ class Material:
     
     @property
     def _xmax_shadernode_dimensions(self):
-        return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,0])
+        return np.max(np.array(list(self._shadernodes_dimensions.values()))[:,0])
     
     @property
     def _ymax_shadernode_dimensions(self):
-        return np.max(np.array(list(self.shadernodes_dimensions.values()))[:,1])
+        return np.max(np.array(list(self._shadernodes_dimensions.values()))[:,1])
     
     @property
     def _xmin_shadernode_dimensions(self):
-        return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,0])
+        return np.min(np.array(list(self._shadernodes_dimensions.values()))[:,0])
     
     @property
     def _ymin_shadernode_dimensions(self):
-        return np.min(np.array(list(self.shadernodes_dimensions.values()))[:,1])
+        return np.min(np.array(list(self._shadernodes_dimensions.values()))[:,1])
     
     @property
     def _height_shadernode_dimensions(self):
-        return self.ymax_shadernode_dimensions-self.ymin_shadernode_dimensions
+        return self._ymax_shadernode_dimensions-self._ymin_shadernode_dimensions
     
     @property
     def _width_shadernode_dimensions(self):
-        return self.xmax_shadernode_dimensions-self.xmin_shadernode_dimensions
+        return self._xmax_shadernode_dimensions-self._xmin_shadernode_dimensions
     
     def add_shader(self, shader_type):
         '''Add a ShaderNode to this Material.
@@ -1199,6 +1200,19 @@ class Object:
                                    modifier_type=modifier_type,
                                    **kwargs)
     
+    def surface_subdivisions(self, levels=1):
+        '''subdivide the Mesh to increase its smoothness
+        
+        Parameters:
+            levels: number of iterations for the subdivision
+        '''
+        
+        modifier=self.assign_modifier('SUBSURF')
+        modifier.properties['levels']=levels
+        time.sleep(0.5)
+        modifier.apply()
+        time.sleep(0.5)
+    
     def subtract(self, target):
         '''Assign and apply a Boolean Modifier for subtraction between
         self and another Object.
@@ -1441,7 +1455,7 @@ class Light(Object):
     
     @color.setter
     def color(self, val):
-        self.light_properties['color']=Material.convert_color(val)
+        self.light_properties['color']=Material.convert_color(val)[:3]
     
     @property
     def radius(self):
