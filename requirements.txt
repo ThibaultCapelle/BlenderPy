@@ -1,4 +1,3 @@
-shapely
-klayout
-numpy
-triangle
+Shapely==1.6.4.post1
+klayout==0.27.7
+triangle==20200424
