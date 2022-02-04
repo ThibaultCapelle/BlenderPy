@@ -1,4 +1,3 @@
 *.pyc
-*.zip
 *.vtk
 BlenderPy.egg-info/*
