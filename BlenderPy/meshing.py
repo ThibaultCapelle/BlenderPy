@@ -191,10 +191,10 @@ class MultiPolygon():
         '''
         
         self.polygons=[]
-        for p in poly.geoms:
+        for p in list(poly):
             polygon=Polygon()
             polygon.from_shapely(p)
-            self.polygon.append(polygon)
+            self.polygons.append(polygon)
     
     @property
     def left(self):
@@ -316,11 +316,7 @@ class Polygon():
             diff=self.to_shapely().difference(other.to_shapely())
         if isinstance(diff, geometry.multipolygon.MultiPolygon):
             res=MultiPolygon()
-            polys=list(diff)
-            for poly in polys:
-                p=Polygon()
-                p.from_shapely(poly)
-                res.polygons.append(p)
+            res.from_shapely(diff)
             return res
         elif isinstance(diff, geometry.polygon.Polygon):
             self.from_shapely(diff)

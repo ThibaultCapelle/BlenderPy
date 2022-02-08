@@ -1213,7 +1213,7 @@ class Object:
         modifier.apply()
         time.sleep(0.5)
     
-    def subtract(self, target):
+    def subtract(self, target, apply=True):
         '''Assign and apply a Boolean Modifier for subtraction between
         self and another Object.
         
@@ -1225,7 +1225,8 @@ class Object:
         '''
         boolean=self.assign_modifier(modifier_type='BOOLEAN')
         boolean.properties['object']=target
-        boolean.apply()
+        if apply:
+            boolean.apply()
     
     def copy_location(self, target=None):
         '''Apply a COPY_LOCATION constraint to the object
@@ -1276,6 +1277,17 @@ class Object:
     @scale.setter
     def scale(self, val):
         self.properties['scale']=val
+    
+    @property
+    def hide(self):
+        '''Scale of the Object. Expect and returns a list of 3 scalings,
+        for x,y and z respectively
+        '''
+        return self.properties['hide_viewport']
+    
+    @hide.setter
+    def hide(self, val):
+        self.properties['hide_viewport']=val
     
     @property
     def location(self):
