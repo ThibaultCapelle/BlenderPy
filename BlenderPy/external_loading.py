@@ -322,7 +322,7 @@ class GDSLoader:
                  xmax=None, ymin=None,
                  ymax=None, layer=None, scaling=1e-3,
                  cell_name='TOP', centering=[0.,0.,0.],
-                 merged=True, **kwargs):
+                 merged=True, N_per_circle=30, **kwargs):
         '''
         Parameters:
             filename: path to the GDS
@@ -339,31 +339,52 @@ class GDSLoader:
         self.filename=filename
         self.data=self.read()
         
-        reading_cell, reading_el=False, False
+        
+        reading_cell, reading_bound, reading_path=False, False, False
         polygons=[]
         dbu=None
         for datatype, data in self.data:
             if datatype=='UNITS':
-                dbu=data[0]
+                dbu=data[1]/data[0]
+                print(data)
             if datatype=='STRNAME' and data.decode()==cell_name:
                 reading_cell=True
             elif datatype=='ENDSTR':
                 reading_cell=False
             elif datatype=='BOUNDARY':
-                reading_el=True
+                reading_bound=True
+            elif datatype=='PATH':
+                reading_path=True
             elif datatype=='ENDEL':
-                reading_el=False
-            if reading_cell and reading_el:
+                reading_bound=False
+                reading_path=False
+            if reading_cell and reading_bound:
                 if datatype=='LAYER' and data[0]!=layer:
-                    reading_el=False
+                    reading_bound=False
                 elif datatype=='XY':
                     data_np=np.array(data)
+                    print(data_np*dbu)
+                    xs, ys = data_np[::2]*dbu, data_np[1::2]*dbu
+                    if (np.min(xs)>xmin and np.max(xs)<xmax and
+                        np.min(ys)>ymin and np.max(ys)<ymax):
+                        polygons.append(list(zip(xs, ys)))
+            if reading_cell and reading_path:
+                if datatype=='LAYER' and data[0]!=layer:
+                    reading_path=False
+                elif datatype=='WIDTH':
+                    width=data[0]/2
+                elif datatype=='XY':
+                    data_list=[]
+                    for theta in np.linspace(0,2*np.pi,N_per_circle):
+                        data_list.append(data[0]+width*np.cos(theta))
+                        data_list.append(data[1]+width*np.sin(theta))
+                    data_np=np.array(data_list)
                     xs, ys = data_np[::2]*dbu, data_np[1::2]*dbu
                     if (np.min(xs)>xmin and np.max(xs)<xmax and
                         np.min(ys)>ymin and np.max(ys)<ymax):
                         polygons.append(list(zip(xs, ys)))
         self.polygons=MultiPolygon([Polygon(points=p,
-                                    holes=[]) for p in polygons])         
+                                    holes=[]) for p in polygons])        
         if centering is None:
             dx, dy, dz=0.,0.,0.
         else:
@@ -448,7 +469,6 @@ class GDSLoader:
 if __name__=='__main__':
     from BlenderPy.meshing import Box
     from BlenderPy.sending_data import delete_all
-    import numpy as np
     delete_all()
     loader=GDSLoader(filename=r'C:\Users\Thibault\Documents\postdoc\Masks\trenches.gds',
                      layer=3,xmin=-1000, xmax=3500,
@@ -457,5 +477,9 @@ if __name__=='__main__':
     trenches=loader.load()
     trenches.scale=[1e-3, 1e-3, 1e-3]
     
+    cyls=GDSLoader(filename=r'C:\Users\Thibault\Documents\postdoc\Blender_scripting_workshop\test.gds', layer=4,
+                 cell_name='TOP', xmin=0, xmax=25, merged=False,
+                 ymin=-6, ymax=6, thickness=2e-3, centering=None)
+    load=cyls.load()
 
         
