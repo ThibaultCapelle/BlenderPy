@@ -6,6 +6,7 @@ Created on Wed Oct 20 10:50:42 2021
 """
 
 from shapely import geometry
+from shapely.ops import unary_union
 import triangle
 import numpy as np
 from BlenderPy.sending_data import (Mesh, GeometricEntity)
@@ -195,6 +196,17 @@ class MultiPolygon():
             polygon=Polygon()
             polygon.from_shapely(p)
             self.polygons.append(polygon)
+    
+    def merge(self):
+        polygons=[p.to_shapely() for p in self.polygons]
+        merged=unary_union(polygons)
+        if isinstance(merged, geometry.MultiPolygon):
+            res=MultiPolygon()
+            res.from_shapely(merged)
+        elif isinstance(merged, geometry.Polygon):
+            res=Polygon()
+            res.from_shapely(merged)
+        return res
     
     @property
     def left(self):
@@ -394,6 +406,15 @@ class Polygon():
         mir=Mirror(point, ax)
         self.points=[[p.x, p.y] for p in mir.update(self.points)]
         return self
+    
+    def _generate_polygon_from_shapely_linestring(self, poly):
+        x_s, y_s=poly.exterior.xy
+        self.points=[[x, y] for x,y in zip(x_s, y_s)]
+        if (hasattr(poly, 'interiors') or  hasattr(poly, 'interiors')
+        and len(poly.interiors)==0):
+            for interior in poly.interiors:
+                x_s, y_s=interior.xy
+                self.holes.append([[x, y] for x,y in zip(x_s, y_s)])
             
     @property
     def left(self):
@@ -675,7 +696,7 @@ class PlaneGeom(Mesh, GeometricEntity):
                                        [("triangle", t['triangles'].tolist())])
     
 
-class Path(PlaneGeom):
+class Path(Polygon):
     '''extruded Path'''
     
     def __init__(self, points, width, cap_style='flat',
@@ -689,11 +710,8 @@ class Path(PlaneGeom):
             manual for Path
             kwargs: PlaneGeom keyword arguments
         '''
-        
-        super().__init__(**kwargs)
+        super().__init__()
         self.resolution=resolution
-        self.width=width
-        self.points=points
         self.cap_style_dict=dict({'flat':2,
                                   'round':1,
                                   'square':3})
@@ -702,15 +720,12 @@ class Path(PlaneGeom):
                                   'bevel':3})
         self.cap_style=self.cap_style_dict[cap_style]
         self.join_style=self.join_style_dict[join_style]
-        self._generate()
-        self._send_to_blender(use_triangle=True)
-    
-    def _generate(self):
-        self.line=geometry.LineString(self.points).buffer(self.width/2.,
+        self.line=geometry.LineString(points).buffer(width/2.,
                                 cap_style=self.cap_style,
                                 join_style=self.join_style,
                                 resolution=self.resolution)
-        self.generate_polygon_from_shapely_linestring(self.line)
+        self._generate_polygon_from_shapely_linestring(self.line)
+
         
 class Arrow(PlaneGeom):
     '''Extruded Arrow'''

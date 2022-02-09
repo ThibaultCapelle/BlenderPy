@@ -5,12 +5,12 @@ Created on Sun Dec 26 15:54:46 2021
 @author: Thibault
 """
 
-import pya
 import math
 import numpy as np
 import struct
 from BlenderPy.meshing import PlaneGeom, Polygon, MultiPolygon
 from BlenderPy.sending_data import Mesh
+from shapely.geometry import LineString, Point
 
 class VTULoader:
     '''Load a VTU file, tipycally exported from COMSOL'''
@@ -345,13 +345,13 @@ class GDSLoader:
         dbu=None
         for datatype, data in self.data:
             if datatype=='UNITS':
-                dbu=data[1]/data[0]
+                dbu=data[0]
                 print(data)
             if datatype=='STRNAME' and data.decode()==cell_name:
                 reading_cell=True
             elif datatype=='ENDSTR':
                 reading_cell=False
-            elif datatype=='BOUNDARY':
+            elif datatype=='BOUNDARY' or datatype=='BOX':
                 reading_bound=True
             elif datatype=='PATH':
                 reading_path=True
@@ -363,8 +363,8 @@ class GDSLoader:
                     reading_bound=False
                 elif datatype=='XY':
                     data_np=np.array(data)
-                    print(data_np*dbu)
                     xs, ys = data_np[::2]*dbu, data_np[1::2]*dbu
+                    print(np.min(xs))
                     if (np.min(xs)>xmin and np.max(xs)<xmax and
                         np.min(ys)>ymin and np.max(ys)<ymax):
                         polygons.append(list(zip(xs, ys)))
@@ -373,78 +373,41 @@ class GDSLoader:
                     reading_path=False
                 elif datatype=='WIDTH':
                     width=data[0]/2
+                elif datatype=='PATHTYPE':
+                    pathtype=data[0]
+                    pathtype_conv=dict({0:2,1:1,2:3})
+                    pathtype=pathtype_conv[pathtype]
                 elif datatype=='XY':
-                    data_list=[]
-                    for theta in np.linspace(0,2*np.pi,N_per_circle):
-                        data_list.append(data[0]+width*np.cos(theta))
-                        data_list.append(data[1]+width*np.sin(theta))
-                    data_np=np.array(data_list)
-                    xs, ys = data_np[::2]*dbu, data_np[1::2]*dbu
+                    points=[[x,y] for x,y in zip(data[::2], data[1::2])]
+                    if len(points)>1:
+                        line=LineString(points).buffer(width,
+                                    cap_style=pathtype)
+                        xs, ys=line.exterior.xy
+                        xs, ys = np.array(xs)*dbu, np.array(ys)*dbu
+                    elif len(points)==1 and pathtype!=1:
+                        line=Point(points[0][0], points[0][1]).buffer(width,
+                                        cap_style=pathtype)
+                        xs, ys=line.exterior.xy
+                        xs, ys = np.array(xs)*dbu, np.array(ys)*dbu
+                    else:
+                        xs = np.array([data[0]+width*np.cos(theta) for theta
+                              in np.linspace(0, 2*np.pi, N_per_circle)])*dbu
+                        ys = np.array([data[1]+width*np.sin(theta) for theta
+                              in np.linspace(0, 2*np.pi, N_per_circle)])*dbu
                     if (np.min(xs)>xmin and np.max(xs)<xmax and
                         np.min(ys)>ymin and np.max(ys)<ymax):
                         polygons.append(list(zip(xs, ys)))
         self.polygons=MultiPolygon([Polygon(points=p,
-                                    holes=[]) for p in polygons])        
+                                    holes=[]) for p in polygons])   
+        if merged:
+            self.polygons=self.polygons.merge()
         if centering is None:
             dx, dy, dz=0.,0.,0.
         else:
             dx, dy, dz=(centering[0]-self.polygons.center[0],
                         centering[1]-self.polygons.center[1],
                         centering[2])
-        self.polygons.translate([dx, dy, dz])    
-        '''
-        self.centering=centering
-        self.layout=pya.Layout()
-        self.layout.read(self.filename)
-        dbu=self.layout.dbu
-        cell = self.layout.cell(self.layout.cell_by_name(cell_name))
-        for i, layer_info in enumerate(self.layout.layer_infos()):
-            if layer_info.layer==layer:
-                layer_ind=i
-                break
-        shapes=cell.shapes(layer_ind)
-        shapes_inside_box=[]
-        for s in shapes.each():
-            bbox=s.bbox()
-            if (bbox.left>xmin/dbu and bbox.right<xmax/dbu
-                and bbox.top<ymax/dbu and bbox.bottom>ymin/dbu):
-                shapes_inside_box.append(s)
-        reg=pya.Region([b.polygon for b in shapes_inside_box if
-                        not b.is_text()])
-        x_center, y_center=(0.5*(reg.bbox().left+reg.bbox().right),
-                            0.5*(reg.bbox().top+reg.bbox().bottom))
-        
-        if centering is None:
-            dx, dy, dz=0.,0.,0.
-        else:
-            dx, dy, dz=(centering[0]/dbu-x_center,
-                        centering[1]/dbu-y_center,
-                        centering[2]/dbu)
-        res=[]
-        if merged:
-            iterator=reg.each_merged()
-        else:
-            iterator=reg.each()
-        for s in iterator:
-            shape=[[],[]]
-            for p in s.each_point_hull():
-                shape[0].append([(p.x+dx)*dbu*self.scaling,
-                                 (p.y+dy)*dbu*self.scaling,
-                                 dz*dbu])
-            holes=[[] for i in range(s.holes())]
-            for i in range(s.holes()):
-                for p in s.each_point_hole(i):
-                    holes[i].append([p.x*dbu*self.scaling,
-                                     p.y*dbu*self.scaling,
-                                     0.])
-            shape[1]=holes
-            res.append(shape)
-        if len(res)==1:
-            self.polygons=Polygon(points=res[0][0],
-                                  holes=res[0][1])
-        else:
-            self.polygons=MultiPolygon([Polygon(points=p[0],
-                                       holes=p[1]) for p in res])'''   
+        self.polygons.translate([dx, dy, dz])     
         self.kwargs=kwargs
     
     def read(self):
@@ -479,7 +442,7 @@ if __name__=='__main__':
     
     cyls=GDSLoader(filename=r'C:\Users\Thibault\Documents\postdoc\Blender_scripting_workshop\test.gds', layer=4,
                  cell_name='TOP', xmin=0, xmax=25, merged=False,
-                 ymin=-6, ymax=6, thickness=2e-3, centering=None)
+                 ymin=-6, ymax=6, thickness=2e-3)
     load=cyls.load()
 
         
