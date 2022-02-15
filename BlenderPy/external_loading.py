@@ -321,8 +321,8 @@ class GDSLoader:
     def __init__(self, filename=None, xmin=None, 
                  xmax=None, ymin=None,
                  ymax=None, layer=None, scaling=1e-3,
-                 cell_name='TOP', centering=[0.,0.,0.],
-                 merged=True, N_per_circle=30, **kwargs):
+                 cell_name='TOP', centering=None,
+                 merged=False, N_per_circle=30, **kwargs):
         '''
         Parameters:
             filename: path to the GDS
@@ -347,8 +347,11 @@ class GDSLoader:
             if datatype=='UNITS':
                 dbu=data[0]
                 print(data)
-            if datatype=='STRNAME' and data.decode()==cell_name:
-                reading_cell=True
+            if datatype=='STRNAME':
+                if hasattr(data, 'decode') and data.decode()==cell_name:
+                    reading_cell=True
+                elif data==cell_name:
+                    reading_cell=True
             elif datatype=='ENDSTR':
                 reading_cell=False
             elif datatype=='BOUNDARY' or datatype=='BOX':
