@@ -791,16 +791,6 @@ class Box(PlaneGeom):
         self.cells=[[0, 1, 2, 3]]
         super().__init__(name=name, thickness=Lz, **kwargs)
         self._send_to_blender(from_external_loading=True)
-
-class Cube(Box):
-    
-    def __init__(self, name='Cube', L=1, **kwargs):
-        '''
-        Parameters:
-            name: desired name
-            L: size of the Cube
-        '''
-        super().__init__(name=name, Lx=L, Ly=L, Lz=L, **kwargs)
         
 class Plane(Box):
     
