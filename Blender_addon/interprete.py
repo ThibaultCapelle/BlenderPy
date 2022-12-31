@@ -36,6 +36,16 @@ class Interprete:
             time.sleep(0.01)
         self.server.send_answer(connection, "DONE")
     
+    
+    def subdivide_edges(self, connection=None, name_msh=None, N_cuts=100):
+        mesh=bpy.data.meshes[name_msh]
+        bm = bmesh.new()
+        bm.from_mesh(mesh)
+        bmesh.ops.subdivide_edges(bm, edges=bm.edges, cuts=N_cuts)
+        bm.to_mesh(mesh) 
+        bm.free()
+
+    
     def remove_object(self, connection=None, name_obj=None, **kwargs):
         bpy.data.objects.remove(bpy.data.objects[name_obj], do_unlink=True)
     

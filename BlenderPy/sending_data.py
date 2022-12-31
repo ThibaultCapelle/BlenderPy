@@ -1562,6 +1562,18 @@ class Mesh(Object, GeometricEntity):
                            planes_co=plane_points,
                            planes_no=plane_normals)
     
+    def global_cut_mesh(self, N_cuts=100):
+        '''
+        Cut all the edges in N_cuts parts regularly spaced. Much more
+        efficient than cut_mesh
+        
+        Parameters:
+            N_cuts: the number of cuts to perform
+        '''
+        Communication.send('subdivide_edges',
+                           name_msh=self.name_msh,
+                           N_cuts=N_cuts)
+    
     def smooth(self):
         '''
         Use the smooth option
