@@ -552,10 +552,10 @@ class Rectangle(Polygon):
             x0, y0: the center of the Rectangle
             Lx, Ly: the width and height of the Rectangle
         '''
-        points=[[x0-Lx/2, x0-Ly/2],
-                [x0-Lx/2, x0+Ly/2],
-                [x0+Lx/2, x0+Ly/2],
-                [x0+Lx/2, x0-Ly/2]]
+        points=[[x0-Lx/2, y0-Ly/2],
+                [x0-Lx/2, y0+Ly/2],
+                [x0+Lx/2, y0+Ly/2],
+                [x0+Lx/2, y0-Ly/2]]
         super().__init__(points=points)
 
 class Triangle:

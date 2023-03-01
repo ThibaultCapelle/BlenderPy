@@ -8,7 +8,7 @@ Created on Sun Dec 26 15:54:46 2021
 import math
 import numpy as np
 import struct
-from BlenderPy.meshing import PlaneGeom, Polygon, MultiPolygon
+from BlenderPy.meshing import PlaneGeom, Polygon, MultiPolygon, Rectangle
 from BlenderPy.sending_data import Mesh
 from shapely.geometry import LineString, Point
 
@@ -322,7 +322,8 @@ class GDSLoader:
                  xmax=None, ymin=None,
                  ymax=None, layer=None, scaling=1e-3,
                  cell_name='TOP', centering=None,
-                 merged=False, N_per_circle=30, **kwargs):
+                 merged=False, N_per_circle=30,
+                 negative=False, **kwargs):
         '''
         Parameters:
             filename: path to the GDS
@@ -367,9 +368,8 @@ class GDSLoader:
                 elif datatype=='XY':
                     data_np=np.array(data)
                     xs, ys = data_np[::2]*dbu, data_np[1::2]*dbu
-                    print(np.min(xs))
                     if (np.min(xs)>xmin and np.max(xs)<xmax and
-                        np.min(ys)>ymin and np.max(ys)<ymax):
+                            np.min(ys)>ymin and np.max(ys)<ymax):
                         polygons.append(list(zip(xs, ys)))
             if reading_cell and reading_path:
                 if datatype=='LAYER' and data[0]!=layer:
@@ -398,10 +398,20 @@ class GDSLoader:
                         ys = np.array([data[1]+width*np.sin(theta) for theta
                               in np.linspace(0, 2*np.pi, N_per_circle)])*dbu
                     if (np.min(xs)>xmin and np.max(xs)<xmax and
-                        np.min(ys)>ymin and np.max(ys)<ymax):
+                            np.min(ys)>ymin and np.max(ys)<ymax):
                         polygons.append(list(zip(xs, ys)))
-        self.polygons=MultiPolygon([Polygon(points=p,
-                                    holes=[]) for p in polygons])   
+        if not negative:
+            self.polygons=MultiPolygon([Polygon(points=p,
+                                        holes=[]) for p in polygons])   
+        else:
+            self.polygons=Rectangle(x0=0.5*(xmin+xmax),
+                                           y0=0.5*(ymin+ymax),
+                                    Lx=xmax-xmin,
+                                    Ly=ymax-ymin)
+            
+            
+            self.polygons=self.polygons.subtract(MultiPolygon([Polygon(points=p,
+                                        holes=[]) for p in polygons]))
         if merged:
             self.polygons=self.polygons.merge()
         if centering is None:
@@ -410,7 +420,8 @@ class GDSLoader:
             dx, dy, dz=(centering[0]-self.polygons.center[0],
                         centering[1]-self.polygons.center[1],
                         centering[2])
-        self.polygons.translate([dx, dy, dz])     
+        self.polygons.translate([dx, dy, dz])  
+        kwargs['scale']=self.scaling
         self.kwargs=kwargs
     
     def read(self):
