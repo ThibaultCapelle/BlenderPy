@@ -422,6 +422,7 @@ class GDSLoader:
                         centering[2])
         self.polygons.translate([dx, dy, dz])  
         kwargs['scale']=self.scaling
+        kwargs['z_position']=dz
         self.kwargs=kwargs
     
     def read(self):

@@ -601,7 +601,7 @@ class PlaneGeom(Mesh, GeometricEntity):
     '''class representing an eventually extruded 2D geometry'''
     
     def __init__(self, polygon=None, name='', 
-                 refine=None, **kwargs):
+                 refine=None, z_position=0, **kwargs):
         '''
         Parameters:
             polygon: eventually a Polygon to send to Blender
@@ -615,10 +615,11 @@ class PlaneGeom(Mesh, GeometricEntity):
         self._refine=refine
         self.name=name
         self.kwargs=kwargs
+        self.z_position=z_position
         if polygon is not None:
             if isinstance(polygon, Polygon):
                 if len(polygon.holes)==0:
-                    self.cell_points=[[p[0], p[1], 0.] for p in polygon.points]
+                    self.cell_points=[[p[0], p[1], self.z_position] for p in polygon.points]
                     self.cells=[[i for i, p in enumerate(polygon.points)]]
                     self._send_to_blender(from_external_loading=True)
                 else:
@@ -632,7 +633,7 @@ class PlaneGeom(Mesh, GeometricEntity):
                     if len(poly.holes)==0:
                         self.cell_points+=[[p[0],
                                             p[1],
-                                            0.] for p in poly.points]
+                                            self.z_position] for p in poly.points]
                         self.cells.append([offset+i for
                                            i,p in enumerate(poly.points)])
                     else:
@@ -776,7 +777,7 @@ class Cylinder(PlaneGeom):
         super().__init__(name=name, thickness=height, **kwargs)
         self._send_to_blender(from_external_loading=True)
 
-class Box(PlaneGeom):
+class Box(Mesh):
     
     def __init__(self, name='Box', Lx=1, Ly=1, Lz=1, **kwargs):
         '''
@@ -784,13 +785,40 @@ class Box(PlaneGeom):
             name: desired name
             Lx, Ly, Lz: x, y, and z extension of the box
         '''
-        self.cell_points=[[-Lx/2, -Ly/2, -Lz/2],
+        self.points=[[-Lx/2, -Ly/2, -Lz/2],
                           [-Lx/2, Ly/2, -Lz/2],
                           [Lx/2, Ly/2, -Lz/2],
-                          [Lx/2, -Ly/2, -Lz/2]]
-        self.cells=[[0, 1, 2, 3]]
-        super().__init__(name=name, thickness=Lz, **kwargs)
-        self._send_to_blender(from_external_loading=True)
+                          [Lx/2, -Ly/2, -Lz/2],
+                          [-Lx/2, -Ly/2, Lz/2],
+                          [-Lx/2, Ly/2, Lz/2],
+                          [Lx/2, Ly/2, Lz/2],
+                          [Lx/2, -Ly/2, Lz/2]]
+        self.cells=[[0, 1, 2, 3],
+                    [0,1,5,4],
+                    [4,5,6,7],
+                    [2,3,7,6],
+                    [1,2,5,6],
+                    [0,3,7,4]]
+        super().__init__(cells=self.cells,
+                         points=self.points,
+                         **kwargs)
+        
+class Disk(Mesh):
+    
+    def __init__(self, name='Disk', radius=1, N_points=32, **kwargs):
+        '''
+        Parameters:
+            name: desired name
+            radius: desired radius
+            N_points: numer of points
+        '''
+        self.points=[[radius*np.cos(theta), radius*np.sin(theta), 0.] 
+                        for theta in np.linspace(0, 2*np.pi, N_points)]
+        self.cells=[[i for i in range(N_points)]]
+        super().__init__(cells=self.cells,
+                         points=self.points,
+                         name=name,
+                         **kwargs)
 
 class Cube(Box):
     
@@ -802,16 +830,35 @@ class Cube(Box):
         '''
         super().__init__(name=name, Lx=L, Ly=L, Lz=L, **kwargs)
         
-class Plane(Box):
+class Plane(PlaneGeom):
     
-    def __init__(self, name='plane', size=10, **kwargs):
+    def __init__(self, name='plane', size=10,
+                 Lx=None, Ly=None, **kwargs):
         '''
         Parameters:
             name: desired name
             Lx, Ly: x and y extension of the plane
         '''
-        super().__init__(Lx=size, Ly=size, Lz=0.,
-                         name=name, **kwargs)
+        if Lx is None:
+            Lx=size
+            Ly=size
+        self.cell_points=[[-Lx/2, -Ly/2, 0.],
+                          [-Lx/2, Ly/2, 0.],
+                          [Lx/2, Ly/2, 0.],
+                          [Lx/2, -Ly/2, 0.]]
+        self.cells=[[0, 1, 2, 3]]
+        super().__init__(name=name, **kwargs)
+        self._send_to_blender(from_external_loading=True)
+        
+class Pyramid(Mesh):
+    
+    def __init__(self, Lx=1, Ly=1, Lz=1, **kwargs):
+        self.points=[[-Lx/2,-Ly/2,0],[-Lx/2,Ly/2,0],[Lx/2,Ly/2,0],
+                     [Lx/2,-Ly/2,0],[0,0,Lz]]
+        self.cells=[[0,1,2,3],[0,1,4],[1,2,4],[2,3,4],[3,0,4]]
+        super().__init__(cells=self.cells,
+                         points=self.points,
+                         **kwargs)
         
 class Sphere(Mesh):
     '''Class representing an isocahedron sphere in 3D'''

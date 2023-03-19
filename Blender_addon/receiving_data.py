@@ -10,6 +10,7 @@ import threading
 import json
 from .interprete import Interprete
 from mathutils import Vector, Matrix, Euler
+import time
 
 HOST = '127.0.0.1'
 PORT = 20000
@@ -21,6 +22,10 @@ class Server:
         self.port=port
         self.connected=False
         self.interprete = Interprete(self)
+    
+    def __del__(self):
+        self.disconnect()
+        time.sleep(0.5)
         
     def connect(self):
         if not self.connected:
