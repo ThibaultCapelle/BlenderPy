@@ -357,9 +357,8 @@ class Interprete:
     def update_material(self, connection=None, **kwargs):
         material=bpy.data.materials.get(kwargs['name'])
         node=material.node_tree.nodes["Principled BSDF"]
-        node.inputs[0].default_value=kwargs['color']
-        node.inputs[15].default_value=kwargs['transmission']
-        node.inputs[16].default_value=kwargs['use_screen_refraction']
+        node.inputs['Base Color'].default_value=kwargs['color']
+        node.inputs['Transmission Weight'].default_value=kwargs['transmission']
         node.inputs['Alpha'].default_value=kwargs['alpha']
         material.blend_method = kwargs['blend_method']
         material.shadow_method = kwargs['blend_method_shadow']
