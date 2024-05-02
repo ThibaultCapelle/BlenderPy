@@ -335,12 +335,21 @@ class GDSLoader:
             merged: if True, merge all the found polygons before sending
             to Blender. If False, send those polygons separately
             kwargs: keyword arguments for PlaneGeom'''
-            
+        
+        if isinstance(scaling, float):
+            scaling=[scaling, scaling, 1]
         self.scaling=scaling
         self.filename=filename
         self.data=self.read()
         
-        
+        if xmin is None:
+            xmin=-np.inf
+        if xmax is None:
+            xmax=np.inf
+        if ymin is None:
+            ymin=-np.inf
+        if ymax is None:
+            ymax=np.inf
         reading_cell, reading_bound, reading_path=False, False, False
         polygons=[]
         dbu=None
