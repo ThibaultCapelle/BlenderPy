@@ -90,6 +90,21 @@ class Communication:
             return json.loads(data)['content']
     
     @staticmethod
+    def format_dict(kwargs):
+        res=dict()
+        for k,v in kwargs.items():
+            if isinstance(v, np.ndarray):
+                if len(v.shape)==2:
+                    res[k]=[list(i) for i in v]
+                elif len(v.shape)==1:
+                    res[k]=[i for i in v]
+                else:
+                    raise NotImplementedError('are you sending 3d matrices ?')
+            else:
+                res[k]=v
+        return res
+    
+    @staticmethod
     def parse(message, **kwargs):
         '''Format a message to be sent to the Blender Server.
         
@@ -101,7 +116,7 @@ class Communication:
         '''
         res=dict()
         res['command']=message
-        res['kwargs']=kwargs
+        res['kwargs']=Communication.format_dict(kwargs)
         msg=json.dumps(res)
         return msg
     

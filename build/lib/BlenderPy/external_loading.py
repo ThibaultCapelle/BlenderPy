@@ -8,7 +8,7 @@ Created on Sun Dec 26 15:54:46 2021
 import math
 import numpy as np
 import struct
-from BlenderPy.meshing import PlaneGeom, Polygon, MultiPolygon
+from BlenderPy.meshing import PlaneGeom, Polygon, MultiPolygon, Rectangle
 from BlenderPy.sending_data import Mesh
 from shapely.geometry import LineString, Point
 
@@ -321,8 +321,9 @@ class GDSLoader:
     def __init__(self, filename=None, xmin=None, 
                  xmax=None, ymin=None,
                  ymax=None, layer=None, scaling=1e-3,
-                 cell_name='TOP', centering=None,
-                 merged=False, N_per_circle=30, **kwargs):
+                 cell_name=None, centering=None,
+                 merged=False, N_per_circle=30,
+                 negative=False, **kwargs):
         '''
         Parameters:
             filename: path to the GDS
@@ -334,24 +335,36 @@ class GDSLoader:
             merged: if True, merge all the found polygons before sending
             to Blender. If False, send those polygons separately
             kwargs: keyword arguments for PlaneGeom'''
-            
+        
+        if isinstance(scaling, float):
+            scaling=[scaling, scaling, 1]
         self.scaling=scaling
         self.filename=filename
         self.data=self.read()
         
-        
+        if xmin is None:
+            xmin=-np.inf
+        if xmax is None:
+            xmax=np.inf
+        if ymin is None:
+            ymin=-np.inf
+        if ymax is None:
+            ymax=np.inf
         reading_cell, reading_bound, reading_path=False, False, False
         polygons=[]
         dbu=None
+        if cell_name is None:
+            reading_cell=True
         for datatype, data in self.data:
             if datatype=='UNITS':
                 dbu=data[0]
                 print(data)
             if datatype=='STRNAME':
-                if hasattr(data, 'decode') and data.decode()==cell_name:
-                    reading_cell=True
-                elif data==cell_name:
-                    reading_cell=True
+                if cell_name is not None:
+                    if hasattr(data, 'decode') and data.decode()==cell_name:
+                        reading_cell=True
+                    elif data==cell_name:
+                        reading_cell=True
             elif datatype=='ENDSTR':
                 reading_cell=False
             elif datatype=='BOUNDARY' or datatype=='BOX':
@@ -367,9 +380,8 @@ class GDSLoader:
                 elif datatype=='XY':
                     data_np=np.array(data)
                     xs, ys = data_np[::2]*dbu, data_np[1::2]*dbu
-                    print(np.min(xs))
                     if (np.min(xs)>xmin and np.max(xs)<xmax and
-                        np.min(ys)>ymin and np.max(ys)<ymax):
+                            np.min(ys)>ymin and np.max(ys)<ymax):
                         polygons.append(list(zip(xs, ys)))
             if reading_cell and reading_path:
                 if datatype=='LAYER' and data[0]!=layer:
@@ -398,10 +410,20 @@ class GDSLoader:
                         ys = np.array([data[1]+width*np.sin(theta) for theta
                               in np.linspace(0, 2*np.pi, N_per_circle)])*dbu
                     if (np.min(xs)>xmin and np.max(xs)<xmax and
-                        np.min(ys)>ymin and np.max(ys)<ymax):
+                            np.min(ys)>ymin and np.max(ys)<ymax):
                         polygons.append(list(zip(xs, ys)))
-        self.polygons=MultiPolygon([Polygon(points=p,
-                                    holes=[]) for p in polygons])   
+        if not negative:
+            self.polygons=MultiPolygon([Polygon(points=p,
+                                        holes=[]) for p in polygons])   
+        else:
+            self.polygons=Rectangle(x0=0.5*(xmin+xmax),
+                                           y0=0.5*(ymin+ymax),
+                                    Lx=xmax-xmin,
+                                    Ly=ymax-ymin)
+            
+            
+            self.polygons=self.polygons.subtract(MultiPolygon([Polygon(points=p,
+                                        holes=[]) for p in polygons]))
         if merged:
             self.polygons=self.polygons.merge()
         if centering is None:
@@ -410,7 +432,9 @@ class GDSLoader:
             dx, dy, dz=(centering[0]-self.polygons.center[0],
                         centering[1]-self.polygons.center[1],
                         centering[2])
-        self.polygons.translate([dx, dy, dz])     
+        self.polygons.translate([dx, dy, dz])  
+        kwargs['scale']=self.scaling
+        kwargs['z_position']=dz
         self.kwargs=kwargs
     
     def read(self):

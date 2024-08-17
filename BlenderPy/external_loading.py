@@ -321,7 +321,7 @@ class GDSLoader:
     def __init__(self, filename=None, xmin=None, 
                  xmax=None, ymin=None,
                  ymax=None, layer=None, scaling=1e-3,
-                 cell_name='TOP', centering=None,
+                 cell_name=None, centering=None,
                  merged=False, N_per_circle=30,
                  negative=False, **kwargs):
         '''
@@ -353,15 +353,18 @@ class GDSLoader:
         reading_cell, reading_bound, reading_path=False, False, False
         polygons=[]
         dbu=None
+        if cell_name is None:
+            reading_cell=True
         for datatype, data in self.data:
             if datatype=='UNITS':
                 dbu=data[0]
                 print(data)
             if datatype=='STRNAME':
-                if hasattr(data, 'decode') and data.decode()==cell_name:
-                    reading_cell=True
-                elif data==cell_name:
-                    reading_cell=True
+                if cell_name is not None:
+                    if hasattr(data, 'decode') and data.decode()==cell_name:
+                        reading_cell=True
+                    elif data==cell_name:
+                        reading_cell=True
             elif datatype=='ENDSTR':
                 reading_cell=False
             elif datatype=='BOUNDARY' or datatype=='BOX':

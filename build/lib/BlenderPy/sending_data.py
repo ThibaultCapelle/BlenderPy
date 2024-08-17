@@ -90,6 +90,21 @@ class Communication:
             return json.loads(data)['content']
     
     @staticmethod
+    def format_dict(kwargs):
+        res=dict()
+        for k,v in kwargs.items():
+            if isinstance(v, np.ndarray):
+                if len(v.shape)==2:
+                    res[k]=[list(i) for i in v]
+                elif len(v.shape)==1:
+                    res[k]=[i for i in v]
+                else:
+                    raise NotImplementedError('are you sending 3d matrices ?')
+            else:
+                res[k]=v
+        return res
+    
+    @staticmethod
     def parse(message, **kwargs):
         '''Format a message to be sent to the Blender Server.
         
@@ -101,7 +116,7 @@ class Communication:
         '''
         res=dict()
         res['command']=message
-        res['kwargs']=kwargs
+        res['kwargs']=Communication.format_dict(kwargs)
         msg=json.dumps(res)
         return msg
     
@@ -1561,6 +1576,18 @@ class Mesh(Object, GeometricEntity):
         Communication.send('cut_mesh', name_msh=self.name_msh,
                            planes_co=plane_points,
                            planes_no=plane_normals)
+    
+    def global_cut_mesh(self, N_cuts=100):
+        '''
+        Cut all the edges in N_cuts parts regularly spaced. Much more
+        efficient than cut_mesh
+        
+        Parameters:
+            N_cuts: the number of cuts to perform
+        '''
+        Communication.send('subdivide_edges',
+                           name_msh=self.name_msh,
+                           N_cuts=N_cuts)
     
     def smooth(self):
         '''

@@ -141,6 +141,29 @@ class Mirror(Transformation):
             points[i]=res
         return points
     
+class Rotation(Transformation):
+    '''a Rotation around a  point'''
+    
+    def __init__(self, point, angle):
+        '''
+        Parameters:
+            point: a point around which to turn
+            angle: the angle to turn by, in degrees
+        '''
+        self.point=point[0]+1j*point[1]
+        self.angle=angle
+    
+    def update(self, points):
+        '''return the mirrored points'''
+        
+        for i, point in enumerate(points):
+            p=point[0]+1j*point[1]
+            p0=self.point
+            res=p0+(p-p0)*np.exp(1j*np.pi*self.angle/180)
+            points[i]=[np.real(res), np.imag(res)]
+        return points
+    
+    
 class MultiPolygon():
     '''
     Class representing a list of Polygons
@@ -207,6 +230,13 @@ class MultiPolygon():
             res=Polygon()
             res.from_shapely(merged)
         return res
+    
+    def duplicate(self):
+        return MultiPolygon(polygons=[pol.duplicate() for pol in self.polygons])
+    
+    def rotate(self, angle, center=[0,0]):
+        self.polygons=[pol.rotate(angle, center=center) for pol in self.polygons]
+        return self
     
     @property
     def left(self):
@@ -333,6 +363,25 @@ class Polygon():
         elif isinstance(diff, geometry.polygon.Polygon):
             self.from_shapely(diff)
             return self
+        
+    def union(self, other):
+        '''Performs a boolean union between this Polygon and another
+        
+        Parameters:
+            other: a Polygon or a MultiPolygon to subtract
+        
+        Returns:
+            a Polygon or a MultiPolygon, resulting from the union
+        '''
+        if isinstance(other, Polygon) or isinstance(other, MultiPolygon):
+            union=self.to_shapely().union(other.to_shapely())
+        if isinstance(union, geometry.multipolygon.MultiPolygon):
+            res=MultiPolygon()
+            res.from_shapely(union)
+            return res
+        elif isinstance(union, geometry.polygon.Polygon):
+            self.from_shapely(union)
+            return self
     
     def intersect(self, other):
         '''Performs a boolean intersection between this Polygon and another
@@ -375,7 +424,14 @@ class Polygon():
         for i, interior in enumerate(polygon.interiors):
             points_int.append(self._xy_to_points(interior))
         return points_ext, points_int
-
+    
+    def rotate(self, angle, center=[0,0]):
+        rot=Rotation(center, angle)
+        if hasattr(self.points[0], 'x'):
+            self.points=[[p.x, p.y] for p in rot.update(self.points)]
+        else:
+            self.points=rot.update(self.points)
+        return self
     
     def translate(self, vect):
         '''Translate the Polygon
@@ -505,7 +561,7 @@ class AngularSector(Polygon):
     '''Angular section of a circle '''
     
     def __init__(self, x0=0, y0=0, radius=1., N=32,
-                 theta_1=0, theta_2=np.pi/2):
+                 theta_1=0, theta_2=np.pi/2, inner_radius=0):
         '''
         Parameters:
             x0, y0: the center of the circle
@@ -513,10 +569,20 @@ class AngularSector(Polygon):
             N: the number of points
             theta_1: the starting angle of the sector
             theta_2: the end angle of the sector
+            inner_radius: if different than 0, make a donut with this inner radius
+            and radius as the outer radius
         '''
-        points=[[x0+radius*np.cos(theta),
-                 y0+radius*np.sin(theta)] 
-                 for theta in np.linspace(theta_1, theta_2, N)]+[[0.,0.]]
+        if inner_radius==0:
+            points=[[x0+radius*np.cos(theta),
+                     y0+radius*np.sin(theta)] 
+                     for theta in np.linspace(theta_1, theta_2, N)]+[[0.,0.]]
+        else:
+            points=[[x0+radius*np.cos(theta),
+                     y0+radius*np.sin(theta)] 
+                     for theta in np.linspace(theta_1, theta_2, N)]+\
+                    [[x0+inner_radius*np.cos(theta),
+                             y0+inner_radius*np.sin(theta)] 
+                             for theta in np.linspace(theta_2, theta_1, N)]
         super().__init__(points=points)
 
 class RoundCorner(Polygon):
