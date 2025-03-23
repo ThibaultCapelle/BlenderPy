@@ -1215,7 +1215,7 @@ class Object:
                                    modifier_type=modifier_type,
                                    **kwargs)
     
-    def surface_subdivisions(self, levels=1):
+    def surface_subdivisions(self, levels=1, subdivision_type='SIMPLE'):
         '''subdivide the Mesh to increase its smoothness
         
         Parameters:
@@ -1224,6 +1224,7 @@ class Object:
         
         modifier=self.assign_modifier('SUBSURF')
         modifier.properties['levels']=levels
+        modifier.properties['subdivision_type']=subdivision_type
         time.sleep(0.5)
         modifier.apply()
         time.sleep(0.5)
@@ -1585,8 +1586,8 @@ class Mesh(Object, GeometricEntity):
         Parameters:
             N_cuts: the number of cuts to perform
         '''
-        Communication.send('subdivide_edges',
-                           name_msh=self.name_msh,
+        Communication.send('subdivide_mesh',
+                           name_obj=self.name_obj,
                            N_cuts=N_cuts)
     
     def smooth(self):
@@ -1596,7 +1597,7 @@ class Mesh(Object, GeometricEntity):
         
         Communication.ask('smooth', name_msh=self.name_msh)
     
-    def divide(self, Nx=None, Ny=None, Nz=None):
+    def divide(self, Nx=None, Ny=None, Nz=None, global_cut=False):
         '''Use the cut_mesh method for planes regularly spaced
         in X, Y and Z, and oriented along thos axis
         
@@ -1608,19 +1609,23 @@ class Mesh(Object, GeometricEntity):
             Nz: an integer that represents the number of cuts along the Z axis.
             Default to None which means no cut
         '''
-        if Nx is not None:
-            xs=np.linspace(self.xmin, self.xmax, Nx)
-            self.cut_mesh([[x,0,0] for x in xs],
-                          [[1,0,0] for x in xs])
-        if Ny is not None:
-            ys=np.linspace(self.ymin, self.ymax, Ny)
-            self.cut_mesh([[0,y,0] for y in ys],
-                          [[0,1,0] for y in ys])
-        if Nz is not None:
-            zs=np.linspace(self.zmin, self.zmax, Nz)
-            self.cut_mesh([[0,0,z] for z in zs],
-                          [[0,0,1] for z in zs])
-    
+        if not global_cut:
+            if Nx is not None:
+                xs=np.linspace(self.xmin, self.xmax, Nx)
+                self.cut_mesh([[x,0,0] for x in xs],
+                              [[1,0,0] for x in xs])
+            if Ny is not None:
+                ys=np.linspace(self.ymin, self.ymax, Ny)
+                self.cut_mesh([[0,y,0] for y in ys],
+                              [[0,1,0] for y in ys])
+            if Nz is not None:
+                zs=np.linspace(self.zmin, self.zmax, Nz)
+                self.cut_mesh([[0,0,z] for z in zs],
+                              [[0,0,1] for z in zs])
+        else:
+            assert Nx is not None
+            self.global_cut_mesh(N_cuts=Nx)
+        
     @property
     def use_auto_smooth(self):
         '''Use the auto_smooth property. Expects a boolean'''

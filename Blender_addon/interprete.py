@@ -35,8 +35,55 @@ class Interprete:
             bpy.data.images.remove(block, do_unlink=True)
             time.sleep(0.01)
         self.server.send_answer(connection, "DONE")
+        
+    def get_base_context(self):
+        context_override = bpy.context.copy()
+        window=bpy.context.window_manager.windows[0]
+        context_override['window']=window
+        context_override['scene']=bpy.data.scenes['Scene']
+        screen=bpy.data.screens['Layout']
+        context_override['screen']= screen
+        for area in screen.areas:
+            if area.type=='VIEW_3D':
+                break
+        for region in area.regions:
+            if region.type=='WINDOW':
+                break
+        
+        context_override['area']= area
+        context_override['region']= region
+        
+        context_override["workspace"] = bpy.data.workspaces['Layout']
+        return context_override
     
     
+    def subdivide_mesh(self, connection=None, name_obj=None, N_cuts=100, **kwargs):
+        bpy.data.objects[name_obj].select_set(True)
+        bpy.context.view_layer.objects.active=bpy.data.objects[name_obj]
+        
+        context_override=self.get_base_context()
+        context_override["selected_objects"] = [bpy.data.objects[name_obj]]
+        context_override["active_object"] = bpy.data.objects[name_obj]
+        context_override["editable_objects"] = [bpy.data.objects[name_obj]]
+        context_override["objects_in_mode"] = [bpy.data.objects[name_obj]]
+        
+        print(bpy.context.copy())
+        with bpy.context.temp_override(**context_override):
+            print(bpy.context.active_object)
+            bpy.ops.object.mode_set(mode="EDIT")
+        context_override=self.get_base_context()
+        context_override["edit_object"] = bpy.data.objects[name_obj]
+        with bpy.context.temp_override(**context_override):
+            print('yolo')
+            bpy.ops.mesh.subdivide(number_cuts=N_cuts)
+        context_override=self.get_base_context()
+        context_override["selected_objects"] = [bpy.data.objects[name_obj]]
+        context_override["active_object"] = bpy.data.objects[name_obj]
+        context_override["editable_objects"] = [bpy.data.objects[name_obj]]
+        context_override["objects_in_mode"] = [bpy.data.objects[name_obj]]
+        with bpy.context.temp_override(**context_override):
+            bpy.ops.object.mode_set(mode="OBJECT")
+        
     def subdivide_edges(self, connection=None, name_msh=None, N_cuts=100):
         mesh=bpy.data.meshes[name_msh]
         bm = bmesh.new()
@@ -334,10 +381,11 @@ class Interprete:
                        modifier_type='BOOLEAN',
                        **kwargs):
         obj=bpy.data.objects[name_obj]
-        ctx = bpy.context.copy()
+        ctx = self.get_base_context()
         ctx['object'] = obj
         ctx['modifier']= obj.modifiers[name]
-        bpy.ops.object.modifier_apply(ctx, modifier=modifier_type)
+        with bpy.context.temp_override(**ctx):
+            bpy.ops.object.modifier_apply(modifier=modifier_type)
         self.server.send_answer(connection,
                                 'FINISHED')
     
@@ -361,7 +409,7 @@ class Interprete:
         node.inputs['Transmission Weight'].default_value=kwargs['transmission']
         node.inputs['Alpha'].default_value=kwargs['alpha']
         material.blend_method = kwargs['blend_method']
-        material.shadow_method = kwargs['blend_method_shadow']
+        #material.shadow_method = kwargs['blend_method_shadow']
         material.use_screen_refraction=kwargs['use_screen_refraction']
         if 'roughness' in kwargs.keys():
             node.inputs['Roughness'].default_value=kwargs['roughness']

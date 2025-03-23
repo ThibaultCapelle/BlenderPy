@@ -3,7 +3,7 @@ bl_info = {
     "author": "Thibault Capelle",
     "version": (1, 0, 0),
     "blender": (2, 80, 0),
-    "location": "View3D > N",
+    "location": "View3D",
     "description": "Python server to call the Blender API from an IDE",
     "category": "Generic",
 }
