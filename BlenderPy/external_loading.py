@@ -320,7 +320,7 @@ class GDSLoader:
     
     def __init__(self, filename=None, xmin=None, 
                  xmax=None, ymin=None,
-                 ymax=None, layer=None, scaling=1e-3,
+                 ymax=None, layers=None, scaling=1e-3,
                  cell_name=None, centering=None,
                  merged=False, N_per_circle=30,
                  negative=False, **kwargs):
@@ -328,7 +328,7 @@ class GDSLoader:
         Parameters:
             filename: path to the GDS
             xmin xmax, ymin, ymax: limits of the box to select from
-            layer: layer number to select from. Ex: 2 will select the layer 2/0
+            layers: list of layer number to select from, or a single layer. Ex: 2 will select the layer 2/0
             scaling: 2D scaling to apply after loading
             cell_name: name of the cell to select from
             centering: desired center of the coordinates,
@@ -338,6 +338,8 @@ class GDSLoader:
         
         if isinstance(scaling, float):
             scaling=[scaling, scaling, 1]
+        if not isinstance(layers, list):
+            layers=[layers]
         self.scaling=scaling
         self.filename=filename
         self.data=self.read()
@@ -375,7 +377,7 @@ class GDSLoader:
                 reading_bound=False
                 reading_path=False
             if reading_cell and reading_bound:
-                if datatype=='LAYER' and data[0]!=layer:
+                if datatype=='LAYER' and data[0] not in layers:
                     reading_bound=False
                 elif datatype=='XY':
                     data_np=np.array(data)
@@ -384,7 +386,7 @@ class GDSLoader:
                             np.min(ys)>ymin and np.max(ys)<ymax):
                         polygons.append(list(zip(xs, ys)))
             if reading_cell and reading_path:
-                if datatype=='LAYER' and data[0]!=layer:
+                if datatype=='LAYER' and data[0] not in layers:
                     reading_path=False
                 elif datatype=='WIDTH':
                     width=data[0]/2
@@ -412,6 +414,8 @@ class GDSLoader:
                     if (np.min(xs)>xmin and np.max(xs)<xmax and
                             np.min(ys)>ymin and np.max(ys)<ymax):
                         polygons.append(list(zip(xs, ys)))
+                else:
+                    print(datatype)
         if not negative:
             self.polygons=MultiPolygon([Polygon(points=p,
                                         holes=[]) for p in polygons])   
